@@ -1,0 +1,194 @@
+// src/app/api/leads/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentSession, recordAuditLog } from '@/lib/auth/session';
+import { queryOne, execute, transaction } from '@/lib/db/connection';
+import { LeadStatus } from '@/lib/db/types';
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id: leadId } = await params;
+    const body = await req.json();
+    const { status, notes, convertToClient } = body;
+
+    const lead = await queryOne('SELECT * FROM leads WHERE id = ?', [leadId]);
+    if (!lead) {
+      return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+    }
+
+    // Role check: If representative, must be their own lead
+    if (session.role === 'REPRESENTATIVE') {
+      const rep = await queryOne('SELECT id FROM representatives WHERE user_id = ?', [session.userId]);
+      if (!rep || lead.representative_id !== rep.id) {
+        return NextResponse.json({ error: 'Forbidden: You cannot modify this lead' }, { status: 403 });
+      }
+
+      if (convertToClient || status === 'WON') {
+        return NextResponse.json({
+          error: 'Forbidden: Representatives cannot directly mark leads as WON. Conversion requires formal client proposal approval or administrative sign-off.',
+        }, { status: 403 });
+      }
+    }
+
+    const validStatuses: LeadStatus[] = [
+      'NEW',
+      'CONTACTED',
+      'QUALIFIED',
+      'REQUIREMENTS_COLLECTED',
+      'PROPOSAL',
+      'WON',
+      'LOST',
+    ];
+
+    const targetStatus = status && validStatuses.includes(status) ? status : lead.status;
+
+    // Handle conversion from WON lead to Client + Project
+    if (convertToClient && targetStatus === 'WON') {
+      let createdClientId = '';
+      let createdProjectId = '';
+
+      await transaction(async (tx) => {
+        // 1. Check if user already exists for lead email
+        let clientUserId: string;
+        const existingUser = await tx.queryOne('SELECT id FROM users WHERE LOWER(email) = ?', [lead.email.toLowerCase()]);
+
+        if (existingUser) {
+          clientUserId = existingUser.id;
+        } else {
+          clientUserId = `u_cli_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          // Seed temporary hash for client activation
+          await tx.execute(`
+            INSERT INTO users (id, email, password_hash, role, status, email_verified, created_at, updated_at)
+            VALUES (?, ?, '$2a$10$DemoHashForConvertedClientUnset1234567890abcdef', 'CLIENT', 'ACTIVE', 0, datetime('now'), datetime('now'))
+          `, [clientUserId, lead.email.toLowerCase()]);
+
+          await tx.execute(`
+            INSERT INTO user_profiles (user_id, first_name, last_name, phone, country_id, timezone, updated_at)
+            VALUES (?, ?, 'Client', ?, ?, 'Africa/Nairobi', datetime('now'))
+          `, [clientUserId, lead.contact_person, lead.phone, lead.country_id]);
+        }
+
+        // 2. Create or find Client record
+        const existingClient = await tx.queryOne('SELECT id FROM clients WHERE user_id = ?', [clientUserId]);
+        if (existingClient) {
+          createdClientId = existingClient.id;
+        } else {
+          createdClientId = `cli_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          await tx.execute(`
+            INSERT INTO clients (id, user_id, lead_id, company_name, industry, country_id, representative_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+          `, [
+            createdClientId,
+            clientUserId,
+            leadId,
+            lead.business_name,
+            lead.business_type,
+            lead.country_id,
+            lead.representative_id
+          ]);
+        }
+
+        // 3. Create Project record
+        createdProjectId = `prj_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const projectCode = `PRJ-${lead.currency}-${Math.floor(1000 + Math.random() * 9000)}`;
+        await tx.execute(`
+          INSERT INTO projects (
+            id, code, title, description, client_id, representative_id, lead_id,
+            status, budget_minor, currency, country_id, created_at, updated_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'PLANNING', ?, ?, ?, datetime('now'), datetime('now'))
+        `, [
+          createdProjectId,
+          projectCode,
+          `Digital Solution for ${lead.business_name}`,
+          lead.requirements,
+          createdClientId,
+          lead.representative_id,
+          leadId,
+          lead.estimated_budget_minor,
+          lead.currency,
+          lead.country_id
+        ]);
+
+        // 4. Update Lead status to WON
+        await tx.execute(`
+          UPDATE leads SET status = 'WON', notes = ?, updated_at = datetime('now')
+          WHERE id = ?
+        `, [notes || lead.notes, leadId]);
+
+        // 5. If lead had a representative, initialize commission record (default rate 20% or rep specific)
+        if (lead.representative_id) {
+          const rep = await tx.queryOne('SELECT commission_rate_bps FROM representatives WHERE id = ?', [lead.representative_id]);
+          const rateBps = rep ? rep.commission_rate_bps : 2000;
+          const commissionMinor = Math.round((lead.estimated_budget_minor * rateBps) / 10000);
+          const commId = `comm_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+          await tx.execute(`
+            INSERT INTO commissions (
+              id, project_id, representative_id, rate_bps, base_amount_minor,
+              commission_amount_minor, currency, status, created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING', datetime('now'), datetime('now'))
+          `, [
+            commId,
+            createdProjectId,
+            lead.representative_id,
+            rateBps,
+            lead.estimated_budget_minor,
+            commissionMinor,
+            lead.currency
+          ]);
+        }
+      });
+
+      await recordAuditLog({
+        userId: session.userId,
+        action: 'CONVERT_LEAD_TO_CLIENT',
+        entity: 'leads',
+        entityId: leadId,
+        metadata: { clientId: createdClientId, projectId: createdProjectId },
+        ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1'
+      });
+
+      return NextResponse.json({
+        success: true,
+        converted: true,
+        clientId: createdClientId,
+        projectId: createdProjectId,
+        message: 'Lead successfully converted to Client and Project!'
+      });
+    }
+
+    // Standard status and notes update
+    await execute(`
+      UPDATE leads
+      SET status = ?, notes = ?, updated_at = datetime('now')
+      WHERE id = ?
+    `, [targetStatus, notes !== undefined ? notes : lead.notes, leadId]);
+
+    await recordAuditLog({
+      userId: session.userId,
+      action: 'UPDATE_LEAD_STATUS',
+      entity: 'leads',
+      entityId: leadId,
+      metadata: { previousStatus: lead.status, newStatus: targetStatus },
+      ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1'
+    });
+
+    return NextResponse.json({
+      success: true,
+      leadId,
+      status: targetStatus,
+    });
+  } catch (err: any) {
+    console.error('Failed to update lead:', err);
+    return NextResponse.json({ error: 'Failed to update lead' }, { status: 500 });
+  }
+}
