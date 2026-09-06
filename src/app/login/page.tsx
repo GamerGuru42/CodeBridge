@@ -1,16 +1,14 @@
 // src/app/login/page.tsx
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound } from 'lucide-react';
 import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,19 +16,24 @@ function LoginForm() {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
   const [showDemoLogins, setShowDemoLogins] = useState(false);
 
-  // Handle OAuth redirect error parameters
+  // Handle OAuth redirect error & redirect parameters in useEffect
   useEffect(() => {
-    const err = searchParams.get('error');
-    if (err === 'account_role_conflict') {
-      setErrorMsg('This Google account is already registered under an administrative or client account. Please sign in with email and password.');
-    } else if (err === 'oauth_cancelled') {
-      setErrorMsg('Google authentication was cancelled.');
-    } else if (err === 'oauth_exchange_failed' || err === 'oauth_server_error') {
-      setErrorMsg('Google authentication encountered an error. Please try again.');
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setRedirectPath(params.get('redirect'));
+      const err = params.get('error');
+      if (err === 'account_role_conflict') {
+        setErrorMsg('This Google account is already registered under an administrative or client account. Please sign in with email and password.');
+      } else if (err === 'oauth_cancelled') {
+        setErrorMsg('Google authentication was cancelled.');
+      } else if (err === 'oauth_exchange_failed' || err === 'oauth_server_error') {
+        setErrorMsg('Google authentication encountered an error. Please try again.');
+      }
     }
-  }, [searchParams]);
+  }, []);
 
   const demoAccounts = [
     { label: 'Super Admin', email: 'superadmin@marketbridge.com', role: 'SUPER_ADMIN' },
@@ -419,13 +422,5 @@ function LoginForm() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
-      <LoginForm />
-    </Suspense>
   );
 }
