@@ -3,8 +3,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Layers, Globe, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
+import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 
 export default function RepresentativeOnboardingPage() {
   const router = useRouter();
@@ -41,44 +41,46 @@ export default function RepresentativeOnboardingPage() {
   return (
     <div style={{
       minHeight: '100vh',
+      backgroundColor: '#F8FAFC',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
       padding: '40px 20px',
-      backgroundColor: 'var(--cb-bg-page)',
-      background: 'radial-gradient(circle at 50% 15%, rgba(217, 119, 6, 0.12), transparent 60%), var(--cb-bg-page)',
     }}>
       {/* Brand Header */}
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: 'var(--cb-amber-500)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFFFFF',
-          }}>
-            <Layers size={24} />
-          </div>
-          <span style={{ fontSize: '22px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-            CODEBRIDGE
-          </span>
-        </Link>
-        <div className="cb-badge cb-badge-amber" style={{ margin: '0 auto', fontSize: '11px', textTransform: 'uppercase' }}>
+      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div style={{ marginBottom: '14px' }}>
+          <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+        </div>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '4px 12px',
+          borderRadius: '9999px',
+          backgroundColor: '#E0F2FE',
+          color: '#0284C7',
+          fontSize: '11px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+        }}>
           Sales Representative Activation
         </div>
       </div>
 
       <div style={{ width: '100%', maxWidth: '520px' }}>
-        <div className="cb-card" style={{ padding: '36px' }}>
-          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF', marginBottom: '8px', textAlign: 'center' }}>
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '20px',
+          padding: '36px',
+          boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #E2E8F0',
+        }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#0B1B3D', marginBottom: '8px', textAlign: 'center', letterSpacing: '-0.02em' }}>
             Which country will you operate in?
           </h2>
-          <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginBottom: '28px', textAlign: 'center', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '28px', textAlign: 'center', lineHeight: 1.5 }}>
             Select your primary operating market. This assigns your localized currency, client lead pricing tiers, and direct 20% commission settlement channel.
           </p>
 
@@ -86,9 +88,9 @@ export default function RepresentativeOnboardingPage() {
             <div style={{
               padding: '12px 14px',
               borderRadius: '8px',
-              backgroundColor: 'rgba(225, 29, 72, 0.15)',
-              border: '1px solid rgba(225, 29, 72, 0.3)',
-              color: '#FB7185',
+              backgroundColor: 'rgba(225, 29, 72, 0.08)',
+              border: '1px solid rgba(225, 29, 72, 0.25)',
+              color: '#BE123C',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
@@ -102,65 +104,71 @@ export default function RepresentativeOnboardingPage() {
 
           <form onSubmit={handleComplete}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
-              {/* Nigeria Option */}
+              {/* Option 1: Nigeria */}
               <div
                 onClick={() => setSelectedCountry('NG')}
                 style={{
                   padding: '18px 20px',
                   borderRadius: '12px',
-                  border: selectedCountry === 'NG' ? '2px solid var(--cb-emerald-500, #10B981)' : '1px solid var(--cb-border-subtle)',
-                  backgroundColor: selectedCountry === 'NG' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.02)',
+                  border: selectedCountry === 'NG' ? '2px solid #00B4D8' : '1px solid #CBD5E1',
+                  backgroundColor: selectedCountry === 'NG' ? 'rgba(0, 180, 216, 0.06)' : '#FFFFFF',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.15s ease',
+                  boxShadow: selectedCountry === 'NG' ? '0 4px 12px rgba(0, 180, 216, 0.12)' : 'none',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <span style={{ fontSize: '32px' }} role="img" aria-label="Nigeria">🇳🇬</span>
+                  <span style={{ fontSize: '28px' }}>🇳🇬</span>
                   <div>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D' }}>
                       Nigeria
                     </div>
-                    <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', marginTop: '2px' }}>
-                      Base Currency: <strong>NGN (₦)</strong> &bull; Regional Hub: Lagos
+                    <div style={{ fontSize: '12px', color: '#64748B' }}>
+                      Base Currency: NGN (₦) &bull; West Africa Operations
                     </div>
                   </div>
                 </div>
-                {selectedCountry === 'NG' && (
-                  <CheckCircle2 size={22} color="#10B981" />
+                {selectedCountry === 'NG' ? (
+                  <CheckCircle2 size={22} color="#00B4D8" />
+                ) : (
+                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid #CBD5E1' }} />
                 )}
               </div>
 
-              {/* Kenya Option */}
+              {/* Option 2: Kenya */}
               <div
                 onClick={() => setSelectedCountry('KE')}
                 style={{
                   padding: '18px 20px',
                   borderRadius: '12px',
-                  border: selectedCountry === 'KE' ? '2px solid var(--cb-amber-500)' : '1px solid var(--cb-border-subtle)',
-                  backgroundColor: selectedCountry === 'KE' ? 'rgba(217, 119, 6, 0.1)' : 'rgba(255, 255, 255, 0.02)',
+                  border: selectedCountry === 'KE' ? '2px solid #00B4D8' : '1px solid #CBD5E1',
+                  backgroundColor: selectedCountry === 'KE' ? 'rgba(0, 180, 216, 0.06)' : '#FFFFFF',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.15s ease',
+                  boxShadow: selectedCountry === 'KE' ? '0 4px 12px rgba(0, 180, 216, 0.12)' : 'none',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <span style={{ fontSize: '32px' }} role="img" aria-label="Kenya">🇰🇪</span>
+                  <span style={{ fontSize: '28px' }}>🇰🇪</span>
                   <div>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D' }}>
                       Kenya
                     </div>
-                    <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', marginTop: '2px' }}>
-                      Base Currency: <strong>KES (KSh)</strong> &bull; Regional Hub: Nairobi
+                    <div style={{ fontSize: '12px', color: '#64748B' }}>
+                      Base Currency: KES (KSh) &bull; East Africa Operations
                     </div>
                   </div>
                 </div>
-                {selectedCountry === 'KE' && (
-                  <CheckCircle2 size={22} color="var(--cb-amber-500)" />
+                {selectedCountry === 'KE' ? (
+                  <CheckCircle2 size={22} color="#00B4D8" />
+                ) : (
+                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid #CBD5E1' }} />
                 )}
               </div>
             </div>
@@ -168,22 +176,16 @@ export default function RepresentativeOnboardingPage() {
             <button
               type="submit"
               disabled={loading}
-              className="cb-btn cb-btn-primary"
+              className="cb-btn cb-btn-navy"
               style={{
                 width: '100%',
                 padding: '14px',
                 fontSize: '15px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                backgroundColor: 'var(--cb-amber-500)',
-                color: '#000000',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.75 : 1,
               }}
             >
-              {loading ? 'Activating Representative Workspace...' : 'Complete Onboarding & Enter Workspace'}
-              <ArrowRight size={18} />
+              {loading ? 'Activating Profile...' : 'Complete Onboarding & Enter Dashboard'}
             </button>
           </form>
         </div>

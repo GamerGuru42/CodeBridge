@@ -4,7 +4,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Layers, AlertCircle, ArrowRight, ShieldCheck, KeyRound } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound } from 'lucide-react';
+import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 
 function LoginForm() {
   const router = useRouter();
@@ -13,29 +14,30 @@ function LoginForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showDemoLogins, setShowDemoLogins] = useState(false);
 
   // Handle OAuth redirect error parameters
   useEffect(() => {
     const err = searchParams.get('error');
     if (err === 'account_role_conflict') {
-      setErrorMsg('This Google account is already associated with a client or administrative account. Please sign in with your email and password.');
+      setErrorMsg('This Google account is already registered under an administrative or client account. Please sign in with email and password.');
     } else if (err === 'oauth_cancelled') {
-      setErrorMsg('Google authentication was cancelled. Please try again.');
+      setErrorMsg('Google authentication was cancelled.');
     } else if (err === 'oauth_exchange_failed' || err === 'oauth_server_error') {
       setErrorMsg('Google authentication encountered an error. Please try again.');
     }
   }, [searchParams]);
 
   const demoAccounts = [
-    { label: 'Super Admin', email: 'superadmin@marketbridge.com', role: 'SUPER_ADMIN', desc: 'MarketBridge owner' },
-    { label: 'Admin / Ops', email: 'ops@marketbridge.com', role: 'ADMIN', desc: 'Operational manager' },
-    { label: 'Country Mgr (KE)', email: 'countrymanager.ke@codebridge.com', role: 'COUNTRY_MANAGER', desc: 'Kenya manager' },
-    { label: 'Representative (Active)', email: 'rep.kenya@codebridge.com', role: 'REPRESENTATIVE', desc: 'Approved Kenya rep' },
-    { label: 'Representative (Pending)', email: 'rep.pending@codebridge.com', role: 'REPRESENTATIVE', desc: 'Pending approval rep' },
-    { label: 'Developer', email: 'dev@codebridge.com', role: 'DEVELOPER', desc: 'Engineering team' },
-    { label: 'Client', email: 'client@abcrestaurants.com', role: 'CLIENT', desc: 'ABC Restaurant Ltd' },
+    { label: 'Super Admin', email: 'superadmin@marketbridge.com', role: 'SUPER_ADMIN' },
+    { label: 'Admin / Ops', email: 'ops@marketbridge.com', role: 'ADMIN' },
+    { label: 'Country Manager', email: 'countrymanager.ke@codebridge.com', role: 'COUNTRY_MANAGER' },
+    { label: 'Client', email: 'client@abcrestaurants.com', role: 'CLIENT' },
+    { label: 'Developer', email: 'dev@codebridge.com', role: 'DEVELOPER' },
   ];
 
   const handleQuickFill = (demoEmail: string) => {
@@ -58,7 +60,6 @@ function LoginForm() {
 
       const data = await res.json();
       if (res.ok) {
-        // Successful login: redirect to user's targeted dashboard
         const target = redirectPath || data.redirectTo || '/dashboard';
         router.push(target);
         router.refresh();
@@ -75,130 +76,84 @@ function LoginForm() {
   return (
     <div style={{
       minHeight: '100vh',
+      backgroundColor: '#F8FAFC',
       display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
       alignItems: 'center',
-      padding: '40px 20px',
-      backgroundColor: 'var(--cb-bg-page)',
-      background: 'radial-gradient(circle at 50% 15%, rgba(30, 80, 255, 0.12), transparent 60%), var(--cb-bg-page)',
+      justifyContent: 'center',
+      padding: '30px 20px',
     }}>
-      {/* Brand Header */}
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: 'var(--cb-blue-600)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFFFFF',
-          }}>
-            <Layers size={24} />
+      {/* Split-Screen Branded Card Container */}
+      <div style={{
+        width: '100%',
+        maxWidth: '920px',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '20px',
+        overflow: 'hidden',
+        boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.1), 0 0 0 1px #E2E8F0',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+      }}>
+        {/* =============================================================== */}
+        {/* LEFT COLUMN: Clean Sign-In Form                                 */}
+        {/* =============================================================== */}
+        <div style={{ padding: '44px 38px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {/* Logo Header */}
+          <div style={{ marginBottom: '24px' }}>
+            <CodeBridgeLogo size="md" variant="dark-text" href="/" />
           </div>
-          <span style={{ fontSize: '22px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-            CODEBRIDGE
-          </span>
-        </Link>
-        <p style={{ fontSize: '14px', color: 'var(--cb-text-muted)' }}>
-          "Built for business." &bull; Sign in to access your platform dashboard
-        </p>
-      </div>
 
-      <div style={{ width: '100%', maxWidth: '460px' }}>
-        <div className="cb-card" style={{ padding: '36px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
-            Account Sign In
-          </h2>
-          <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginBottom: '24px' }}>
-            Enter your authorized email credentials to proceed.
+          <h1 style={{
+            fontSize: '26px',
+            fontWeight: 800,
+            letterSpacing: '-0.025em',
+            color: '#0B1B3D',
+            marginBottom: '6px',
+          }}>
+            Welcome Back
+          </h1>
+          <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '24px' }}>
+            Sign in to your CodeBridge account
           </p>
 
           {errorMsg && (
             <div style={{
               padding: '12px 14px',
               borderRadius: '8px',
-              backgroundColor: 'rgba(225, 29, 72, 0.15)',
-              border: '1px solid rgba(225, 29, 72, 0.3)',
-              color: '#FB7185',
+              backgroundColor: 'rgba(225, 29, 72, 0.08)',
+              border: '1px solid rgba(225, 29, 72, 0.25)',
+              color: '#BE123C',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               marginBottom: '20px',
               fontSize: '13px',
+              lineHeight: 1.4,
             }}>
-              <AlertCircle size={16} />
-              {errorMsg}
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>{errorMsg}</span>
             </div>
           )}
 
-          <form onSubmit={handleLogin}>
-            <div className="cb-form-group">
-              <label className="cb-label">Email Address</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="cb-input"
-                placeholder="name@business.com"
-              />
-            </div>
-
-            <div className="cb-form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label className="cb-label">Password</label>
-                <span style={{ fontSize: '12px', color: 'var(--cb-blue-400)', cursor: 'pointer' }} onClick={() => alert('Password reset links will be transmitted in Phase 2 email provider setup.')}>
-                  Forgot Password?
-                </span>
-              </div>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="cb-input"
-                placeholder="••••••••••••"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="cb-btn cb-btn-primary"
-              style={{ width: '100%', padding: '12px', marginTop: '8px' }}
-            >
-              {loading ? 'Verifying Authorization...' : 'Sign In with Email'}
-            </button>
-          </form>
-
-          <div style={{ margin: '24px 0 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--cb-border-subtle)' }} />
-            <span style={{ fontSize: '11px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Sales Representative Portal
-            </span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--cb-border-subtle)' }} />
-          </div>
-
+          {/* Continue with Google Button */}
           <a
             href="/api/auth/google"
-            className="cb-btn"
+            className="cb-btn cb-btn-outline-pill"
             style={{
               width: '100%',
-              padding: '12px',
+              padding: '12px 20px',
               fontSize: '14px',
-              fontWeight: 700,
+              fontWeight: 600,
               backgroundColor: '#FFFFFF',
               color: '#1F2937',
-              borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '10px',
+              gap: '12px',
               textDecoration: 'none',
-              border: '1px solid #E5E7EB',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+              border: '1px solid #E2E8F0',
+              marginBottom: '20px',
+              transition: 'background-color 0.15s ease',
             }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
@@ -210,48 +165,258 @@ function LoginForm() {
             Continue with Google
           </a>
 
-          <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '13px', color: 'var(--cb-text-secondary)' }}>
-            Don't have an account?{' '}
-            <Link href="/register" style={{ color: 'var(--cb-blue-400)', fontWeight: 600 }}>
+          {/* "or" Divider */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            margin: '0 0 20px 0',
+          }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+            <span style={{ padding: '0 12px', fontSize: '13px', color: '#94A3B8' }}>or</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+          </div>
+
+          {/* Email / Password Form (Clients, Admins, Operations, Devs) */}
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                Email address
+              </label>
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                  <Mail size={16} />
+                </div>
+                <input
+                  type="email"
+                  required
+                  placeholder="name@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px 12px 11px 36px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    backgroundColor: '#FFFFFF',
+                    color: '#0F172A',
+                    fontSize: '14px',
+                    outline: 'none',
+                    transition: 'border-color 0.15s',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#00B4D8'}
+                  onBlur={(e) => e.target.style.borderColor = '#CBD5E1'}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                  <Lock size={16} />
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px 38px 11px 36px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    backgroundColor: '#FFFFFF',
+                    color: '#0F172A',
+                    fontSize: '14px',
+                    outline: 'none',
+                    transition: 'border-color 0.15s',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#00B4D8'}
+                  onBlur={(e) => e.target.style.borderColor = '#CBD5E1'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#94A3B8',
+                    cursor: 'pointer',
+                    padding: '4px',
+                  }}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me & Forgot Password */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#475569' }}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  style={{ borderRadius: '4px', accentColor: '#00B4D8' }}
+                />
+                Remember me
+              </label>
+
+              <Link href="/contact" style={{ color: '#0284C7', fontWeight: 500 }}>
+                Forgot password?
+              </Link>
+            </div>
+
+            {/* Sign In Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="cb-btn cb-btn-navy"
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '15px',
+                marginTop: '4px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.75 : 1,
+              }}
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+
+          {/* Register Link */}
+          <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '13px', color: '#64748B' }}>
+            Don&apos;t have an account?{' '}
+            <Link href="/register" style={{ color: '#0284C7', fontWeight: 600 }}>
               Register here
             </Link>
           </div>
+
+          {/* Quick-fill testing toggle */}
+          <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setShowDemoLogins(!showDemoLogins)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#94A3B8',
+                fontSize: '12px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <KeyRound size={12} />
+              {showDemoLogins ? 'Hide Demo Logins' : 'Quick Demo Logins'}
+            </button>
+            {showDemoLogins && (
+              <div style={{
+                marginTop: '12px',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px',
+                justifyContent: 'center',
+              }}>
+                {demoAccounts.map((acc) => (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    onClick={() => handleQuickFill(acc.email)}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      borderRadius: '4px',
+                      border: '1px solid #E2E8F0',
+                      backgroundColor: '#F8FAFC',
+                      color: '#475569',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {acc.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Development Quick Fill / Demo Credentials Box (Non-production only) */}
-        {(process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === 'true') && (
+        {/* =============================================================== */}
+        {/* RIGHT COLUMN: Dark Navy Branded Wave Panel                      */}
+        {/* =============================================================== */}
+        <div style={{
+          backgroundColor: '#070F26',
+          backgroundImage: 'radial-gradient(ellipse at 80% 90%, rgba(0, 180, 216, 0.4), transparent 60%), radial-gradient(ellipse at 20% 20%, rgba(30, 64, 175, 0.45), transparent 70%)',
+          position: 'relative',
+          padding: '48px 36px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          color: '#FFFFFF',
+          overflow: 'hidden',
+        }}>
+          {/* Decorative Glowing Wave SVGs */}
           <div style={{
-            marginTop: '24px',
-            padding: '20px',
-            borderRadius: '12px',
-            backgroundColor: 'rgba(217, 119, 6, 0.06)',
-            border: '1px dashed rgba(217, 119, 6, 0.35)',
+            position: 'absolute',
+            inset: 0,
+            opacity: 0.25,
+            pointerEvents: 'none',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <KeyRound size={16} color="var(--cb-amber-500)" />
-              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--cb-amber-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Development Environment: Quick-Fill Roles
-              </span>
+            <svg width="100%" height="100%" viewBox="0 0 400 600" preserveAspectRatio="none">
+              <path d="M 0 350 Q 150 200, 400 450 L 400 600 L 0 600 Z" fill="url(#wave-cyan)" />
+              <path d="M 0 250 Q 200 450, 400 150 L 400 600 L 0 600 Z" fill="url(#wave-blue)" opacity="0.6" />
+              <defs>
+                <linearGradient id="wave-cyan" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#00B4D8" />
+                  <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.2" />
+                </linearGradient>
+                <linearGradient id="wave-blue" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#1E40AF" />
+                  <stop offset="100%" stopColor="#0369A1" stopOpacity="0.1" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '320px', margin: '0 auto' }}>
+            <div style={{ marginBottom: '24px', display: 'inline-block' }}>
+              <CodeBridgeLogo size="lg" variant="light-text" showTagline={true} />
             </div>
-            <p style={{ fontSize: '11px', color: 'var(--cb-text-muted)', marginBottom: '12px', lineHeight: 1.4 }}>
-              Authorized testing profiles (Password: <code>CodeBridge@2025!</code>). <em>Hidden automatically in production.</em>
+
+            <p style={{
+              fontSize: '16px',
+              lineHeight: 1.6,
+              color: '#CBD5E1',
+              fontWeight: 400,
+            }}>
+              Connecting talent with opportunity across Africa.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              {demoAccounts.map((acc, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleQuickFill(acc.email)}
-                  className="cb-btn cb-btn-outline cb-btn-sm"
-                  style={{ fontSize: '11px', padding: '6px 8px', justifyContent: 'flex-start', textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                  title={`${acc.email} (${acc.desc})`}
-                >
-                  {acc.label}
-                </button>
-              ))}
+
+            <div style={{
+              marginTop: '32px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 14px',
+              borderRadius: '9999px',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              fontSize: '12px',
+              color: '#94A3B8',
+            }}>
+              <span>Serving Nigeria &bull; Kenya</span>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -259,13 +424,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--cb-bg-page)', color: 'var(--cb-text-muted)' }}>
-        Loading CodeBridge Authentication...
-      </div>
-    }>
+    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
       <LoginForm />
     </Suspense>
   );
 }
-

@@ -3,22 +3,27 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CodeBridge — Built for business. | Digital Products & Technology',
+  title: 'CodeBridge — Ideas to Impact | Build Your Project. Bridge to Africa.',
   description:
-    'CodeBridge delivers modern digital products, custom software, and engineering solutions to businesses. Operated by MarketBridge NG LTD, serving businesses across Nigeria and Kenya.',
+    'CodeBridge connects you with vetted developers and tech talent across Nigeria and Kenya, delivering high-quality solutions, on time, and within budget.',
   keywords: [
     'CodeBridge',
-    'MarketBridge',
-    'Built for business',
-    'business websites',
-    'e-commerce',
-    'restaurant ordering systems',
-    'booking systems',
-    'custom software',
-    'web applications',
+    'Ideas to Impact',
+    'African tech talent',
+    'vetted developers Nigeria',
+    'vetted developers Kenya',
+    'web development',
+    'mobile app development',
+    'UI UX design',
+    'staff augmentation',
     'Nigeria',
     'Kenya'
   ],
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -30,7 +35,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
       </head>
       <body>{children}</body>
     </html>

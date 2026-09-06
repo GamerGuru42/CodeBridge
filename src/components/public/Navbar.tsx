@@ -2,12 +2,15 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Layers, ArrowRight, Menu, X, User } from 'lucide-react';
+import { Menu, X, User, ArrowRight } from 'lucide-react';
+import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -20,82 +23,78 @@ export default function Navbar() {
       .catch(() => {});
   }, []);
 
+  const navLinks = [
+    { name: 'Home', href: '/' },
+    { name: 'Services', href: '/services' },
+    { name: 'How It Works', href: '/how-it-works' },
+    { name: 'About', href: '/about' },
+    { name: 'Contact', href: '/contact' },
+  ];
+
   return (
     <header style={{
-      borderBottom: '1px solid var(--cb-border-subtle)',
-      backgroundColor: 'rgba(13, 22, 44, 0.92)',
-      backdropFilter: 'blur(12px)',
+      borderBottom: '1px solid #F1F5F9',
+      backgroundColor: '#FFFFFF',
       position: 'sticky',
       top: 0,
       zIndex: 100,
+      boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
     }}>
-      <div className="cb-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '72px' }}>
-        {/* Brand Lockup */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '8px',
-            backgroundColor: 'var(--cb-blue-600)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFFFFF'
-          }}>
-            <Layers size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              CODEBRIDGE
-              <span style={{ fontSize: '10px', padding: '2px 6px', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '4px', color: 'var(--cb-text-secondary)', fontWeight: 600 }}>
-                BY MARKETBRIDGE
-              </span>
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)', fontWeight: 500 }}>
-              Built for business.
-            </div>
-          </div>
-        </Link>
+      <div className="cb-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '74px' }}>
+        {/* Brand Lockup with Official Logo */}
+        <CodeBridgeLogo size="md" variant="dark-text" href="/" />
 
         {/* Desktop Navigation */}
-        <nav style={{ display: 'none', alignItems: 'center', gap: '28px' }} className="desktop-nav">
-          <Link href="/" style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', transition: 'color 0.15s' }}>
-            Home
-          </Link>
-          <Link href="/services" style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', transition: 'color 0.15s' }}>
-            Services
-          </Link>
-          <Link href="/how-it-works" style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', transition: 'color 0.15s' }}>
-            How It Works
-          </Link>
-          <Link href="/about" style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', transition: 'color 0.15s' }}>
-            About
-          </Link>
-          <Link href="/contact" style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', transition: 'color 0.15s' }}>
-            Contact
-          </Link>
+        <nav style={{ display: 'none', alignItems: 'center', gap: '32px' }} className="desktop-nav">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.name}
+                href={link.href}
+                style={{
+                  fontSize: '14px',
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive ? '#0B1B3D' : '#475569',
+                  transition: 'color 0.15s ease',
+                  textDecoration: 'none',
+                }}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Action Buttons */}
         <div style={{ display: 'none', alignItems: 'center', gap: '12px' }} className="desktop-actions">
           {currentUser ? (
-            <Link href="/dashboard" className="cb-btn cb-btn-secondary cb-btn-sm" style={{ gap: '6px' }}>
+            <Link
+              href="/dashboard"
+              className="cb-btn cb-btn-navy cb-btn-sm"
+              style={{ padding: '8px 18px', gap: '8px' }}
+            >
               <User size={15} />
               Dashboard ({currentUser.role.replace('_', ' ')})
             </Link>
           ) : (
             <>
-              <Link href="/login" className="cb-btn cb-btn-outline cb-btn-sm">
+              <Link
+                href="/login"
+                className="cb-btn cb-btn-outline-pill cb-btn-sm"
+                style={{ padding: '8px 22px', fontSize: '13px', fontWeight: 600 }}
+              >
                 Login
               </Link>
-              <Link href="/register" className="cb-btn cb-btn-secondary cb-btn-sm">
-                Register
+              <Link
+                href="/register"
+                className="cb-btn cb-btn-navy cb-btn-sm"
+                style={{ padding: '8px 22px', fontSize: '13px', fontWeight: 600 }}
+              >
+                Get Started
               </Link>
             </>
           )}
-          <Link href="/request-project" className="cb-btn cb-btn-primary cb-btn-sm">
-            Request a Project <ArrowRight size={14} />
-          </Link>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -104,11 +103,13 @@ export default function Navbar() {
           style={{
             background: 'none',
             border: 'none',
-            color: 'var(--cb-text-primary)',
+            color: '#0F172A',
             cursor: 'pointer',
-            padding: '8px'
+            padding: '8px',
+            borderRadius: '6px',
           }}
           className="mobile-toggle"
+          aria-label="Toggle navigation menu"
         >
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -117,46 +118,57 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div style={{
-          backgroundColor: 'var(--cb-navy-900)',
-          borderBottom: '1px solid var(--cb-border-subtle)',
+          backgroundColor: '#FFFFFF',
+          borderBottom: '1px solid #E2E8F0',
           padding: '20px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px'
+          gap: '16px',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)',
         }}>
-          <Link href="/" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '15px', color: 'var(--cb-text-primary)' }}>
-            Home
-          </Link>
-          <Link href="/services" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '15px', color: 'var(--cb-text-primary)' }}>
-            Services
-          </Link>
-          <Link href="/how-it-works" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '15px', color: 'var(--cb-text-primary)' }}>
-            How It Works
-          </Link>
-          <Link href="/about" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '15px', color: 'var(--cb-text-primary)' }}>
-            About
-          </Link>
-          <Link href="/contact" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '15px', color: 'var(--cb-text-primary)' }}>
-            Contact
-          </Link>
-          <div style={{ height: '1px', backgroundColor: 'var(--cb-border-subtle)', margin: '4px 0' }} />
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                fontSize: '15px',
+                fontWeight: 500,
+                color: pathname === link.href ? '#0B1B3D' : '#475569',
+              }}
+            >
+              {link.name}
+            </Link>
+          ))}
+          <div style={{ height: '1px', backgroundColor: '#F1F5F9', margin: '4px 0' }} />
           {currentUser ? (
-            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="cb-btn cb-btn-secondary">
+            <Link
+              href="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="cb-btn cb-btn-navy"
+            >
               Go to Dashboard
             </Link>
           ) : (
             <div style={{ display: 'flex', gap: '10px' }}>
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="cb-btn cb-btn-outline" style={{ flex: 1 }}>
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="cb-btn cb-btn-outline-pill"
+                style={{ flex: 1 }}
+              >
                 Login
               </Link>
-              <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="cb-btn cb-btn-secondary" style={{ flex: 1 }}>
-                Register
+              <Link
+                href="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="cb-btn cb-btn-navy"
+                style={{ flex: 1 }}
+              >
+                Get Started
               </Link>
             </div>
           )}
-          <Link href="/request-project" onClick={() => setMobileMenuOpen(false)} className="cb-btn cb-btn-primary">
-            Request a Project
-          </Link>
         </div>
       )}
 

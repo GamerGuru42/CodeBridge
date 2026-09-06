@@ -2,16 +2,22 @@
 
 :root {
   /* Brand Palette */
-  --cb-navy-950: #070B19;
-  --cb-navy-900: #0D162C;
-  --cb-navy-850: #131F3F;
-  --cb-navy-800: #1B2A52;
-  --cb-navy-700: #263A6E;
+  --cb-navy-950: #070F26;
+  --cb-navy-900: #0B1B3D;
+  --cb-navy-850: #0F254B;
+  --cb-navy-800: #163265;
+  --cb-navy-700: #1E4280;
 
-  --cb-blue-600: #1E50FF;
-  --cb-blue-500: #3867FF;
-  --cb-blue-400: #6085FF;
-  --cb-blue-50: #EEF2FF;
+  --cb-blue-600: #0B1B3D;
+  --cb-blue-500: #163265;
+  --cb-blue-400: #2563EB;
+  --cb-blue-50: #EFF6FF;
+
+  --cb-cyan-600: #0284C7;
+  --cb-cyan-500: #00B4D8;
+  --cb-cyan-400: #38BDF8;
+  --cb-cyan-100: #E0F2FE;
+  --cb-cyan-50: #F0F9FF;
 
   --cb-amber-500: #D97706;
   --cb-amber-100: #FEF3C7;
@@ -25,24 +31,24 @@
   --cb-rose-100: #FFE4E6;
   --cb-rose-800: #9F1239;
 
-  /* Neutrals & Surfaces */
-  --cb-bg-page: #0B1224;
-  --cb-bg-surface: #111A33;
-  --cb-bg-card: #142040;
-  --cb-bg-subtle: #19274D;
-  --cb-bg-input: #0E162B;
+  /* Neutrals & Surfaces - Light Default Matching Mockups */
+  --cb-bg-page: #FFFFFF;
+  --cb-bg-surface: #F8FAFC;
+  --cb-bg-card: #FFFFFF;
+  --cb-bg-subtle: #F1F5F9;
+  --cb-bg-input: #FFFFFF;
 
-  --cb-border-subtle: rgba(255, 255, 255, 0.08);
-  --cb-border-light: rgba(255, 255, 255, 0.15);
-  --cb-border-focus: #3867FF;
+  --cb-border-subtle: #E2E8F0;
+  --cb-border-light: #CBD5E1;
+  --cb-border-focus: #00B4D8;
 
-  --cb-text-primary: #FFFFFF;
-  --cb-text-secondary: #94A3B8;
-  --cb-text-muted: #64748B;
-  --cb-text-inverted: #070B19;
+  --cb-text-primary: #0F172A;
+  --cb-text-secondary: #475569;
+  --cb-text-muted: #94A3B8;
+  --cb-text-inverted: #FFFFFF;
 
   /* Typography */
-  --cb-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --cb-font-sans: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --cb-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Elevations & Radii */
@@ -53,25 +59,24 @@
   --cb-radius-full: 9999px;
 
   --cb-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --cb-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
-  --cb-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
-  --cb-shadow-glow: 0 0 24px -2px rgba(30, 80, 255, 0.25);
+  --cb-shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --cb-shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+  --cb-shadow-glow: 0 0 24px -2px rgba(0, 180, 216, 0.25);
 
   --cb-container-max: 1200px;
 }
 
-/* Light Theme Variables for Client/General Reading */
-.light-mode {
-  --cb-bg-page: #F8FAFC;
-  --cb-bg-surface: #FFFFFF;
-  --cb-bg-card: #FFFFFF;
-  --cb-bg-subtle: #F1F5F9;
-  --cb-bg-input: #FFFFFF;
-  --cb-border-subtle: #E2E8F0;
-  --cb-border-light: #CBD5E1;
-  --cb-text-primary: #0F172A;
-  --cb-text-secondary: #475569;
-  --cb-text-muted: #94A3B8;
+/* Dark Theme Variables for High-Contrast/Special Panels */
+.dark-mode, .cb-dark-panel {
+  --cb-bg-page: #0B1224;
+  --cb-bg-surface: #111A33;
+  --cb-bg-card: #142040;
+  --cb-bg-subtle: #19274D;
+  --cb-border-subtle: rgba(255, 255, 255, 0.08);
+  --cb-border-light: rgba(255, 255, 255, 0.15);
+  --cb-text-primary: #FFFFFF;
+  --cb-text-secondary: #94A3B8;
+  --cb-text-muted: #64748B;
 }
 
 /* Global Reset */
@@ -248,6 +253,51 @@ button, input, select, textarea {
   padding: 14px 28px;
   font-size: 16px;
   font-weight: 600;
+}
+
+/* Modern Pill Button Utilities */
+.cb-btn-pill {
+  border-radius: var(--cb-radius-full) !important;
+}
+
+.cb-btn-navy {
+  background-color: #0B1B3D;
+  color: #FFFFFF !important;
+  border: 1px solid #0B1B3D;
+  font-weight: 600;
+  border-radius: var(--cb-radius-full);
+}
+
+.cb-btn-navy:hover {
+  background-color: #163265;
+  border-color: #163265;
+  box-shadow: 0 4px 12px rgba(11, 27, 61, 0.2);
+}
+
+.cb-btn-outline-pill {
+  background-color: #FFFFFF;
+  color: #0F172A !important;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--cb-radius-full);
+  font-weight: 500;
+}
+
+.cb-btn-outline-pill:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.cb-btn-cyan {
+  background: linear-gradient(135deg, #00B4D8 0%, #0284C7 100%);
+  color: #FFFFFF !important;
+  border: none;
+  font-weight: 600;
+  border-radius: var(--cb-radius-full);
+}
+
+.cb-btn-cyan:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 4px 14px rgba(0, 180, 216, 0.35);
 }
 
 /* Card Surfaces */

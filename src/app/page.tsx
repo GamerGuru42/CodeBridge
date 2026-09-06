@@ -1,360 +1,478 @@
 // src/app/page.tsx
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 import {
-  ArrowRight,
-  Globe,
-  Code2,
-  Cpu,
-  CheckCircle2,
+  Code,
+  Smartphone,
+  Layout,
   Users,
-  Briefcase,
-  Layers,
   ShieldCheck,
-  TrendingUp,
-  Building2,
-  ShoppingBag,
-  Utensils,
-  CalendarCheck,
-  Sliders,
-  Laptop
+  Zap,
+  Lock,
+  FileText,
+  Star,
+  Clock,
+  ArrowRight,
 } from 'lucide-react';
 
 export default function HomePage() {
-  const featuredServices = [
-    { icon: Building2, title: 'Business Websites', desc: 'Corporate and brand platforms engineered for market authority, lead capture, and performance.' },
-    { icon: ShoppingBag, title: 'E-commerce Websites', desc: 'Robust digital storefronts with integrated catalog management, cart flows, and regional currency ready.' },
-    { icon: Utensils, title: 'Restaurant & Ordering Systems', desc: 'Complete hospitality hubs with real-time digital menus, table bookings, and order dispatch.' },
-    { icon: Laptop, title: 'Property & Airbnb Websites', desc: 'Direct booking and listing showcases for property developers, hotels, and short-let operators.' },
-    { icon: CalendarCheck, title: 'Booking Systems', desc: 'Automated scheduling engines with calendar synchronization, confirmation alerts, and client self-service.' },
-    { icon: Code2, title: 'Custom Web Applications', desc: 'Purpose-built software platforms designed around your exact business workflows and operational scale.' },
-    { icon: Sliders, title: 'Admin Dashboards & Portals', desc: 'Centralized executive control panels with granular metrics, team permissions, and real-time operational views.' },
-    { icon: Cpu, title: 'Custom Business Software', desc: 'High-reliability digital management systems engineered to eliminate operational bottlenecks.' },
-  ];
-
   return (
-    <>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
+
       <main style={{ flex: 1 }}>
-        {/* Hero Section */}
+        {/* ================================================================= */}
+        {/* 1. HERO SECTION                                                   */}
+        {/* ================================================================= */}
         <section style={{
-          padding: '90px 0 80px',
-          background: 'radial-gradient(ellipse at 50% 10%, rgba(30, 80, 255, 0.15), transparent 70%), var(--cb-bg-page)',
-          borderBottom: '1px solid var(--cb-border-subtle)',
-          textAlign: 'center'
+          padding: '70px 0 60px',
+          backgroundColor: '#FFFFFF',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Subtle background gradient radial */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '100%',
+            maxWidth: '1400px',
+            height: '100%',
+            background: 'radial-gradient(circle at 15% 20%, rgba(0, 180, 216, 0.06), transparent 50%), radial-gradient(circle at 85% 40%, rgba(14, 165, 233, 0.05), transparent 45%)',
+            pointerEvents: 'none',
+          }} />
+
+          <div className="cb-container" style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '48px',
+              alignItems: 'center',
+            }}>
+              {/* Left Column: Headline, Copy, Dual Pill Buttons, Trust Props */}
+              <div>
+                {/* Eyebrow Pill */}
+                <div style={{
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  color: '#0284C7',
+                  textTransform: 'uppercase',
+                  marginBottom: '18px',
+                }}>
+                  GLOBAL TECH TALENT &bull; AFRICA&apos;S GROWTH
+                </div>
+
+                {/* Main Headline */}
+                <h1 style={{
+                  fontSize: 'clamp(38px, 5.2vw, 58px)',
+                  fontWeight: 900,
+                  lineHeight: 1.12,
+                  letterSpacing: '-0.03em',
+                  color: '#0B1B3D',
+                  marginBottom: '20px',
+                }}>
+                  Build Your Project.<br />
+                  Bridge to <span style={{ color: '#00B4D8' }}>Africa.</span>
+                </h1>
+
+                {/* Subtitle */}
+                <p style={{
+                  fontSize: 'clamp(15px, 1.8vw, 17px)',
+                  lineHeight: 1.6,
+                  color: '#475569',
+                  maxWidth: '520px',
+                  marginBottom: '32px',
+                }}>
+                  CodeBridge connects you with vetted developers and tech talent across Nigeria and Kenya, delivering high-quality solutions, on time, and within budget.
+                </p>
+
+                {/* Dual Pill CTA Buttons */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', marginBottom: '40px' }}>
+                  <Link
+                    href="/request-project"
+                    className="cb-btn cb-btn-navy"
+                    style={{ padding: '13px 28px', fontSize: '15px' }}
+                  >
+                    Get Started
+                  </Link>
+                  <Link
+                    href="/how-it-works"
+                    className="cb-btn cb-btn-outline-pill"
+                    style={{ padding: '13px 28px', fontSize: '15px' }}
+                  >
+                    Learn More
+                  </Link>
+                </div>
+
+                {/* Trust / Value Props Row */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                  gap: '16px',
+                  paddingTop: '16px',
+                  borderTop: '1px solid #F1F5F9',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <div style={{ color: '#0B1B3D', marginTop: '2px' }}>
+                      <ShieldCheck size={20} color="#0B1B3D" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B1B3D' }}>Vetted Talent</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>Pre-screened professionals</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <div style={{ color: '#0B1B3D', marginTop: '2px' }}>
+                      <Zap size={20} color="#0B1B3D" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B1B3D' }}>Fast Delivery</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>Get results, on time</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <div style={{ color: '#0B1B3D', marginTop: '2px' }}>
+                      <Lock size={20} color="#0B1B3D" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B1B3D' }}>Secure &amp; Reliable</div>
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>Your project, our priority</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Hero Visual with Doodles and Floating Badge */}
+              <div style={{ position: 'relative' }}>
+                {/* Playful Doodles: Top right star and curved note */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-24px',
+                  right: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                }}>
+                  <span style={{
+                    fontFamily: 'cursive, var(--cb-font-sans)',
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    color: '#0284C7',
+                    transform: 'rotate(4deg)',
+                    whiteSpace: 'nowrap',
+                    textShadow: '0 1px 2px rgba(255,255,255,0.8)',
+                  }}>
+                    Great talent builds great products
+                  </span>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L14.5 8.5L21 9.5L16 14.5L17.5 21L12 17.5L6.5 21L8 14.5L3 9.5L9.5 8.5L12 2Z" stroke="#00B4D8" strokeWidth="2" fill="rgba(0,180,216,0.15)"/>
+                  </svg>
+                </div>
+
+                {/* Hand-drawn curved arrow doodle */}
+                <div style={{
+                  position: 'absolute',
+                  top: '10px',
+                  left: '-10px',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                }}>
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <path d="M8 28 C 14 12, 28 8, 36 14" stroke="#00B4D8" strokeWidth="2.5" strokeLinecap="round"/>
+                    <path d="M30 8 L 36 14 L 32 20" stroke="#00B4D8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+
+                {/* Hero Collaboration Image Container */}
+                <div style={{
+                  position: 'relative',
+                  borderRadius: '24px',
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 40px -12px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04)',
+                  aspectRatio: '3/2',
+                  backgroundColor: '#F1F5F9',
+                }}>
+                  <Image
+                    src="/images/hero-talent.jpg"
+                    alt="African tech developers collaborating enthusiastically over laptop"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 560px"
+                    priority
+                    style={{ objectFit: 'cover' }}
+                  />
+
+                  {/* Floating Flag Badge (Nigeria & Kenya) */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '20px',
+                    right: '20px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(8px)',
+                    padding: '8px 16px',
+                    borderRadius: '9999px',
+                    boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    zIndex: 2,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '18px' }}>
+                      <span title="Nigeria">🇳🇬</span>
+                      <span title="Kenya">🇰🇪</span>
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#0B1B3D', whiteSpace: 'nowrap' }}>
+                      Serving businesses<br /><span style={{ fontWeight: 500, color: '#475569' }}>in Nigeria &amp; Kenya</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ================================================================= */}
+        {/* 2. METRICS / SOCIAL PROOF STRIP                                   */}
+        {/* ================================================================= */}
+        <section style={{
+          backgroundColor: '#FFFFFF',
+          borderTop: '1px solid #F1F5F9',
+          borderBottom: '1px solid #F1F5F9',
+          padding: '36px 0',
         }}>
           <div className="cb-container">
-            {/* Pill Badge */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '6px 14px',
-              borderRadius: '9999px',
-              backgroundColor: 'rgba(30, 80, 255, 0.12)',
-              border: '1px solid rgba(30, 80, 255, 0.3)',
-              color: 'var(--cb-blue-400)',
-              fontSize: '13px',
-              fontWeight: 600,
-              marginBottom: '28px'
-            }}>
-              <Globe size={15} />
-              Serving businesses across Nigeria and Kenya
-            </div>
-
-            {/* Headline & Tagline */}
-            <h1 style={{
-              fontSize: 'clamp(36px, 6vw, 64px)',
-              fontWeight: 900,
-              letterSpacing: '-0.03em',
-              lineHeight: 1.1,
-              maxWidth: '960px',
-              margin: '0 auto 24px',
-              color: '#FFFFFF'
-            }}>
-              International Digital Products & Technology.{' '}
-              <span style={{
-                background: 'linear-gradient(135deg, #6085FF, #3867FF, #93C5FD)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                display: 'inline-block'
-              }}>
-                Built for business.
-              </span>
-            </h1>
-
-            <p style={{
-              fontSize: 'clamp(16px, 2.5vw, 20px)',
-              color: 'var(--cb-text-secondary)',
-              maxWidth: '740px',
-              margin: '0 auto 40px',
-              lineHeight: 1.6
-            }}>
-              CodeBridge develops high-performance websites, e-commerce engines, custom business software, and digital management systems. Centralized engineering excellence, regional client management.
-            </p>
-
-            {/* Dual CTA */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', justifyContent: 'center', marginBottom: '48px' }}>
-              <Link href="/request-project" className="cb-btn cb-btn-primary cb-btn-lg">
-                Request a Project <ArrowRight size={18} />
-              </Link>
-              <Link href="/services" className="cb-btn cb-btn-secondary cb-btn-lg">
-                Explore 14 Services
-              </Link>
-              <Link href="/how-it-works#representatives" className="cb-btn cb-btn-outline cb-btn-lg">
-                Partner as Representative (20% Comm.)
-              </Link>
-            </div>
-
-            {/* Parent company trust notice */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '10px 20px',
-              backgroundColor: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '8px',
-              border: '1px solid var(--cb-border-subtle)',
-              fontSize: '13px',
-              color: 'var(--cb-text-muted)'
-            }}>
-              <ShieldCheck size={16} color="var(--cb-emerald-500)" />
-              Operated by <strong>MarketBridge NG LTD</strong> — Corporate Governance & SLA-backed Engineering
-            </div>
-          </div>
-        </section>
-
-        {/* Value Pillars */}
-        <section style={{ padding: '60px 0', borderBottom: '1px solid var(--cb-border-subtle)', backgroundColor: 'var(--cb-navy-900)' }}>
-          <div className="cb-container">
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: '24px'
-            }}>
-              <div className="cb-card" style={{ padding: '28px' }}>
-                <div style={{ color: 'var(--cb-blue-400)', marginBottom: '14px' }}>
-                  <Layers size={32} />
-                </div>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: '#FFFFFF' }}>
-                  Centralized Engineering
-                </h3>
-                <p style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', lineHeight: 1.6 }}>
-                  Full-stack architecture, rigorous QA, and modern cloud deployment managed directly by CodeBridge's senior tech team.
-                </p>
-              </div>
-
-              <div className="cb-card" style={{ padding: '28px' }}>
-                <div style={{ color: 'var(--cb-blue-400)', marginBottom: '14px' }}>
-                  <Users size={32} />
-                </div>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: '#FFFFFF' }}>
-                  Regional Representative Model
-                </h3>
-                <p style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', lineHeight: 1.6 }}>
-                  Local business representatives in designated markets handle client consultation, requirement scoping, and relationship management.
-                </p>
-              </div>
-
-              <div className="cb-card" style={{ padding: '28px' }}>
-                <div style={{ color: 'var(--cb-blue-400)', marginBottom: '14px' }}>
-                  <TrendingUp size={32} />
-                </div>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: '#FFFFFF' }}>
-                  Multi-Currency Architecture
-                </h3>
-                <p style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', lineHeight: 1.6 }}>
-                  Built from the foundation up to natively support Kenyan Shillings (KES) and Nigerian Naira (NGN), ready for pan-African expansion.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Services */}
-        <section style={{ padding: '80px 0', borderBottom: '1px solid var(--cb-border-subtle)' }}>
-          <div className="cb-container">
-            <div style={{ textAlign: 'center', maxWidth: '680px', margin: '0 auto 50px' }}>
-              <div className="cb-badge cb-badge-blue" style={{ marginBottom: '12px' }}>
-                Digital Products & Services
-              </div>
-              <h2 style={{ fontSize: '32px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', marginBottom: '16px' }}>
-                Built for Every Stage of Business Growth
-              </h2>
-              <p style={{ fontSize: '15px', color: 'var(--cb-text-secondary)', lineHeight: 1.6 }}>
-                From high-conversion customer-facing storefronts to proprietary business operations platforms, we engineer solutions that generate measurable value.
-              </p>
-            </div>
-
-            <div className="cb-grid-4">
-              {featuredServices.map((srv, idx) => {
-                const Icon = srv.icon;
-                return (
-                  <div key={idx} className="cb-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <div style={{
-                      width: '42px',
-                      height: '42px',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(30, 80, 255, 0.1)',
-                      border: '1px solid rgba(30, 80, 255, 0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--cb-blue-400)',
-                      marginBottom: '18px'
-                    }}>
-                      <Icon size={20} />
-                    </div>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '8px' }}>
-                      {srv.title}
-                    </h3>
-                    <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', lineHeight: 1.5, flex: 1, marginBottom: '16px' }}>
-                      {srv.desc}
-                    </p>
-                    <Link href="/services" style={{ fontSize: '13px', color: 'var(--cb-blue-400)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      View Specs &rarr;
-                    </Link>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ textAlign: 'center', marginTop: '40px' }}>
-              <Link href="/services" className="cb-btn cb-btn-secondary">
-                View All 14 Technology Services &rarr;
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* The Business Process */}
-        <section style={{ padding: '80px 0', backgroundColor: 'var(--cb-navy-900)', borderBottom: '1px solid var(--cb-border-subtle)' }}>
-          <div className="cb-container">
-            <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 50px' }}>
-              <div className="cb-badge cb-badge-emerald" style={{ marginBottom: '12px' }}>
-                Delivery Lifecycle
-              </div>
-              <h2 style={{ fontSize: '32px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', marginBottom: '16px' }}>
-                How CodeBridge Delivers
-              </h2>
-              <p style={{ fontSize: '15px', color: 'var(--cb-text-secondary)' }}>
-                Structured milestones with full transparency from initial requirement collection to launch.
-              </p>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
               gap: '24px',
-              position: 'relative'
+              textAlign: 'center',
             }}>
-              {[
-                { step: '01', title: 'Consultation & Scoping', desc: 'A CodeBridge representative collects your business requirements, operational goals, and budget.' },
-                { step: '02', title: 'Technical Proposal', desc: 'Our engineering architects define the technical stack, deliverables, milestones, and formal agreement.' },
-                { step: '03', title: 'Agile Engineering', desc: 'Centralized development team builds your product with milestone tracking accessible in your Client Portal.' },
-                { step: '04', title: 'QA & Handover', desc: 'End-to-end acceptance testing, staff training, and deployment on resilient cloud infrastructure.' },
-              ].map((item, idx) => (
-                <div key={idx} className="cb-card" style={{ position: 'relative', overflow: 'hidden' }}>
-                  <div style={{
-                    fontSize: '48px',
-                    fontWeight: 900,
-                    color: 'rgba(255, 255, 255, 0.05)',
-                    position: 'absolute',
-                    top: '12px',
-                    right: '16px',
-                    lineHeight: 1
-                  }}>
-                    {item.step}
-                  </div>
-                  <div style={{
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    color: 'var(--cb-blue-400)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    marginBottom: '8px'
-                  }}>
-                    Step {item.step}
-                  </div>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', marginBottom: '10px' }}>
-                    {item.title}
-                  </h3>
-                  <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', lineHeight: 1.5 }}>
-                    {item.desc}
-                  </p>
+              {/* Stat 1 */}
+              <div style={{ padding: '8px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#0B1B3D', marginBottom: '8px' }}>
+                  <Users size={22} />
                 </div>
-              ))}
+                <div style={{ fontSize: '28px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.03em' }}>500+</div>
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#64748B' }}>Verified Developers</div>
+              </div>
+
+              {/* Stat 2 */}
+              <div style={{ padding: '8px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#0B1B3D', marginBottom: '8px' }}>
+                  <FileText size={22} />
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.03em' }}>300+</div>
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#64748B' }}>Projects Delivered</div>
+              </div>
+
+              {/* Stat 3 */}
+              <div style={{ padding: '8px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#0B1B3D', marginBottom: '8px' }}>
+                  <Star size={22} />
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.03em' }}>98%</div>
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#64748B' }}>Client Satisfaction</div>
+              </div>
+
+              {/* Stat 4 */}
+              <div style={{ padding: '8px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#0B1B3D', marginBottom: '8px' }}>
+                  <Clock size={22} />
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.03em' }}>24/7</div>
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#64748B' }}>Support</div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Representative Opportunity Callout */}
-        <section style={{ padding: '80px 0', borderBottom: '1px solid var(--cb-border-subtle)' }}>
+        {/* ================================================================= */}
+        {/* 3. SERVICES SHOWCASE SECTION                                      */}
+        {/* ================================================================= */}
+        <section style={{
+          padding: '80px 0',
+          backgroundColor: '#FFFFFF',
+        }}>
           <div className="cb-container">
-            <div className="cb-card" style={{
-              padding: '48px 36px',
-              backgroundColor: 'linear-gradient(135deg, var(--cb-bg-card), var(--cb-navy-850))',
-              border: '1px solid rgba(30, 80, 255, 0.3)',
+            <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '40px',
-              alignItems: 'center'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '48px',
+              alignItems: 'center',
             }}>
+              {/* Left Column: Heading, Description, CTA */}
               <div>
-                <div className="cb-badge cb-badge-amber" style={{ marginBottom: '16px' }}>
-                  Representative Partnership
+                <div style={{
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  color: '#0284C7',
+                  textTransform: 'uppercase',
+                  marginBottom: '14px',
+                }}>
+                  OUR SERVICES
                 </div>
-                <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px', lineHeight: 1.2 }}>
-                  Earn 20% Commission as a CodeBridge Business Representative
+
+                <h2 style={{
+                  fontSize: 'clamp(28px, 3.6vw, 40px)',
+                  fontWeight: 900,
+                  lineHeight: 1.2,
+                  letterSpacing: '-0.03em',
+                  color: '#00B4D8',
+                  marginBottom: '18px',
+                }}>
+                  Comprehensive Tech Talent &amp; Development Solutions
                 </h2>
-                <p style={{ fontSize: '15px', color: 'var(--cb-text-secondary)', lineHeight: 1.6, marginBottom: '24px' }}>
-                  Are you well-connected with businesses in your country? Introduce businesses that need modern websites, e-commerce stores, or custom software. CodeBridge handles all technical architecture, project delivery, and maintenance while you earn 20% commission on qualifying projects.
+
+                <p style={{
+                  fontSize: '15px',
+                  lineHeight: 1.6,
+                  color: '#475569',
+                  marginBottom: '32px',
+                  maxWidth: '440px',
+                }}>
+                  From simple websites to complex enterprise systems, we provide the right talent for your business needs.
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: 'var(--cb-text-primary)' }}>
-                    <CheckCircle2 size={16} color="var(--cb-emerald-500)" /> Dedicated Representative Dashboard with real-time lead tracking
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: 'var(--cb-text-primary)' }}>
-                    <CheckCircle2 size={16} color="var(--cb-emerald-500)" /> Commission tracking on every closed project
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: 'var(--cb-text-primary)' }}>
-                    <CheckCircle2 size={16} color="var(--cb-emerald-500)" /> Official CodeBridge collateral and technical scoping support
-                  </div>
-                </div>
-                <Link href="/register?type=representative" className="cb-btn cb-btn-primary">
-                  Apply as a Representative <ArrowRight size={16} />
+
+                <Link
+                  href="/services"
+                  className="cb-btn cb-btn-navy"
+                  style={{ padding: '13px 28px', fontSize: '14px' }}
+                >
+                  Explore All Services
                 </Link>
               </div>
 
+              {/* Right Column: 2x2 Service Cards Grid */}
               <div style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '12px',
-                padding: '28px',
-                border: '1px solid var(--cb-border-subtle)'
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '20px',
               }}>
-                <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '20px' }}>
-                  Example Commission Scenarios (20%)
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ padding: '12px 16px', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '13px', color: 'var(--cb-text-secondary)' }}>Kenya Restaurant Ordering System</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#FFFFFF' }}>280,000 KES Project</span>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#34D399' }}>56,000 KES Commission</span>
-                    </div>
+                {/* Card 1: Web Development */}
+                <div style={{
+                  padding: '24px',
+                  borderRadius: '16px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0B1B3D',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '16px',
+                  }}>
+                    <Code size={20} />
                   </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D', marginBottom: '8px' }}>
+                    Web Development
+                  </h3>
+                  <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#64748B' }}>
+                    Modern, scalable web applications for your business.
+                  </p>
+                </div>
 
-                  <div style={{ padding: '12px 16px', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '13px', color: 'var(--cb-text-secondary)' }}>Nigeria Custom Business Software</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#FFFFFF' }}>2,500,000 NGN Project</span>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#34D399' }}>500,000 NGN Commission</span>
-                    </div>
+                {/* Card 2: Mobile App Development */}
+                <div style={{
+                  padding: '24px',
+                  borderRadius: '16px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0B1B3D',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '16px',
+                  }}>
+                    <Smartphone size={20} />
                   </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D', marginBottom: '8px' }}>
+                    Mobile App Development
+                  </h3>
+                  <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#64748B' }}>
+                    iOS and Android apps that users love.
+                  </p>
+                </div>
 
-                  <p style={{ fontSize: '11px', color: 'var(--cb-text-muted)', lineHeight: 1.4 }}>
-                    *Commissions are calculated on qualifying project revenue and governed by CodeBridge representative agreements.
+                {/* Card 3: UI/UX Design */}
+                <div style={{
+                  padding: '24px',
+                  borderRadius: '16px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0B1B3D',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '16px',
+                  }}>
+                    <Layout size={20} />
+                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D', marginBottom: '8px' }}>
+                    UI/UX Design
+                  </h3>
+                  <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#64748B' }}>
+                    Beautiful, intuitive designs that convert.
+                  </p>
+                </div>
+
+                {/* Card 4: Staff Augmentation */}
+                <div style={{
+                  padding: '24px',
+                  borderRadius: '16px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0B1B3D',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '16px',
+                  }}>
+                    <Users size={20} />
+                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D', marginBottom: '8px' }}>
+                    Staff Augmentation
+                  </h3>
+                  <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#64748B' }}>
+                    Scale your team with skilled professionals.
                   </p>
                 </div>
               </div>
@@ -362,27 +480,39 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Final CTA Strip */}
-        <section style={{ padding: '80px 0', textAlign: 'center' }}>
+        {/* ================================================================= */}
+        {/* 4. TRUSTED BY FORWARD-THINKING BUSINESSES BANNER                  */}
+        {/* ================================================================= */}
+        <section style={{
+          backgroundColor: '#0B1B3D',
+          padding: '60px 0',
+          textAlign: 'center',
+          color: '#FFFFFF',
+        }}>
           <div className="cb-container">
-            <h2 style={{ fontSize: '32px', fontWeight: 800, color: '#FFFFFF', marginBottom: '16px' }}>
-              Ready to Upgrade Your Business Technology?
+            <h2 style={{
+              fontSize: 'clamp(24px, 3.2vw, 34px)',
+              fontWeight: 800,
+              letterSpacing: '-0.02em',
+              marginBottom: '12px',
+              color: '#FFFFFF',
+            }}>
+              Trusted by Forward-Thinking Businesses
             </h2>
-            <p style={{ fontSize: '16px', color: 'var(--cb-text-secondary)', maxWidth: '580px', margin: '0 auto 32px' }}>
-              Tell our engineering team about your project requirements and receive a structured architectural proposal.
+            <p style={{
+              fontSize: '15px',
+              color: '#94A3B8',
+              maxWidth: '620px',
+              margin: '0 auto',
+              lineHeight: 1.6,
+            }}>
+              From startups to established companies, we help organizations build, scale, and succeed.
             </p>
-            <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
-              <Link href="/request-project" className="cb-btn cb-btn-primary cb-btn-lg">
-                Request a Project Proposal <ArrowRight size={18} />
-              </Link>
-              <Link href="/contact" className="cb-btn cb-btn-outline cb-btn-lg">
-                Talk with Technical Desk
-              </Link>
-            </div>
           </div>
         </section>
       </main>
+
       <Footer />
-    </>
+    </div>
   );
 }

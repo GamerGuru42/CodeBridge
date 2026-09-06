@@ -4,21 +4,22 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Layers, AlertCircle, CheckCircle2, ArrowRight, ShieldCheck, Briefcase, Users } from 'lucide-react';
+import { AlertCircle, Briefcase, Users, Mail, Lock, Building, Phone, Globe } from 'lucide-react';
+import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [accountType, setAccountType] = useState<'CLIENT' | 'REPRESENTATIVE'>('CLIENT');
+  const [accountType, setAccountType] = useState<'CLIENT' | 'REPRESENTATIVE'>('REPRESENTATIVE');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
     phone: '',
-    countryCode: 'KE',
+    countryCode: 'NG',
     companyName: '',
-    industry: 'Hospitality',
+    industry: 'Technology',
   });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -40,7 +41,6 @@ export default function RegisterPage() {
 
       const data = await res.json();
       if (res.ok) {
-        // Successful registration: navigate to targeted dashboard
         router.push(data.redirectTo || '/dashboard');
         router.refresh();
       } else {
@@ -56,291 +56,396 @@ export default function RegisterPage() {
   return (
     <div style={{
       minHeight: '100vh',
+      backgroundColor: '#F8FAFC',
       display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
       alignItems: 'center',
+      justifyContent: 'center',
       padding: '40px 20px',
-      backgroundColor: 'var(--cb-bg-page)',
-      background: 'radial-gradient(circle at 50% 15%, rgba(30, 80, 255, 0.12), transparent 60%), var(--cb-bg-page)',
     }}>
-      {/* Brand Header */}
-      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: 'var(--cb-blue-600)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFFFFF',
-          }}>
-            <Layers size={24} />
-          </div>
-          <span style={{ fontSize: '22px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-            CODEBRIDGE
-          </span>
-        </Link>
-        <p style={{ fontSize: '14px', color: 'var(--cb-text-muted)' }}>
-          "Built for business." &bull; Create your authenticated account
+      <div style={{
+        width: '100%',
+        maxWidth: '560px',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '20px',
+        overflow: 'hidden',
+        boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #E2E8F0',
+        padding: '40px 36px',
+      }}>
+        {/* Logo Header */}
+        <div style={{ marginBottom: '20px' }}>
+          <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+        </div>
+
+        <h1 style={{
+          fontSize: '26px',
+          fontWeight: 800,
+          letterSpacing: '-0.025em',
+          color: '#0B1B3D',
+          marginBottom: '6px',
+        }}>
+          Create Your Account
+        </h1>
+        <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '24px', lineHeight: 1.5 }}>
+          Join CodeBridge and be part of a growing community of talent and opportunities.
         </p>
-      </div>
 
-      <div style={{ width: '100%', maxWidth: '540px' }}>
-        <div className="cb-card" style={{ padding: '36px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF', marginBottom: '6px' }}>
-            Create Your Account
-          </h2>
-          <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginBottom: '20px' }}>
-            Select your participation role in the CodeBridge ecosystem.
-          </p>
-
-          {/* Role Type Selector Tabs */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '12px',
-            marginBottom: '24px',
-          }}>
-            <button
-              type="button"
-              onClick={() => setAccountType('CLIENT')}
-              style={{
-                padding: '14px',
-                borderRadius: '8px',
-                border: accountType === 'CLIENT' ? '2px solid var(--cb-blue-600)' : '1px solid var(--cb-border-subtle)',
-                backgroundColor: accountType === 'CLIENT' ? 'rgba(30, 80, 255, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                color: accountType === 'CLIENT' ? '#FFFFFF' : 'var(--cb-text-secondary)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '14px' }}>
-                <Briefcase size={16} color={accountType === 'CLIENT' ? 'var(--cb-blue-400)' : 'var(--cb-text-muted)'} />
-                Client Account
-              </div>
-              <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
-                Request tech services, track project milestones
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setAccountType('REPRESENTATIVE')}
-              style={{
-                padding: '14px',
-                borderRadius: '8px',
-                border: accountType === 'REPRESENTATIVE' ? '2px solid var(--cb-amber-500)' : '1px solid var(--cb-border-subtle)',
-                backgroundColor: accountType === 'REPRESENTATIVE' ? 'rgba(217, 119, 6, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : 'var(--cb-text-secondary)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '14px' }}>
-                <Users size={16} color={accountType === 'REPRESENTATIVE' ? 'var(--cb-amber-500)' : 'var(--cb-text-muted)'} />
-                Sales Representative
-              </div>
-              <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
-                Introduce clients, earn 20% commission
-              </span>
-            </button>
-          </div>
-
-          {errorMsg && (
+        {/* Role Switcher Tabs */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '12px',
+          marginBottom: '28px',
+        }}>
+          {/* Client Account Tab */}
+          <button
+            type="button"
+            onClick={() => setAccountType('CLIENT')}
+            style={{
+              padding: '16px 14px',
+              borderRadius: '12px',
+              border: accountType === 'CLIENT' ? '2px solid #0B1B3D' : '1px solid #E2E8F0',
+              backgroundColor: accountType === 'CLIENT' ? '#F1F5F9' : '#FFFFFF',
+              color: '#0F172A',
+              cursor: 'pointer',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease',
+            }}
+          >
             <div style={{
-              padding: '12px 14px',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(225, 29, 72, 0.15)',
-              border: '1px solid rgba(225, 29, 72, 0.3)',
-              color: '#FB7185',
+              width: '32px',
+              height: '32px',
+              borderRadius: '9999px',
+              backgroundColor: accountType === 'CLIENT' ? '#0B1B3D' : '#E2E8F0',
+              color: accountType === 'CLIENT' ? '#FFFFFF' : '#475569',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              marginBottom: '20px',
-              fontSize: '13px',
+              justifyContent: 'center',
             }}>
-              <AlertCircle size={16} />
-              {errorMsg}
+              <Briefcase size={16} />
             </div>
-          )}
+            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0B1B3D' }}>Client Account</div>
+            <span style={{ fontSize: '11px', color: '#64748B', lineHeight: 1.3 }}>
+              Request tech services &amp; track projects
+            </span>
+          </button>
 
-          {accountType === 'REPRESENTATIVE' ? (
-            /* Sales Representative: Google OAuth Only */
-            <div style={{ textAlign: 'center', padding: '12px 0 16px' }}>
-              <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginBottom: '24px', lineHeight: 1.5 }}>
-                Sales Representative onboarding is authenticated exclusively via Google for instant verification and automatic workspace activation.
-              </p>
+          {/* Sales Representative Tab (Highlighted in Cyan) */}
+          <button
+            type="button"
+            onClick={() => setAccountType('REPRESENTATIVE')}
+            style={{
+              padding: '16px 14px',
+              borderRadius: '12px',
+              border: accountType === 'REPRESENTATIVE' ? '2px solid #00B4D8' : '1px solid #E2E8F0',
+              backgroundColor: accountType === 'REPRESENTATIVE' ? '#00B4D8' : '#FFFFFF',
+              color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : '#0F172A',
+              cursor: 'pointer',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease',
+              boxShadow: accountType === 'REPRESENTATIVE' ? '0 4px 14px rgba(0, 180, 216, 0.3)' : 'none',
+            }}
+          >
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '9999px',
+              backgroundColor: accountType === 'REPRESENTATIVE' ? 'rgba(255, 255, 255, 0.2)' : '#E2E8F0',
+              color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : '#475569',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Users size={16} />
+            </div>
+            <div style={{ fontWeight: 700, fontSize: '14px', color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : '#0B1B3D' }}>
+              Sales Representative
+            </div>
+            <span style={{ fontSize: '11px', color: accountType === 'REPRESENTATIVE' ? 'rgba(255, 255, 255, 0.9)' : '#64748B', lineHeight: 1.3 }}>
+              Introduce talent, earn 20% commission
+            </span>
+          </button>
+        </div>
 
-              <a
-                href="/api/auth/google"
-                className="cb-btn"
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  fontSize: '15px',
-                  fontWeight: 700,
-                  backgroundColor: '#FFFFFF',
-                  color: '#1F2937',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '12px',
-                  textDecoration: 'none',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  border: '1px solid #E5E7EB',
-                  transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                Continue with Google
-              </a>
+        {errorMsg && (
+          <div style={{
+            padding: '12px 14px',
+            borderRadius: '8px',
+            backgroundColor: 'rgba(225, 29, 72, 0.08)',
+            border: '1px solid rgba(225, 29, 72, 0.25)',
+            color: '#BE123C',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '20px',
+            fontSize: '13px',
+          }}>
+            <AlertCircle size={16} style={{ flexShrink: 0 }} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
 
-              <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--cb-text-muted)', fontSize: '12px' }}>
-                <CheckCircle2 size={14} color="#10B981" />
-                Immediate activation &bull; 20% commission settlement
+        {/* =============================================================== */}
+        {/* ROLE A: Sales Representative -> Google-Only Authentication      */}
+        {/* =============================================================== */}
+        {accountType === 'REPRESENTATIVE' ? (
+          <div style={{ padding: '8px 0 16px', textAlign: 'center' }}>
+            <a
+              href="/api/auth/google"
+              className="cb-btn cb-btn-outline-pill"
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                fontSize: '15px',
+                fontWeight: 600,
+                backgroundColor: '#FFFFFF',
+                color: '#1F2937',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                border: '1px solid #CBD5E1',
+                textDecoration: 'none',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>Continue with Google</div>
+                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>Quick and secure registration</div>
+              </div>
+            </a>
+
+            <div style={{
+              marginTop: '20px',
+              padding: '12px 16px',
+              backgroundColor: '#F8FAFC',
+              borderRadius: '10px',
+              border: '1px solid #E2E8F0',
+              fontSize: '12px',
+              color: '#64748B',
+              lineHeight: 1.5,
+            }}>
+              Instant workspace activation &bull; Choice of 🇳🇬 Nigeria or 🇰🇪 Kenya post-login &bull; Direct monthly commission settlement
+            </div>
+          </div>
+        ) : (
+          /* ============================================================= */
+          /* ROLE B: Client Account -> Standard Registration Form          */
+          /* ============================================================= */
+          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Jane"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Doe"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                />
               </div>
             </div>
-          ) : (
-            /* Client Account: Standard Registration */
-            <form onSubmit={handleRegister}>
-              <div className="cb-grid-2">
-                <div className="cb-form-group">
-                  <label className="cb-label">First Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="cb-input"
-                    placeholder="e.g. Grace"
-                  />
-                </div>
 
-                <div className="cb-form-group">
-                  <label className="cb-label">Last Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="cb-input"
-                    placeholder="e.g. Onyango"
-                  />
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                Business / Company Name
+              </label>
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                  <Building size={16} />
                 </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="Acme Logistics Ltd"
+                  value={formData.companyName}
+                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 36px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                />
               </div>
+            </div>
 
-              <div className="cb-grid-2">
-                <div className="cb-form-group">
-                  <label className="cb-label">Email Address *</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                  Work Email
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                    <Mail size={16} />
+                  </div>
                   <input
                     type="email"
                     required
+                    placeholder="jane@company.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="cb-input"
-                    placeholder="name@business.com"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 36px',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                    }}
                   />
                 </div>
+              </div>
 
-                <div className="cb-form-group">
-                  <label className="cb-label">Country *</label>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                  Country
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                    <Globe size={16} />
+                  </div>
                   <select
                     value={formData.countryCode}
                     onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                    className="cb-select"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 36px',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: '#FFFFFF',
+                    }}
                   >
-                    <option value="KE">Kenya (KES)</option>
-                    <option value="NG">Nigeria (NGN)</option>
+                    <option value="NG">🇳🇬 Nigeria (NGN)</option>
+                    <option value="KE">🇰🇪 Kenya (KES)</option>
                   </select>
                 </div>
               </div>
+            </div>
 
-              <div className="cb-grid-2">
-                <div className="cb-form-group">
-                  <label className="cb-label">Phone Number / WhatsApp</label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="cb-input"
-                    placeholder="+254... or +234..."
-                  />
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                Phone Number
+              </label>
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                  <Phone size={16} />
                 </div>
-
-                <div className="cb-form-group">
-                  <label className="cb-label">Password *</label>
-                  <input
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="cb-input"
-                    placeholder="Minimum 8 characters"
-                  />
-                </div>
+                <input
+                  type="tel"
+                  placeholder="+234 801 234 5678"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 36px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                />
               </div>
+            </div>
 
-              <div className="cb-grid-2">
-                <div className="cb-form-group">
-                  <label className="cb-label">Company / Enterprise Name</label>
-                  <input
-                    type="text"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    className="cb-input"
-                    placeholder="Your Company Name"
-                  />
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                Password (min. 8 characters)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                  <Lock size={16} />
                 </div>
-
-                <div className="cb-form-group">
-                  <label className="cb-label">Industry</label>
-                  <select
-                    value={formData.industry}
-                    onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                    className="cb-select"
-                  >
-                    <option value="Hospitality">Food, Beverage & Hospitality</option>
-                    <option value="Real Estate">Real Estate & Property</option>
-                    <option value="E-commerce">Retail & E-commerce</option>
-                    <option value="Healthcare">Healthcare & Wellness</option>
-                    <option value="Professional Services">Professional Services</option>
-                    <option value="Technology">Technology & SaaS</option>
-                  </select>
-                </div>
+                <input
+                  type="password"
+                  required
+                  placeholder="Create a strong password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 36px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                />
               </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="cb-btn cb-btn-primary"
-                style={{ width: '100%', padding: '12px', marginTop: '12px' }}
-              >
-                {loading ? 'Creating Client Account...' : 'Register as Client'}
-              </button>
-            </form>
-          )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="cb-btn cb-btn-navy"
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '15px',
+                marginTop: '6px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.75 : 1,
+              }}
+            >
+              {loading ? 'Creating account...' : 'Create Client Account'}
+            </button>
+          </form>
+        )}
 
-          <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px', color: 'var(--cb-text-secondary)' }}>
-            Already have an account?{' '}
-            <Link href="/login" style={{ color: 'var(--cb-blue-400)', fontWeight: 600 }}>
-              Sign in here
-            </Link>
-          </div>
+        {/* Footer Link */}
+        <div style={{ marginTop: '28px', textAlign: 'center', fontSize: '13px', color: '#64748B' }}>
+          Already have an account?{' '}
+          <Link href="/login" style={{ color: '#0284C7', fontWeight: 600 }}>
+            Sign in
+          </Link>
         </div>
       </div>
     </div>
