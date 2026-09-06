@@ -881,8 +881,27 @@ function RequestProjectContent() {
 export default function RequestProjectPage() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', gap: '16px' }}>
         <div style={{ color: '#0284C7', fontWeight: 700 }}>Loading Scoping Engine...</div>
+        <Link
+          href="/"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 14px',
+            borderRadius: '9999px',
+            backgroundColor: '#FFFFFF',
+            border: '1px solid #CBD5E1',
+            color: '#0B1B3D',
+            fontSize: '13px',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          <ArrowLeft size={14} />
+          Return to Home
+        </Link>
       </div>
     }>
       <RequestProjectContent />
