@@ -1,10 +1,7 @@
 // tests/phase2a-verify.mjs
-import { DatabaseSync } from 'node:sqlite';
-import path from 'node:path';
+import { testDb as db } from './test-db-adapter.mjs';
 
 const BASE_URL = 'http://127.0.0.1:3000';
-const dbPath = path.resolve(process.cwd(), './data/codebridge.db');
-const db = new DatabaseSync(dbPath);
 
 async function runPhase2ATests() {
   console.log('====================================================');
@@ -26,6 +23,23 @@ async function runPhase2ATests() {
 
   // Helper for logging in and capturing session cookie
   async function login(email, password = 'CodeBridge@2025!') {
+    if (email.includes('rep.')) {
+      const mockCode = 'test_mock_' + encodeURIComponent(JSON.stringify({
+        sub: `google_sub_${email.replace(/[^a-zA-Z0-9]/g, '_')}`,
+        email,
+        given_name: 'Kenya',
+        family_name: 'Representative',
+      }));
+      const res = await fetch(`${BASE_URL}/api/auth/callback/google?code=${mockCode}&state=mock_state`, {
+        redirect: 'manual',
+      });
+      const setCookie = res.headers.get('set-cookie');
+      const cookie = setCookie ? setCookie.split(';')[0] : '';
+      const meRes = await fetch(`${BASE_URL}/api/auth/me`, { headers: { Cookie: cookie } });
+      const data = await meRes.json();
+      return { cookie, user: data.user };
+    }
+
     const res = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -39,6 +53,7 @@ async function runPhase2ATests() {
     const data = await res.json();
     return { cookie, user: data.user };
   }
+
 
   try {
     // 1. Authenticate Actors
@@ -58,24 +73,28 @@ async function runPhase2ATests() {
     // Setup an isolated second client for cross-client security test
     const clientBUserId = 'u_client_b_test';
     const clientBId = 'cli_b_test';
-    const passwordHash = db.prepare("SELECT password_hash FROM users WHERE email = 'client@abcrestaurants.com'").get().password_hash;
+    const defaultUser = await db.get("SELECT password_hash FROM users WHERE email = 'client@abcrestaurants.com'");
+    const passwordHash = defaultUser.password_hash;
     
-    let clientBUser = db.prepare("SELECT id FROM users WHERE email = 'client.other@testcorp.ng'").get();
+    let clientBUser = await db.get("SELECT id FROM users WHERE email = 'client.other@testcorp.ng'");
     if (!clientBUser) {
-      db.prepare(`
+      await db.run(`
         INSERT INTO users (id, email, password_hash, role, status, email_verified)
         VALUES (?, 'client.other@testcorp.ng', ?, 'CLIENT', 'ACTIVE', 1)
-      `).run(clientBUserId, passwordHash);
+        ON CONFLICT (id) DO NOTHING
+      `, [clientBUserId, passwordHash]);
 
-      db.prepare(`
+      await db.run(`
         INSERT INTO user_profiles (user_id, first_name, last_name, phone, country_id, timezone)
         VALUES (?, 'Other', 'Client', '+2348099999999', 'c_ng', 'Africa/Lagos')
-      `).run(clientBUserId);
+        ON CONFLICT (user_id) DO NOTHING
+      `, [clientBUserId]);
 
-      db.prepare(`
+      await db.run(`
         INSERT INTO clients (id, user_id, company_name, industry, country_id)
         VALUES (?, ?, 'Test Nigeria Corp', 'Retail', 'c_ng')
-      `).run(clientBId, clientBUserId);
+        ON CONFLICT (id) DO NOTHING
+      `, [clientBId, clientBUserId]);
     }
 
     const clientBSession = await login('client.other@testcorp.ng');
@@ -219,13 +238,13 @@ async function runPhase2ATests() {
     assert(proposalIdV2 !== proposalIdV1, 'New proposal ID allocated for version 2');
 
     // Verify in database that version 1 is preserved and marked is_current = 0
-    const v1Record = db.prepare('SELECT version, is_current, total_amount_minor FROM proposals WHERE id = ?').get(proposalIdV1);
-    assert(v1Record.version === 1 && v1Record.is_current === 0, 'Version 1 preserved with is_current = 0');
-    assert(v1Record.total_amount_minor === 32000000, 'Version 1 preserved original minor unit amount (32000000)');
+    const v1Record = await db.get('SELECT version, is_current, total_amount_minor FROM proposals WHERE id = ?', [proposalIdV1]);
+    assert(Number(v1Record.version) === 1 && (v1Record.is_current === 0 || v1Record.is_current === false || v1Record.is_current === '0'), 'Version 1 preserved with is_current = 0');
+    assert(Number(v1Record.total_amount_minor) === 32000000, 'Version 1 preserved original minor unit amount (32000000)');
 
-    const v2Record = db.prepare('SELECT version, is_current, total_amount_minor FROM proposals WHERE id = ?').get(proposalIdV2);
-    assert(v2Record.version === 2 && v2Record.is_current === 1, 'Version 2 marked active with is_current = 1');
-    assert(v2Record.total_amount_minor === 35000000, 'Version 2 reflects revised minor unit amount (35000000)');
+    const v2Record = await db.get('SELECT version, is_current, total_amount_minor FROM proposals WHERE id = ?', [proposalIdV2]);
+    assert(Number(v2Record.version) === 2 && (v2Record.is_current === 1 || v2Record.is_current === true || v2Record.is_current === '1'), 'Version 2 marked active with is_current = 1');
+    assert(Number(v2Record.total_amount_minor) === 35000000, 'Version 2 reflects revised minor unit amount (35000000)');
 
     // 6. Test Approving an Old Proposal Version (Rule 2 & 9)
     console.log('\n6. Testing Approval of Superseded Version (Rule 2)...');
@@ -310,7 +329,7 @@ async function runPhase2ATests() {
     console.log('\n10. Testing Client Approval & Project Initialization (Rule 1)...');
     
     // Count projects and milestones before approval
-    const initialProjectsCount = db.prepare("SELECT COUNT(*) as count FROM projects WHERE lead_id = 'lead_001'").get().count;
+    const initialProjectsCount = Number((await db.get("SELECT COUNT(*) as count FROM projects WHERE lead_id = 'lead_001'")).count);
 
     // Valid approval call by designated client
     const approveRes = await fetch(`${BASE_URL}/api/proposals/${proposalIdV2}`, {
@@ -326,22 +345,22 @@ async function runPhase2ATests() {
     assert(createdProjectId !== null, `Project created with ID: ${createdProjectId}`);
 
     // Verify project and milestones in database
-    const projectRecord = db.prepare('SELECT * FROM projects WHERE id = ?').get(createdProjectId);
-    assert(projectRecord !== undefined, 'Project record verified in database');
+    const projectRecord = await db.get('SELECT * FROM projects WHERE id = ?', [createdProjectId]);
+    assert(projectRecord !== undefined && projectRecord !== null, 'Project record verified in database');
     assert(projectRecord.currency === 'KES', 'Project currency correctly isolated as KES');
-    assert(projectRecord.budget_minor === 35000000, 'Project budget matches proposal minor units (35000000)');
+    assert(Number(projectRecord.budget_minor) === 35000000, 'Project budget matches proposal minor units (35000000)');
 
-    const milestones = db.prepare('SELECT * FROM project_milestones WHERE project_id = ?').all(createdProjectId);
+    const milestones = await db.all('SELECT * FROM project_milestones WHERE project_id = ?', [createdProjectId]);
     assert(milestones.length === 4, 'Exactly 4 project milestones initialized');
 
     // Verify lead status transitioned to WON
-    const leadRecord = db.prepare("SELECT status FROM leads WHERE id = 'lead_001'").get();
+    const leadRecord = await db.get("SELECT status FROM leads WHERE id = 'lead_001'");
     assert(leadRecord.status === 'WON', 'Lead status transitioned to WON upon proposal approval');
 
     // 11. Test Idempotent Approval (Rule 1: Never create duplicate project or milestones on retry)
     console.log('\n11. Testing Idempotent Approval Retry (Rule 1)...');
-    const projectsBeforeRetry = db.prepare("SELECT COUNT(*) as count FROM projects").get().count;
-    const milestonesBeforeRetry = db.prepare("SELECT COUNT(*) as count FROM project_milestones WHERE project_id = ?").get(createdProjectId).count;
+    const projectsBeforeRetry = Number((await db.get("SELECT COUNT(*) as count FROM projects")).count);
+    const milestonesBeforeRetry = Number((await db.get("SELECT COUNT(*) as count FROM project_milestones WHERE project_id = ?", [createdProjectId])).count);
 
     const retryApproveRes = await fetch(`${BASE_URL}/api/proposals/${proposalIdV2}`, {
       method: 'PATCH',
@@ -354,11 +373,11 @@ async function runPhase2ATests() {
     assert(retryApproveData.projectId === createdProjectId, 'Returns existing Project ID without re-creating');
 
     // Verify project count did NOT increase
-    const projectsAfterRetry = db.prepare("SELECT COUNT(*) as count FROM projects").get().count;
+    const projectsAfterRetry = Number((await db.get("SELECT COUNT(*) as count FROM projects")).count);
     assert(projectsAfterRetry === projectsBeforeRetry, 'Duplicate project prevention: Total projects count unchanged on retry');
 
     // Verify milestones count did NOT duplicate
-    const milestonesAfterRetry = db.prepare("SELECT COUNT(*) as count FROM project_milestones WHERE project_id = ?").get(createdProjectId).count;
+    const milestonesAfterRetry = Number((await db.get("SELECT COUNT(*) as count FROM project_milestones WHERE project_id = ?", [createdProjectId])).count);
     assert(milestonesAfterRetry === milestonesBeforeRetry, 'Duplicate milestone prevention: Milestones count unchanged on retry (remains 4)');
 
     // 12. Test Immutability of Approved Proposal (Rule 2)
@@ -375,7 +394,7 @@ async function runPhase2ATests() {
     // 13. Test Informational Commission Integrity (Rule 3)
     console.log('\n13. Testing Commission Integrity: Informational Only (Rule 3)...');
     // Check that NO commission ledger row was inserted into commissions table for this proposal approval
-    const postCommissionsCount = db.prepare('SELECT COUNT(*) as count FROM commissions WHERE project_id = ?').get(createdProjectId).count;
+    const postCommissionsCount = Number((await db.get('SELECT COUNT(*) as count FROM commissions WHERE project_id = ?', [createdProjectId])).count);
     assert(postCommissionsCount === 0, 'No payable commission record created in ledger (Informational only in Phase 2A)');
 
     // 14. Test Client Rejection with Feedback (Rule 5 & 8)
@@ -412,7 +431,7 @@ async function runPhase2ATests() {
       body: JSON.stringify({ action: 'CLIENT_REJECT', rejectionReason: 'Budget exceeds our current quarterly allocation.' }),
     });
     assert(validRejectRes.status === 200, 'Client rejection with feedback succeeded (HTTP 200)');
-    const rejectDb = db.prepare('SELECT status, rejection_reason FROM proposals WHERE id = ?').get(rejectPropId);
+    const rejectDb = await db.get('SELECT status, rejection_reason FROM proposals WHERE id = ?', [rejectPropId]);
     assert(rejectDb.status === 'CLIENT_REJECTED', 'Status updated to CLIENT_REJECTED in database');
     assert(rejectDb.rejection_reason === 'Budget exceeds our current quarterly allocation.', 'Rejection reason saved in database');
 
@@ -442,7 +461,7 @@ async function runPhase2ATests() {
       body: JSON.stringify({ action: 'CANCEL' }),
     });
     assert(cancelRes.status === 200, 'Admin successfully cancelled proposal (HTTP 200)');
-    const cancelDb = db.prepare('SELECT status FROM proposals WHERE id = ?').get(cancelPropId);
+    const cancelDb = await db.get('SELECT status FROM proposals WHERE id = ?', [cancelPropId]);
     assert(cancelDb.status === 'CANCELLED', 'Status updated to CANCELLED in database');
 
     // Expiration
@@ -469,7 +488,7 @@ async function runPhase2ATests() {
       body: JSON.stringify({ action: 'EXPIRE' }),
     });
     assert(expireRes.status === 200, 'Proposal expired successfully (HTTP 200)');
-    const expireDb = db.prepare('SELECT status FROM proposals WHERE id = ?').get(expirePropId);
+    const expireDb = await db.get('SELECT status FROM proposals WHERE id = ?', [expirePropId]);
     assert(expireDb.status === 'EXPIRED', 'Status updated to EXPIRED in database');
 
     // Attempting to approve an EXPIRED proposal must be rejected (Rule 5)
@@ -482,11 +501,11 @@ async function runPhase2ATests() {
 
     // 16. Test Audit Trail Completeness (Rule 8: All 8 required audit actions)
     console.log('\n16. Testing Audit Trail Completeness (Rule 8)...');
-    const auditEvents = db.prepare(`
+    const auditEvents = (await db.all(`
       SELECT DISTINCT action
       FROM audit_logs
       WHERE entity = 'proposals'
-    `).all().map(a => a.action);
+    `)).map(a => a.action);
 
     const requiredAuditEvents = [
       'PROPOSAL_CREATED',
@@ -521,7 +540,7 @@ async function runPhase2ATests() {
     console.error('Test execution error:', err);
     failed++;
   } finally {
-    db.close();
+    await db.close();
   }
 
   console.log('\n====================================================');

@@ -28,11 +28,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Security Gate: Representatives must use Google OAuth exclusively
+    if (accountType === 'REPRESENTATIVE') {
+      return NextResponse.json(
+        { error: 'Sales Representative registration is exclusively available via Google. Please use "Continue with Google".' },
+        { status: 400 }
+      );
+    }
+
     // Security Gate: Strict prevention of administrative role escalation
-    const allowedRegistrationRoles: UserRole[] = ['CLIENT', 'REPRESENTATIVE'];
+    const allowedRegistrationRoles: UserRole[] = ['CLIENT'];
     if (!allowedRegistrationRoles.includes(accountType as UserRole)) {
       return NextResponse.json(
-        { error: 'Public registration is only available for Clients and Representatives. Administrative roles cannot be registered publicly.' },
+        { error: 'Public email/password registration is only available for Clients. Administrative roles cannot be registered publicly.' },
         { status: 403 }
       );
     }

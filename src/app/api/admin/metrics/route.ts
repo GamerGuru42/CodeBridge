@@ -35,46 +35,46 @@ export async function GET() {
     `);
 
     // Modeled Commissions (Integer minor units, no fake money movement)
-    const commissionsKES = (await queryOne(`
+    const commissionsKES = Number((await queryOne(`
       SELECT COALESCE(SUM(commission_amount_minor), 0) as total
       FROM commissions
       WHERE currency = 'KES'
-    `))?.total || 0;
+    `))?.total || 0);
 
-    const commissionsNGN = (await queryOne(`
+    const commissionsNGN = Number((await queryOne(`
       SELECT COALESCE(SUM(commission_amount_minor), 0) as total
       FROM commissions
       WHERE currency = 'NGN'
-    `))?.total || 0;
+    `))?.total || 0);
 
     // Commercial Proposals Metrics (Strictly isolated by currency)
-    const totalProposals = (await queryOne('SELECT COUNT(*) as count FROM proposals WHERE is_current = 1'))?.count || 0;
-    const approvedProposals = (await queryOne("SELECT COUNT(*) as count FROM proposals WHERE is_current = 1 AND status = 'CLIENT_APPROVED'"))?.count || 0;
-    const proposalsKES_minor = (await queryOne(`
+    const totalProposals = Number((await queryOne('SELECT COUNT(*) as count FROM proposals WHERE is_current = 1'))?.count || 0);
+    const approvedProposals = Number((await queryOne("SELECT COUNT(*) as count FROM proposals WHERE is_current = 1 AND status = 'CLIENT_APPROVED'"))?.count || 0);
+    const proposalsKES_minor = Number((await queryOne(`
       SELECT COALESCE(SUM(total_amount_minor), 0) as total
       FROM proposals
       WHERE is_current = 1 AND status = 'CLIENT_APPROVED' AND currency = 'KES'
-    `))?.total || 0;
-    const proposalsNGN_minor = (await queryOne(`
+    `))?.total || 0);
+    const proposalsNGN_minor = Number((await queryOne(`
       SELECT COALESCE(SUM(total_amount_minor), 0) as total
       FROM proposals
       WHERE is_current = 1 AND status = 'CLIENT_APPROVED' AND currency = 'NGN'
-    `))?.total || 0;
+    `))?.total || 0);
 
     // Phase 2B Commercial Billing & Receivables Metrics (Strictly isolated by currency)
-    const totalInvoices = (await queryOne('SELECT COUNT(*) as count FROM invoices'))?.count || 0;
-    const paidInvoices = (await queryOne("SELECT COUNT(*) as count FROM invoices WHERE status = 'PAID'"))?.count || 0;
+    const totalInvoices = Number((await queryOne('SELECT COUNT(*) as count FROM invoices'))?.count || 0);
+    const paidInvoices = Number((await queryOne("SELECT COUNT(*) as count FROM invoices WHERE status = 'PAID'"))?.count || 0);
 
-    const invoicedKES_minor = (await queryOne("SELECT COALESCE(SUM(amount_minor), 0) as total FROM invoices WHERE currency = 'KES' AND status != 'CANCELLED'"))?.total || 0;
-    const invoicedNGN_minor = (await queryOne("SELECT COALESCE(SUM(amount_minor), 0) as total FROM invoices WHERE currency = 'NGN' AND status != 'CANCELLED'"))?.total || 0;
+    const invoicedKES_minor = Number((await queryOne("SELECT COALESCE(SUM(amount_minor), 0) as total FROM invoices WHERE currency = 'KES' AND status != 'CANCELLED'"))?.total || 0);
+    const invoicedNGN_minor = Number((await queryOne("SELECT COALESCE(SUM(amount_minor), 0) as total FROM invoices WHERE currency = 'NGN' AND status != 'CANCELLED'"))?.total || 0);
 
-    const verifiedPaidKES_minor = (await queryOne("SELECT COALESCE(SUM(amount_paid_minor), 0) as total FROM invoices WHERE currency = 'KES'"))?.total || 0;
-    const verifiedPaidNGN_minor = (await queryOne("SELECT COALESCE(SUM(amount_paid_minor), 0) as total FROM invoices WHERE currency = 'NGN'"))?.total || 0;
+    const verifiedPaidKES_minor = Number((await queryOne("SELECT COALESCE(SUM(amount_paid_minor), 0) as total FROM invoices WHERE currency = 'KES'"))?.total || 0);
+    const verifiedPaidNGN_minor = Number((await queryOne("SELECT COALESCE(SUM(amount_paid_minor), 0) as total FROM invoices WHERE currency = 'NGN'"))?.total || 0);
 
     const receivablesKES_minor = Math.max(0, invoicedKES_minor - verifiedPaidKES_minor);
     const receivablesNGN_minor = Math.max(0, invoicedNGN_minor - verifiedPaidNGN_minor);
 
-    const commissionEventsCount = (await queryOne('SELECT COUNT(*) as count FROM commission_events'))?.count || 0;
+    const commissionEventsCount = Number((await queryOne('SELECT COUNT(*) as count FROM commission_events'))?.count || 0);
 
     // Recent Audit Logs
     const recentAuditLogs = await query(`
@@ -87,12 +87,12 @@ export async function GET() {
 
     return NextResponse.json({
       overview: {
-        totalClients: clientCount,
-        totalReps,
-        activeReps,
-        pendingReps,
-        totalLeads,
-        activeProjects,
+        totalClients: Number(clientCount || 0),
+        totalReps: Number(totalReps || 0),
+        activeReps: Number(activeReps || 0),
+        pendingReps: Number(pendingReps || 0),
+        totalLeads: Number(totalLeads || 0),
+        activeProjects: Number(activeProjects || 0),
         proposals: {
           total: totalProposals,
           approved: approvedProposals,

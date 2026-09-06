@@ -48,10 +48,14 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   role VARCHAR(32) NOT NULL CHECK (role IN ('SUPER_ADMIN', 'ADMIN', 'COUNTRY_MANAGER', 'REPRESENTATIVE', 'DEVELOPER', 'CLIENT')),
   status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('PENDING', 'ACTIVE', 'SUSPENDED', 'REJECTED')),
+  google_id VARCHAR(255),
   email_verified INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Idempotently ensure google_id column exists on existing production tables
+ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);
 
 -- User Profiles
 CREATE TABLE IF NOT EXISTS user_profiles (
@@ -391,6 +395,7 @@ CREATE INDEX IF NOT EXISTS idx_projects_rep ON projects(representative_id);
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_commissions_rep ON commissions(representative_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 
 -- Ensure permissions for Supabase Studio and service roles
 GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;

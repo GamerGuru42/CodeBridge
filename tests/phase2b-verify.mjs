@@ -1,10 +1,7 @@
 // tests/phase2b-verify.mjs
-import { DatabaseSync } from 'node:sqlite';
-import path from 'node:path';
+import { testDb as db } from './test-db-adapter.mjs';
 
 const BASE_URL = 'http://127.0.0.1:3000';
-const dbPath = path.resolve(process.cwd(), './data/codebridge.db');
-const db = new DatabaseSync(dbPath);
 
 async function runPhase2BTests() {
   console.log('================================================================');
@@ -25,6 +22,23 @@ async function runPhase2BTests() {
   }
 
   async function login(email, password = 'CodeBridge@2025!') {
+    if (email.includes('rep.')) {
+      const mockCode = 'test_mock_' + encodeURIComponent(JSON.stringify({
+        sub: `google_sub_${email.replace(/[^a-zA-Z0-9]/g, '_')}`,
+        email,
+        given_name: 'Kenya',
+        family_name: 'Representative',
+      }));
+      const res = await fetch(`${BASE_URL}/api/auth/callback/google?code=${mockCode}&state=mock_state`, {
+        redirect: 'manual',
+      });
+      const setCookie = res.headers.get('set-cookie');
+      const cookie = setCookie ? setCookie.split(';')[0] : '';
+      const meRes = await fetch(`${BASE_URL}/api/auth/me`, { headers: { Cookie: cookie } });
+      const data = await meRes.json();
+      return { cookie, user: data.user };
+    }
+
     const res = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -39,11 +53,13 @@ async function runPhase2BTests() {
     return { cookie, user: data.user };
   }
 
+
   try {
     // -------------------------------------------------------------------------
     // 1. ACTOR AUTHENTICATION
     // -------------------------------------------------------------------------
     console.log('1. Authenticating test actors across roles...');
+
     const adminSession = await login('ops@marketbridge.com');
     assert(adminSession.user.role === 'ADMIN', 'Admin/Ops authenticated');
 
@@ -66,7 +82,7 @@ async function runPhase2BTests() {
     
     // Create lead for Option A test
     const clientAEmail = `tunde.${Date.now()}@lagosfintech.ng`;
-    const repRow = db.prepare("SELECT id FROM representatives WHERE approval_status = 'ACTIVE'").get();
+    const repRow = await db.get("SELECT id FROM representatives WHERE approval_status = 'ACTIVE'");
     const leadARes = await fetch(`${BASE_URL}/api/leads`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Cookie: adminSession.cookie },
@@ -107,12 +123,12 @@ async function runPhase2BTests() {
     assert(propAData.proposal?.paymentStructureType === 'FULL_UPFRONT', 'Proposal payment structure is FULL_UPFRONT');
 
     // Associate or get client for lead A
-    const clientARow = db.prepare('SELECT id, user_id FROM clients WHERE lead_id = ?').get(leadAData.lead.id);
+    const clientARow = await db.get('SELECT id, user_id FROM clients WHERE lead_id = ?', [leadAData.lead.id]);
     assert(Boolean(clientARow), 'Client record auto-provisioned for Option A lead');
 
     // Make client A user active with valid demo password for client approval
-    const defaultUser = db.prepare('SELECT password_hash FROM users WHERE email = ?').get('client@abcrestaurants.com');
-    db.prepare("UPDATE users SET password_hash = ?, status = 'ACTIVE' WHERE id = ?").run(defaultUser.password_hash, clientARow.user_id);
+    const defaultUser = await db.get('SELECT password_hash FROM users WHERE email = ?', ['client@abcrestaurants.com']);
+    await db.run("UPDATE users SET password_hash = ?, status = 'ACTIVE' WHERE id = ?", [defaultUser.password_hash, clientARow.user_id]);
     const clientASession = await login(clientAEmail);
     assert(clientASession.user.role === 'CLIENT', 'Option A client logged in');
 
@@ -126,23 +142,23 @@ async function runPhase2BTests() {
     assert(approveARes.ok, 'Proposal A approved by client');
 
     // Verify Project State: MUST be AWAITING_PAYMENT, NOT started!
-    const projectARow = db.prepare('SELECT * FROM projects WHERE id = ?').get(approveAData.projectId);
+    const projectARow = await db.get('SELECT * FROM projects WHERE id = ?', [approveAData.projectId]);
     assert(projectARow.status === 'AWAITING_PAYMENT', 'Project is in AWAITING_PAYMENT status upon approval');
     assert(projectARow.payment_status === 'UNPAID', 'Project payment_status is UNPAID');
     assert(projectARow.started_at === null, 'Project started_at is strictly NULL prior to payment');
 
     // Verify Schedule and Invoice Generation
-    const scheduleA = db.prepare('SELECT * FROM payment_schedules WHERE proposal_id = ?').all(propAData.proposal.id);
+    const scheduleA = await db.all('SELECT * FROM payment_schedules WHERE proposal_id = ?', [propAData.proposal.id]);
     assert(scheduleA.length === 1, 'Exactly 1 schedule item created for 100% Upfront');
-    assert(scheduleA[0].percentage_bps === 10000, 'Schedule item is 10000 bps (100%)');
-    assert(scheduleA[0].is_required_to_start === 1, 'Schedule item has is_required_to_start = 1');
+    assert(Number(scheduleA[0].percentage_bps) === 10000, 'Schedule item is 10000 bps (100%)');
+    assert(Number(scheduleA[0].is_required_to_start) === 1 || scheduleA[0].is_required_to_start === true, 'Schedule item has is_required_to_start = 1');
     assert(scheduleA[0].status === 'INVOICED', 'Schedule item marked INVOICED');
 
-    const invoiceARow = db.prepare('SELECT * FROM invoices WHERE project_id = ?').get(projectARow.id);
+    const invoiceARow = await db.get('SELECT * FROM invoices WHERE project_id = ?', [projectARow.id]);
     assert(Boolean(invoiceARow), 'Invoice automatically issued upon approval');
     assert(invoiceARow.invoice_number.startsWith('INV-NGN-'), `Invoice number properly formatted (${invoiceARow.invoice_number})`);
-    assert(invoiceARow.amount_minor === 50000000, 'Invoice amount is 500,000 NGN (50000000 minor)');
-    assert(invoiceARow.amount_paid_minor === 0, 'Invoice amount_paid_minor starts at 0');
+    assert(Number(invoiceARow.amount_minor) === 50000000, 'Invoice amount is 500,000 NGN (50000000 minor)');
+    assert(Number(invoiceARow.amount_paid_minor) === 0, 'Invoice amount_paid_minor starts at 0');
     assert(invoiceARow.status === 'ISSUED', 'Invoice status is ISSUED');
 
     // -------------------------------------------------------------------------
@@ -181,23 +197,23 @@ async function runPhase2BTests() {
     assert(verifyAData.invoiceStatus === 'PAID', 'Response indicates invoiceStatus = PAID');
 
     // Verify Database Post-Verification State
-    const updatedInvoiceA = db.prepare('SELECT * FROM invoices WHERE id = ?').get(invoiceARow.id);
+    const updatedInvoiceA = await db.get('SELECT * FROM invoices WHERE id = ?', [invoiceARow.id]);
     assert(updatedInvoiceA.status === 'PAID', 'Database invoice marked PAID');
-    assert(updatedInvoiceA.amount_paid_minor === 50000000, 'Database invoice amount_paid_minor equals 50000000');
+    assert(Number(updatedInvoiceA.amount_paid_minor) === 50000000, 'Database invoice amount_paid_minor equals 50000000');
     assert(updatedInvoiceA.paid_at !== null, 'Database invoice paid_at is timestamped');
 
-    const updatedScheduleA = db.prepare('SELECT * FROM payment_schedules WHERE id = ?').get(scheduleA[0].id);
+    const updatedScheduleA = await db.get('SELECT * FROM payment_schedules WHERE id = ?', [scheduleA[0].id]);
     assert(updatedScheduleA.status === 'PAID', 'Payment schedule item marked PAID');
     assert(updatedScheduleA.paid_at !== null, 'Payment schedule paid_at is timestamped');
 
-    const updatedProjectA = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectARow.id);
+    const updatedProjectA = await db.get('SELECT * FROM projects WHERE id = ?', [projectARow.id]);
     assert(updatedProjectA.status === 'PLANNING', 'Project transitioned from AWAITING_PAYMENT to PLANNING');
     assert(updatedProjectA.payment_status === 'PAID', 'Project payment_status is PAID');
-    assert(updatedProjectA.total_paid_minor === 50000000, 'Project total_paid_minor is 50000000');
+    assert(Number(updatedProjectA.total_paid_minor) === 50000000, 'Project total_paid_minor is 50000000');
     assert(updatedProjectA.started_at !== null, 'Project started_at is now set');
 
     // Verify Payment Transaction Record
-    const paymentRecordA = db.prepare('SELECT * FROM payments WHERE invoice_id = ?').get(invoiceARow.id);
+    const paymentRecordA = await db.get('SELECT * FROM payments WHERE invoice_id = ?', [invoiceARow.id]);
     assert(Boolean(paymentRecordA), 'Discrete Payment record inserted');
     assert(paymentRecordA.payment_method === 'BANK_TRANSFER', 'Payment method correctly recorded as BANK_TRANSFER');
     assert(paymentRecordA.verification_source === 'MANUAL_VERIFICATION', 'Verification source correctly recorded as MANUAL_VERIFICATION');
@@ -208,17 +224,18 @@ async function runPhase2BTests() {
     // -------------------------------------------------------------------------
     console.log('\n4. Testing Commission Event Handoff & Phase 2D Boundary Isolation...');
 
-    const commEventsA = db.prepare('SELECT * FROM commission_events WHERE payment_id = ?').all(paymentRecordA.id);
+    const commEventsA = await db.all('SELECT * FROM commission_events WHERE payment_id = ?', [paymentRecordA.id]);
     assert(commEventsA.length === 1, 'Exactly 1 immutable commission_event logged for payment');
     const ceA = commEventsA[0];
-    assert(ceA.verified_amount_minor === 50000000, 'Commission event verified_amount_minor matches payment (50000000)');
+    assert(Number(ceA.verified_amount_minor) === 50000000, 'Commission event verified_amount_minor matches payment (50000000)');
     assert(ceA.currency === 'NGN', 'Commission event currency is NGN');
     assert(ceA.status === 'RECORDED', 'Commission event status is RECORDED');
     assert(ceA.idempotency_key === `COMMISSION_PAYMENT_${paymentRecordA.id}`, 'Commission event has unique idempotency_key');
-    assert(ceA.commission_rate_bps_at_time_of_payment > 0, `Commission rate snapshotted (${ceA.commission_rate_bps_at_time_of_payment} bps)`);
+    assert(Number(ceA.commission_rate_bps_at_time_of_payment) > 0, `Commission rate snapshotted (${ceA.commission_rate_bps_at_time_of_payment} bps)`);
 
     // Verify Strict Boundary: commission_ledger MUST NOT have been credited by Phase 2B
-    const ledgerCount = db.prepare('SELECT COUNT(*) as count FROM commission_ledger').get().count;
+    const ledgerCountRow = await db.get('SELECT COUNT(*) as count FROM commission_ledger');
+    const ledgerCount = Number(ledgerCountRow.count);
     assert(ledgerCount === 0, 'Zero commission_ledger mutations (Phase 2B stops strictly at Commission Event)');
 
     // -------------------------------------------------------------------------
@@ -266,8 +283,8 @@ async function runPhase2BTests() {
     assert(propBRes.ok, `Option B proposal created (${propBData.proposal?.proposalNumber})`);
     assert(propBData.proposal?.paymentStructureType === 'DEPOSIT_MILESTONES', 'Proposal structure is DEPOSIT_MILESTONES');
 
-    const clientBRow = db.prepare('SELECT id, user_id FROM clients WHERE lead_id = ?').get(leadBData.lead.id);
-    db.prepare("UPDATE users SET password_hash = ?, status = 'ACTIVE' WHERE id = ?").run(defaultUser.password_hash, clientBRow.user_id);
+    const clientBRow = await db.get('SELECT id, user_id FROM clients WHERE lead_id = ?', [leadBData.lead.id]);
+    await db.run("UPDATE users SET password_hash = ?, status = 'ACTIVE' WHERE id = ?", [defaultUser.password_hash, clientBRow.user_id]);
     const clientBSession = await login(clientBEmail);
 
     // Client B Approves Proposal B
@@ -280,16 +297,16 @@ async function runPhase2BTests() {
     assert(approveBRes.ok, 'Option B proposal approved by client');
 
     // Check Schedules & Invoices for Option B
-    const schedulesB = db.prepare('SELECT * FROM payment_schedules WHERE proposal_id = ? ORDER BY order_index ASC').all(propBData.proposal.id);
+    const schedulesB = await db.all('SELECT * FROM payment_schedules WHERE proposal_id = ? ORDER BY order_index ASC', [propBData.proposal.id]);
     assert(schedulesB.length === 3, 'Exactly 3 schedule items created for Option B');
-    assert(schedulesB[0].percentage_bps === 5000 && schedulesB[0].is_required_to_start === 1, 'Item 1: 50% deposit (5000 bps) required to start');
-    assert(schedulesB[1].percentage_bps === 3000 && schedulesB[1].is_required_to_start === 0, 'Item 2: 30% milestone (3000 bps) not required to start');
-    assert(schedulesB[2].percentage_bps === 2000 && schedulesB[2].is_required_to_start === 0, 'Item 3: 20% handover (2000 bps) not required to start');
+    assert(Number(schedulesB[0].percentage_bps) === 5000 && (Number(schedulesB[0].is_required_to_start) === 1 || schedulesB[0].is_required_to_start === true), 'Item 1: 50% deposit (5000 bps) required to start');
+    assert(Number(schedulesB[1].percentage_bps) === 3000 && (Number(schedulesB[1].is_required_to_start) === 0 || schedulesB[1].is_required_to_start === false), 'Item 2: 30% milestone (3000 bps) not required to start');
+    assert(Number(schedulesB[2].percentage_bps) === 2000 && (Number(schedulesB[2].is_required_to_start) === 0 || schedulesB[2].is_required_to_start === false), 'Item 3: 20% handover (2000 bps) not required to start');
 
     // Invoices check: EXACTLY 1 invoice issued initially (for 50% deposit)
-    const invoicesB = db.prepare('SELECT * FROM invoices WHERE project_id = ?').all(approveBData.projectId);
+    const invoicesB = await db.all('SELECT * FROM invoices WHERE project_id = ?', [approveBData.projectId]);
     assert(invoicesB.length === 1, 'Only 1 initial invoice issued at approval (50% deposit)');
-    assert(invoicesB[0].amount_minor === 50000000, 'Initial invoice is for 500,000 KES (50,000,000 minor)');
+    assert(Number(invoicesB[0].amount_minor) === 50000000, 'Initial invoice is for 500,000 KES (50,000,000 minor)');
     assert(schedulesB[0].status === 'INVOICED', 'Schedule item 1 is INVOICED');
     assert(schedulesB[1].status === 'SCHEDULED', 'Schedule item 2 remains SCHEDULED');
     assert(schedulesB[2].status === 'SCHEDULED', 'Schedule item 3 remains SCHEDULED');
@@ -311,13 +328,13 @@ async function runPhase2BTests() {
     assert(verifyDepRes.ok, 'Deposit payment verified');
     assert(verifyDepData.projectStarted === true, 'Project started upon deposit verification');
 
-    const projectBAfterDep = db.prepare('SELECT * FROM projects WHERE id = ?').get(approveBData.projectId);
+    const projectBAfterDep = await db.get('SELECT * FROM projects WHERE id = ?', [approveBData.projectId]);
     assert(projectBAfterDep.status === 'PLANNING', 'Project status is PLANNING after deposit');
     assert(projectBAfterDep.payment_status === 'PARTIALLY_PAID', 'Project payment_status is PARTIALLY_PAID');
 
     // Now Trigger Milestone 2 Invoicing
     console.log('Testing milestone 2 transition to INVOICEABLE and invoice issuance...');
-    db.prepare("UPDATE payment_schedules SET status = 'INVOICEABLE' WHERE id = ?").run(schedulesB[1].id);
+    await db.run("UPDATE payment_schedules SET status = 'INVOICEABLE' WHERE id = ?", [schedulesB[1].id]);
 
     const issueMilestone2Res = await fetch(`${BASE_URL}/api/payment-schedules/${schedulesB[1].id}/issue-invoice`, {
       method: 'POST',
@@ -328,7 +345,7 @@ async function runPhase2BTests() {
     assert(issueMilestone2Res.ok, 'Milestone 2 invoice issued via API');
     assert(issueMilestone2Data.invoiceNumber.startsWith('INV-KES-'), `Milestone 2 invoice numbered (${issueMilestone2Data.invoiceNumber})`);
 
-    const updatedScheduleB2 = db.prepare('SELECT * FROM payment_schedules WHERE id = ?').get(schedulesB[1].id);
+    const updatedScheduleB2 = await db.get('SELECT * FROM payment_schedules WHERE id = ?', [schedulesB[1].id]);
     assert(updatedScheduleB2.status === 'INVOICED', 'Schedule item 2 marked INVOICED');
     assert(updatedScheduleB2.invoice_id !== null, 'Schedule item 2 links to new invoice');
 
@@ -348,10 +365,10 @@ async function runPhase2BTests() {
     assert(verifyMs2Res.ok, 'Milestone 2 payment verified via GATEWAY_SIMULATION');
 
     // Check that 2 distinct commission events exist for Project B
-    const commEventsB = db.prepare('SELECT * FROM commission_events WHERE project_id = ?').all(approveBData.projectId);
+    const commEventsB = await db.all('SELECT * FROM commission_events WHERE project_id = ?', [approveBData.projectId]);
     assert(commEventsB.length === 2, '2 distinct commission events recorded for Project B milestones');
-    assert(commEventsB[0].verified_amount_minor === 50000000, 'First event verified 500,000 KES');
-    assert(commEventsB[1].verified_amount_minor === 30000000, 'Second event verified 300,000 KES');
+    assert(Number(commEventsB[0].verified_amount_minor) === 50000000, 'First event verified 500,000 KES');
+    assert(Number(commEventsB[1].verified_amount_minor) === 30000000, 'Second event verified 300,000 KES');
 
     // -------------------------------------------------------------------------
     // 6. OPTION C: CUSTOM PAYMENT SCHEDULE VALIDATION & RECONCILIATION
@@ -455,7 +472,7 @@ async function runPhase2BTests() {
     // C. Duplicate Reference Rejection (409 Conflict)
     const dupRef = `DUP-REF-${Date.now()}`;
     // Create new invoice to test duplicate reference
-    const invoiceForRefTest = db.prepare("SELECT id FROM invoices WHERE status = 'ISSUED'").get();
+    const invoiceForRefTest = await db.get("SELECT id FROM invoices WHERE status = 'ISSUED'");
     if (invoiceForRefTest) {
       // First verification with ref
       await fetch(`${BASE_URL}/api/invoices/${invoiceForRefTest.id}/verify-payment`, {
@@ -514,7 +531,8 @@ async function runPhase2BTests() {
       body: JSON.stringify({ action: 'CLIENT_APPROVE' }),
     });
     assert(retryApproveRes.ok, 'Repeat client approval call handled gracefully');
-    const projectCountForPropA = db.prepare('SELECT COUNT(*) as count FROM projects WHERE id = ?').get(approveAData.projectId).count;
+    const projectCountRow = await db.get('SELECT COUNT(*) as count FROM projects WHERE id = ?', [approveAData.projectId]);
+    const projectCountForPropA = Number(projectCountRow.count);
     assert(projectCountForPropA === 1, 'Client approval is idempotent (no duplicate projects created)');
 
     // -------------------------------------------------------------------------
@@ -522,10 +540,10 @@ async function runPhase2BTests() {
     // -------------------------------------------------------------------------
     console.log('\n8. Testing Audit Logging & Executive Metrics Aggregation...');
 
-    const auditPayments = db.prepare("SELECT * FROM audit_logs WHERE action = 'PAYMENT_VERIFIED'").all();
+    const auditPayments = await db.all("SELECT * FROM audit_logs WHERE action = 'PAYMENT_VERIFIED'");
     assert(auditPayments.length >= 2, `Audit trail recorded ${auditPayments.length} PAYMENT_VERIFIED actions`);
 
-    const auditStarts = db.prepare("SELECT * FROM audit_logs WHERE action = 'PROJECT_STARTED'").all();
+    const auditStarts = await db.all("SELECT * FROM audit_logs WHERE action = 'PROJECT_STARTED'");
     assert(auditStarts.length >= 2, `Audit trail recorded ${auditStarts.length} PROJECT_STARTED actions`);
 
     // Fetch Executive Metrics API
@@ -546,6 +564,8 @@ async function runPhase2BTests() {
   } catch (err) {
     console.error('Test suite uncaught exception:', err);
     failed++;
+  } finally {
+    await db.close();
   }
 
   console.log('\n================================================================');

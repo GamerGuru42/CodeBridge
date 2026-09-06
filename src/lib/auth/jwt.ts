@@ -31,3 +31,28 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
     return null;
   }
 }
+
+export interface OnboardingPayload {
+  googleId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string;
+}
+
+export async function signOnboardingToken(payload: OnboardingPayload): Promise<string> {
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('15m')
+    .sign(encodedSecret);
+}
+
+export async function verifyOnboardingToken(token: string): Promise<OnboardingPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, encodedSecret);
+    return payload as unknown as OnboardingPayload;
+  } catch (err) {
+    return null;
+  }
+}

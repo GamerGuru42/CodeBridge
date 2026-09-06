@@ -144,7 +144,7 @@ export default function RepresentativeDashboard() {
     return <div style={{ color: 'var(--cb-text-muted)', padding: '20px' }}>Loading Representative Workspace...</div>;
   }
 
-  const repStatus = currentUser?.representative?.status || currentUser?.status || 'PENDING';
+  const repStatus = currentUser?.representative?.status || currentUser?.status || 'ACTIVE';
   const isApproved = repStatus === 'ACTIVE';
   const commRatePct = ((currentUser?.representative?.commissionRateBps || 2000) / 100).toFixed(1);
 
@@ -167,10 +167,10 @@ export default function RepresentativeDashboard() {
       <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div className="cb-badge cb-badge-amber" style={{ marginBottom: '8px' }}>
-            <Users size={13} /> Field Representative &bull; {commRatePct}% Commission
+            <Users size={13} /> Sales Representative &bull; {commRatePct}% Commission
           </div>
           <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-            Representative Commercial Workspace
+            Sales Representative Commercial Workspace
           </h1>
           <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
             Track your prospective client leads, advance project scopes, and monitor verified commission events.

@@ -79,7 +79,7 @@ async function testPhase1() {
     assert(false, `Escalation test error: ${err.message}`);
   }
 
-  // 3b. Representative Registration (must be PENDING)
+  // 3b. Representative Registration Security Gate (must be Google-only)
   const testRepEmail = `testrep_${Date.now()}@codebridge.ke`;
   try {
     const resRepReg = await fetch(`${BASE_URL}/api/auth/register`, {
@@ -95,9 +95,29 @@ async function testPhase1() {
         accountType: 'REPRESENTATIVE',
       }),
     });
-    assert(resRepReg.status === 200, 'Representative registered successfully');
+    assert(resRepReg.status === 400, 'Direct password registration for REPRESENTATIVE rejected with HTTP 400');
     const dataRep = await resRepReg.json();
-    assert(dataRep.user?.status === 'PENDING', 'New representative account status is strictly PENDING awaiting approval');
+    assert(dataRep.error.includes('Google'), 'Error directs representative to "Continue with Google"');
+
+    // Onboard new representative via Google OAuth flow
+    const mockRepCode = 'test_mock_' + encodeURIComponent(JSON.stringify({
+      sub: `google_sub_${Date.now()}`,
+      email: testRepEmail,
+      given_name: 'Nairobi',
+      family_name: 'Applicant',
+    }));
+    const callbackRes = await fetch(`${BASE_URL}/api/auth/callback/google?code=${mockRepCode}&state=mock_state`, {
+      redirect: 'manual',
+    });
+    const onboardingCookie = callbackRes.headers.get('set-cookie')?.split(';')[0];
+    const onboardRes = await fetch(`${BASE_URL}/api/auth/representative/onboard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: onboardingCookie },
+      body: JSON.stringify({ countryCode: 'KE' }),
+    });
+    assert(onboardRes.status === 200, 'New representative onboarded immediately via Google + country selection');
+    const onboardData = await onboardRes.json();
+    assert(onboardData.redirectTo === '/dashboard/representative', 'Directs immediately to representative dashboard');
   } catch (err) {
     assert(false, `Rep reg error: ${err.message}`);
   }
@@ -108,7 +128,6 @@ async function testPhase1() {
     { email: 'superadmin@marketbridge.com', role: 'SUPER_ADMIN', expectedRedirect: '/dashboard/super-admin' },
     { email: 'ops@marketbridge.com', role: 'ADMIN', expectedRedirect: '/dashboard/admin' },
     { email: 'countrymanager.ke@codebridge.com', role: 'COUNTRY_MANAGER', expectedRedirect: '/dashboard/country-manager' },
-    { email: 'rep.kenya@codebridge.com', role: 'REPRESENTATIVE', expectedRedirect: '/dashboard/representative' },
     { email: 'dev@codebridge.com', role: 'DEVELOPER', expectedRedirect: '/dashboard/developer' },
     { email: 'client@abcrestaurants.com', role: 'CLIENT', expectedRedirect: '/dashboard/client' },
   ];
@@ -131,14 +150,44 @@ async function testPhase1() {
       assert(setCookie && setCookie.includes('cb_session'), 'Received HTTP-only cb_session cookie');
 
       if (acc.role === 'SUPER_ADMIN') superAdminCookie = setCookie;
-      if (acc.role === 'REPRESENTATIVE') repCookie = setCookie;
     } catch (err) {
       assert(false, `Login failed for ${acc.role}: ${err.message}`);
     }
   }
 
-  // 5. Representative Approval Workflow
-  console.log('\n5. Testing Representative Approval Workflow (/api/admin/representatives)...');
+  // Verify Representative password login is BLOCKED at /api/auth/login
+  try {
+    const repLoginBlocked = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'rep.kenya@codebridge.com', password: 'CodeBridge@2025!' }),
+    });
+    assert(repLoginBlocked.status === 403, 'Representative password login strictly rejected with HTTP 403');
+    const blockedData = await repLoginBlocked.json();
+    assert(blockedData.error.includes('Google'), 'Error directs representative to "Continue with Google"');
+
+    // Authenticate representative via Google OAuth callback
+    const mockRepCode = 'test_mock_' + encodeURIComponent(JSON.stringify({
+      sub: 'google_sub_rep_kenya_phase1',
+      email: 'rep.kenya@codebridge.com',
+      given_name: 'Kenya',
+      family_name: 'Representative',
+    }));
+    const repGoogleRes = await fetch(`${BASE_URL}/api/auth/callback/google?code=${mockRepCode}&state=mock_state`, {
+      redirect: 'manual',
+    });
+    assert(repGoogleRes.status === 307 || repGoogleRes.status === 302, 'Returning representative redirected via Google OAuth');
+    const repLocation = repGoogleRes.headers.get('location');
+    assert(repLocation && repLocation.includes('/dashboard/representative'), 'Redirected to /dashboard/representative');
+    const repSetCookie = repGoogleRes.headers.get('set-cookie');
+    assert(repSetCookie && repSetCookie.includes('cb_session'), 'Received cb_session cookie via Google OAuth');
+    repCookie = repSetCookie.split(';')[0];
+  } catch (err) {
+    assert(false, `Representative Google authentication error: ${err.message}`);
+  }
+
+  // 5. Representative Administration
+  console.log('\n5. Testing Representative Administration (/api/admin/representatives)...');
   try {
     // List reps with Super Admin cookie
     const resReps = await fetch(`${BASE_URL}/api/admin/representatives`, {
@@ -146,29 +195,15 @@ async function testPhase1() {
     });
     assert(resReps.status === 200, 'Super Admin fetched representative roster');
     const repsData = await resReps.json();
-    const pendingRep = repsData.representatives?.find(r => r.approval_status === 'PENDING');
-    assert(pendingRep !== undefined, `Found pending representative: ${pendingRep?.first_name} ${pendingRep?.last_name}`);
-
-    if (pendingRep) {
-      // Approve pending rep with 20% (2000 bps)
-      const resApprove = await fetch(`${BASE_URL}/api/admin/representatives`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Cookie: superAdminCookie },
-        body: JSON.stringify({
-          representativeId: pendingRep.id,
-          action: 'APPROVE',
-          commissionRateBps: 2000,
-          notes: 'Verified identity and business network.',
-        }),
-      });
-      assert(resApprove.status === 200, 'Super Admin approved representative');
-      const approveData = await resApprove.json();
-      assert(approveData.approvalStatus === 'ACTIVE', 'Representative status updated to ACTIVE');
-      assert(approveData.commissionRateBps === 2000, 'Commission rate configured at 2000 bps (20.0%)');
+    assert(Array.isArray(repsData.representatives) && repsData.representatives.length > 0, 'Representative roster contains representatives');
+    const kenyaRep = repsData.representatives?.find(r => r.email === 'rep.kenya@codebridge.com');
+    if (kenyaRep) {
+      assert(kenyaRep.approval_status === 'ACTIVE', 'Existing representative has ACTIVE status');
     }
   } catch (err) {
-    assert(false, `Rep approval error: ${err.message}`);
+    assert(false, `Rep administration error: ${err.message}`);
   }
+
 
   // 6. Representative Lead Creation & Pipeline Lifecycle
   console.log('\n6. Testing Representative Lead Lifecycle & Conversion (/api/leads)...');

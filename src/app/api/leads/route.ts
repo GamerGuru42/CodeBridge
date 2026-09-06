@@ -148,6 +148,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      leadId,
       lead: {
         id: leadId,
         businessName,

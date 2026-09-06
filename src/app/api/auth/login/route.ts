@@ -34,6 +34,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Representatives must authenticate exclusively via Google OAuth
+    if (user.role === 'REPRESENTATIVE' || (user.password_hash && user.password_hash.startsWith('oauth:'))) {
+      return NextResponse.json(
+        { error: 'Sales Representatives must sign in using "Continue with Google".' },
+        { status: 403 }
+      );
+    }
+
     if (user.status === 'SUSPENDED' || user.status === 'REJECTED') {
       return NextResponse.json(
         { error: `Your account has been ${user.status.toLowerCase()}. Please contact support.` },

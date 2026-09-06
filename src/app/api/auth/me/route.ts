@@ -35,6 +35,7 @@ export async function GET() {
       firstName: user.first_name,
       lastName: user.last_name,
       phone: user.phone,
+      countryId: user.country_id,
       country: {
         id: user.country_id,
         code: user.country_code,

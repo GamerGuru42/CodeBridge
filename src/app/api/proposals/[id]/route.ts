@@ -332,7 +332,7 @@ export async function PATCH(
       }
 
       // Version check: Client can only approve current active version
-      if (proposal.is_current !== 1) {
+      if (Number(proposal.is_current) !== 1) {
         return NextResponse.json({ error: 'This proposal version has been superseded by a newer version. Please review the current active version.' }, { status: 400 });
       }
 
@@ -449,10 +449,32 @@ export async function PATCH(
             const isStartReq = item.isRequiredToStart ? 1 : 0;
             const schedStatus = isStartReq ? 'INVOICED' : 'SCHEDULED';
 
-            let invoiceIdForSched: string | null = null;
+            // Insert payment schedule first to satisfy foreign key in invoices (payment_schedule_id)
+            await tx.execute(`
+              INSERT INTO payment_schedules (
+                id, proposal_id, project_id, schedule_type, name, order_index,
+                percentage_bps, amount_minor, currency, is_required_to_start,
+                billing_trigger, status, invoice_id, created_at, updated_at
+              )
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+            `, [
+              schedId,
+              proposalId,
+              finalProjectId,
+              proposal.payment_structure_type || 'FULL_UPFRONT',
+              item.name,
+              item.orderIndex || 1,
+              item.percentageBps,
+              item.amountMinor,
+              proposal.currency,
+              isStartReq,
+              item.billingTrigger || 'UPFRONT_APPROVAL',
+              schedStatus,
+              null,
+            ]);
+
             if (isStartReq && !initialInvoiceId) {
               initialInvoiceId = `inv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-              invoiceIdForSched = initialInvoiceId;
               const invNumber = await generateInvoiceNumber(proposal.currency);
               const dueDate = proposal.valid_until || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -478,6 +500,12 @@ export async function PATCH(
                 dueDate,
               ]);
 
+              await tx.execute(`
+                UPDATE payment_schedules
+                SET invoice_id = ?
+                WHERE id = ?
+              `, [initialInvoiceId, schedId]);
+
               await recordAuditLog({
                 userId,
                 action: 'INVOICE_ISSUED',
@@ -492,29 +520,6 @@ export async function PATCH(
                 ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1',
               });
             }
-
-            await tx.execute(`
-              INSERT INTO payment_schedules (
-                id, proposal_id, project_id, schedule_type, name, order_index,
-                percentage_bps, amount_minor, currency, is_required_to_start,
-                billing_trigger, status, invoice_id, created_at, updated_at
-              )
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-            `, [
-              schedId,
-              proposalId,
-              finalProjectId,
-              proposal.payment_structure_type || 'FULL_UPFRONT',
-              item.name,
-              item.orderIndex || 1,
-              item.percentageBps,
-              item.amountMinor,
-              proposal.currency,
-              isStartReq,
-              item.billingTrigger || 'UPFRONT_APPROVAL',
-              schedStatus,
-              invoiceIdForSched,
-            ]);
           }
         } else {
           const existingInv = await tx.queryOne('SELECT id FROM invoices WHERE proposal_id = ? LIMIT 1', [proposalId]);

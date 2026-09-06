@@ -95,7 +95,35 @@ export function getSqliteClient(): DatabaseSync {
   sqliteClient.exec('PRAGMA journal_mode = WAL;');
   sqliteClient.exec(CREATE_TABLES_SQL);
 
+  try {
+    const cols = sqliteClient.prepare('PRAGMA table_info(users);').all() as any[];
+    const hasGoogleId = cols.some((c: any) => c.name === 'google_id');
+    if (!hasGoogleId) {
+      sqliteClient.exec('ALTER TABLE users ADD COLUMN google_id TEXT;');
+    }
+    sqliteClient.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);');
+  } catch {}
+
   return sqliteClient;
+}
+
+/**
+ * Ensures PostgreSQL schema has required columns and indexes.
+ */
+async function ensurePostgresSchema(pg: postgres.Sql): Promise<void> {
+  if (!initPromise) {
+    initPromise = (async () => {
+      try {
+        await pg.unsafe(`
+          ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT;
+          CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
+        `);
+      } catch (err: any) {
+        console.error('Error ensuring PostgreSQL schema:', err.message);
+      }
+    })();
+  }
+  await initPromise;
 }
 
 /**
@@ -125,6 +153,7 @@ export async function query<T = any>(sql: string, params: any[] = []): Promise<T
 
   if (isPostgresConfigured()) {
     const pg = getPgClient();
+    await ensurePostgresSchema(pg);
     const { text, values } = formatPgQuery(sql, params);
     const rows = await pg.unsafe(text, values);
     return Array.from(rows).map((r) => ({ ...r })) as T[];
@@ -144,6 +173,7 @@ export async function queryOne<T = any>(sql: string, params: any[] = []): Promis
 
   if (isPostgresConfigured()) {
     const pg = getPgClient();
+    await ensurePostgresSchema(pg);
     const { text, values } = formatPgQuery(sql, params);
     const rows = await pg.unsafe(text, values);
     if (!rows || rows.length === 0) {
@@ -169,6 +199,7 @@ export async function execute(
 
   if (isPostgresConfigured()) {
     const pg = getPgClient();
+    await ensurePostgresSchema(pg);
     const { text, values } = formatPgQuery(sql, params);
     const result = await pg.unsafe(text, values);
     return { changes: result.count || 0 };
@@ -186,6 +217,7 @@ export async function execute(
 export async function transaction<T>(fn: (tx: TransactionContext) => Promise<T>): Promise<T> {
   if (isPostgresConfigured()) {
     const pg = getPgClient();
+    await ensurePostgresSchema(pg);
     const result = await pg.begin(async (txSql: any) => {
       const txContext: TransactionContext = {
         rawTx: txSql,

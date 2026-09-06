@@ -19,6 +19,15 @@ db.exec('PRAGMA journal_mode = WAL;');
 // Initialize schema
 db.exec(CREATE_TABLES_SQL);
 
+try {
+  const cols = db.prepare('PRAGMA table_info(users);').all() as any[];
+  const hasGoogleId = cols.some((c: any) => c.name === 'google_id');
+  if (!hasGoogleId) {
+    db.exec('ALTER TABLE users ADD COLUMN google_id TEXT;');
+  }
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);');
+} catch {}
+
 console.log('🌱 Starting CodeBridge database seeding [DEMO DATA]...');
 
 const passwordHash = bcrypt.hashSync('CodeBridge@2025!', 10);

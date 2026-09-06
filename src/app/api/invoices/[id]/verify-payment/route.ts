@@ -83,7 +83,9 @@ export async function POST(
     }
 
     // Prevent overpayment
-    const remainingUnpaid = invoice.amount_minor - invoice.amount_paid_minor;
+    const cleanInvoiceAmountMinor = Number(invoice.amount_minor);
+    const cleanInvoiceAmountPaidMinor = Number(invoice.amount_paid_minor || 0);
+    const remainingUnpaid = cleanInvoiceAmountMinor - cleanInvoiceAmountPaidMinor;
     if (cleanAmountMinor > remainingUnpaid) {
       return NextResponse.json({
         error: `Payment amount (${cleanAmountMinor}) exceeds remaining unpaid balance (${remainingUnpaid}) of invoice.`,
@@ -142,8 +144,8 @@ export async function POST(
       ]);
 
       // 2. Update invoice amount_paid_minor and status
-      const updatedAmountPaid = invoice.amount_paid_minor + cleanAmountMinor;
-      newInvoiceStatus = updatedAmountPaid >= invoice.amount_minor ? 'PAID' : 'PARTIALLY_PAID';
+      const updatedAmountPaid = cleanInvoiceAmountPaidMinor + cleanAmountMinor;
+      newInvoiceStatus = updatedAmountPaid >= cleanInvoiceAmountMinor ? 'PAID' : 'PARTIALLY_PAID';
       const paidAtTimestamp = newInvoiceStatus === 'PAID' ? now : null;
 
       await tx.execute(`
@@ -164,9 +166,11 @@ export async function POST(
       }
 
       // 4. Update project total_paid_minor and payment_status
-      const updatedProjectPaid = (project.total_paid_minor || 0) + cleanAmountMinor;
+      const cleanProjectTotalPaidMinor = Number(project.total_paid_minor || 0);
+      const cleanProjectBudgetMinor = Number(project.budget_minor);
+      const updatedProjectPaid = cleanProjectTotalPaidMinor + cleanAmountMinor;
       const updatedProjectPaymentStatus =
-        updatedProjectPaid >= project.budget_minor
+        updatedProjectPaid >= cleanProjectBudgetMinor
           ? 'PAID'
           : updatedProjectPaid > 0
           ? 'PARTIALLY_PAID'
@@ -189,7 +193,7 @@ export async function POST(
 
           if (structureType === 'FULL_UPFRONT') {
             // Full upfront requires 100% of project budget verified
-            if (updatedProjectPaid >= project.budget_minor) {
+            if (updatedProjectPaid >= cleanProjectBudgetMinor) {
               isStartConditionMet = true;
             }
           } else {
@@ -199,7 +203,7 @@ export async function POST(
               WHERE proposal_id = ? AND is_required_to_start = 1 AND status != 'PAID'
             `, [invoice.proposal_id]);
 
-            if (requiredUnpaid && requiredUnpaid.count === 0) {
+            if (requiredUnpaid && Number(requiredUnpaid.count) === 0) {
               isStartConditionMet = true;
             }
           }
@@ -221,7 +225,7 @@ export async function POST(
       // 6. Record Immutable Commission Event (Phase 2B -> Phase 2D Handoff)
       if (invoice.representative_id) {
         const rep = await tx.queryOne<any>('SELECT commission_rate_bps FROM representatives WHERE id = ?', [invoice.representative_id]);
-        const rateBpsSnapshot = rep?.commission_rate_bps ?? 2000; // Snapshots rate at time of payment
+        const rateBpsSnapshot = Number(rep?.commission_rate_bps ?? 2000); // Snapshots rate at time of payment
         const calculatedCommissionMinor = Math.floor((cleanAmountMinor * rateBpsSnapshot) / 10000);
         const idempotencyKey = `COMMISSION_PAYMENT_${paymentId}`;
 
