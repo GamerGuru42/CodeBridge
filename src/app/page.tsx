@@ -209,27 +209,48 @@ export default function HomePage() {
                     style={{ objectFit: 'cover' }}
                   />
 
-                  {/* Floating Flag Badge (Nigeria & Kenya) */}
+                  {/* Floating Flag Badge (Nigeria & Kenya) - Repositioned cleanly to bottom-left */}
                   <div style={{
                     position: 'absolute',
-                    bottom: '20px',
-                    right: '20px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(8px)',
+                    bottom: '18px',
+                    left: '20px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                    backdropFilter: 'blur(10px)',
                     padding: '8px 16px',
                     borderRadius: '9999px',
-                    boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+                    boxShadow: '0 12px 28px -4px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.06)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
-                    zIndex: 2,
+                    zIndex: 3,
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '18px' }}>
-                      <span title="Nigeria">🇳🇬</span>
-                      <span title="Kenya">🇰🇪</span>
+                    {/* High-fidelity circular flag badges (prevents Windows OS from displaying ugly text 'NG KE') */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      {/* Nigeria Flag */}
+                      <svg width="22" height="22" viewBox="0 0 32 32" style={{ borderRadius: '50%', boxShadow: '0 1px 3px rgba(0,0,0,0.18)', flexShrink: 0 }} aria-label="Nigeria Flag">
+                        <rect width="10.67" height="32" x="0" fill="#008751" />
+                        <rect width="10.67" height="32" x="10.67" fill="#FFFFFF" />
+                        <rect width="10.67" height="32" x="21.33" fill="#008751" />
+                      </svg>
+                      {/* Kenya Flag */}
+                      <svg width="22" height="22" viewBox="0 0 32 32" style={{ borderRadius: '50%', boxShadow: '0 1px 3px rgba(0,0,0,0.18)', flexShrink: 0 }} aria-label="Kenya Flag">
+                        <rect width="32" height="9" y="0" fill="#000000" />
+                        <rect width="32" height="2.5" y="9" fill="#FFFFFF" />
+                        <rect width="32" height="9" y="11.5" fill="#BB0000" />
+                        <rect width="32" height="2.5" y="20.5" fill="#FFFFFF" />
+                        <rect width="32" height="9" y="23" fill="#006600" />
+                        <ellipse cx="16" cy="16" rx="3.5" ry="7" fill="#BB0000" stroke="#FFFFFF" strokeWidth="0.8" />
+                        <ellipse cx="16" cy="16" rx="1" ry="5.5" fill="#000000" />
+                      </svg>
                     </div>
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#0B1B3D', whiteSpace: 'nowrap' }}>
-                      Serving businesses<br /><span style={{ fontWeight: 500, color: '#475569' }}>in Nigeria &amp; Kenya</span>
+
+                    <div style={{ lineHeight: 1.25 }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#0B1B3D', whiteSpace: 'nowrap' }}>
+                        Serving businesses
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 500, color: '#64748B', whiteSpace: 'nowrap' }}>
+                        in Nigeria &amp; Kenya
+                      </div>
                     </div>
                   </div>
                 </div>
