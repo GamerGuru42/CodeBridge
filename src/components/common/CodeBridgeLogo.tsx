@@ -19,134 +19,150 @@ export default function CodeBridgeLogo({
   href = '/',
   className = '',
 }: CodeBridgeLogoProps) {
-  // Dimension scales
-  const sizeMap: Record<string, { iconWidth: number; iconHeight: number; titleSize: number; subtitleSize: number }> = {
-    sm: { iconWidth: 32, iconHeight: 24, titleSize: 17, subtitleSize: 10 },
-    md: { iconWidth: 42, iconHeight: 31, titleSize: 22, subtitleSize: 12 },
-    lg: { iconWidth: 54, iconHeight: 40, titleSize: 28, subtitleSize: 14 },
-    xl: { iconWidth: 72, iconHeight: 53, titleSize: 36, subtitleSize: 17 },
+  const sizeMap: Record<string, { iconSize: number; titleSize: number; subtitleSize: number }> = {
+    sm: { iconSize: 30, titleSize: 17, subtitleSize: 9 },
+    md: { iconSize: 40, titleSize: 22, subtitleSize: 11 },
+    lg: { iconSize: 52, titleSize: 28, subtitleSize: 14 },
+    xl: { iconSize: 72, titleSize: 36, subtitleSize: 17 },
   };
 
   const currentScale = typeof size === 'number'
-    ? { iconWidth: size, iconHeight: Math.round(size * 0.74), titleSize: Math.round(size * 0.52), subtitleSize: Math.round(size * 0.28) }
+    ? { iconSize: size, titleSize: Math.round(size * 0.55), subtitleSize: Math.round(size * 0.28) }
     : sizeMap[size] || sizeMap.md;
 
   const isLightText = variant === 'light-text';
   const textColor = isLightText ? '#FFFFFF' : '#0B1B3D';
-  const tagColor = isLightText ? '#94A3B8' : '#475569';
+  const tagColor = isLightText ? '#94A3B8' : '#6B7280';
 
-  // Unique gradient IDs to prevent DOM conflicts when rendered multiple times
+  // Unique gradient IDs
   const uniqueId = React.useId().replace(/[:]/g, '');
-  const gradDarkBlue = `cb-grad-dark-${uniqueId}`;
-  const gradCyan = `cb-grad-cyan-${uniqueId}`;
-  const gradMidBlue = `cb-grad-mid-${uniqueId}`;
+  const gradNavy = `cb-navy-${uniqueId}`;
+  const gradLightBlue = `cb-light-${uniqueId}`;
+  const gradMidBlue = `cb-mid-${uniqueId}`;
+
+  /*
+   * The CodeBridge monogram is a rounded-rectangle "CB" mark:
+   *
+   * ┌─────────────────┐
+   * │  C (dark navy)   B upper (light cyan)  │
+   * │       ═══white bridge═══               │
+   * │  C (dark navy)   B lower (medium blue) │
+   * └─────────────────┘
+   *
+   * The 'C' occupies the left ~55%, forming a thick rounded-square open on the right.
+   * The 'B' has two separate lobes (upper and lower) on the right side.
+   * A horizontal white bar (the "bridge") cuts through the middle.
+   */
 
   const iconElement = (
     <svg
-      width={currentScale.iconWidth}
-      height={currentScale.iconHeight}
-      viewBox="0 0 120 90"
+      width={currentScale.iconSize}
+      height={currentScale.iconSize}
+      viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={{ display: 'block', flexShrink: 0 }}
       aria-label="CodeBridge Monogram"
     >
       <defs>
-        {/* Deep Navy/Royal Blue Gradient (Left 'C' arc) */}
-        <linearGradient id={gradDarkBlue} x1="0%" y1="100%" x2="40%" y2="0%">
-          <stop offset="0%" stopColor="#082046" />
-          <stop offset="45%" stopColor="#0F3B7A" />
-          <stop offset="100%" stopColor="#1E56B0" />
+        {/* Dark navy gradient for the C shape */}
+        <linearGradient id={gradNavy} x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#062047" />
+          <stop offset="50%" stopColor="#0A3272" />
+          <stop offset="100%" stopColor="#164EA0" />
         </linearGradient>
 
-        {/* Vibrant Azure/Cyan Gradient (Right 'B' outer curves) */}
-        <linearGradient id={gradCyan} x1="30%" y1="10%" x2="100%" y2="85%">
+        {/* Light sky-blue / cyan gradient for upper B lobe */}
+        <linearGradient id={gradLightBlue} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#7DD3FC" />
+          <stop offset="50%" stopColor="#38BDF8" />
+          <stop offset="100%" stopColor="#0EA5E9" />
+        </linearGradient>
+
+        {/* Medium blue gradient for lower B lobe */}
+        <linearGradient id={gradMidBlue} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#38BDF8" />
-          <stop offset="45%" stopColor="#00B4D8" />
+          <stop offset="40%" stopColor="#0EA5E9" />
           <stop offset="100%" stopColor="#0284C7" />
         </linearGradient>
-
-        {/* Mid-Tone Cyan/Blue Facet Gradient */}
-        <linearGradient id={gradMidBlue} x1="20%" y1="20%" x2="80%" y2="90%">
-          <stop offset="0%" stopColor="#7DD3FC" />
-          <stop offset="60%" stopColor="#0EA5E9" />
-          <stop offset="100%" stopColor="#0369A1" />
-        </linearGradient>
-
-        {/* Drop shadow for subtle 3D depth */}
-        <filter id={`cb-shadow-${uniqueId}`} x="-10%" y="-10%" width="130%" height="130%">
-          <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#0F172A" floodOpacity="0.12" />
-        </filter>
       </defs>
 
-      <g filter={`url(#cb-shadow-${uniqueId})`}>
-        {/* Left 'C' Body: Outer thick rounded stadium curve */}
-        <path
-          d="M 50 10 
-             C 24 10, 8 26, 8 45 
-             C 8 64, 24 80, 50 80 
-             L 52 80 
-             C 42 70, 36 58, 36 45 
-             C 36 32, 42 20, 52 10 
-             Z"
-          fill={`url(#${gradDarkBlue})`}
-        />
+      {/*
+        === LAYER 1: The 'C' shape (dark navy) ===
+        A thick U/C shape occupying the left portion.
+        Rounded corners on top-left and bottom-left.
+        Open on the right side where the B lobes connect.
+      */}
+      <path
+        d={`
+          M 22 5
+          C 10 5, 5 12, 5 22
+          L 5 78
+          C 5 88, 10 95, 22 95
+          L 55 95
+          L 55 60
+          L 28 60
+          C 24 60, 22 58, 22 55
+          L 22 45
+          C 22 42, 24 40, 28 40
+          L 55 40
+          L 55 5
+          Z
+        `}
+        fill={`url(#${gradNavy})`}
+      />
 
-        {/* Top-right 'B' Upper Lobe */}
-        <path
-          d="M 48 10 
-             L 74 10 
-             C 88 10, 98 19, 98 32 
-             C 98 42, 91 48, 80 48 
-             L 60 48 
-             C 66 38, 66 22, 58 10 
-             Z"
-          fill={`url(#${gradMidBlue})`}
-        />
+      {/*
+        === LAYER 2: Upper B lobe (light cyan) ===
+        Rounded rectangle on the top-right.
+      */}
+      <path
+        d={`
+          M 55 5
+          L 75 5
+          C 88 5, 95 14, 95 25
+          L 95 30
+          C 95 38, 88 44, 78 44
+          L 55 44
+          L 55 40
+          Z
+        `}
+        fill={`url(#${gradLightBlue})`}
+      />
 
-        {/* Bottom-right 'B' Lower Lobe */}
-        <path
-          d="M 60 48 
-             L 82 48 
-             C 94 48, 102 56, 102 66 
-             C 102 75, 92 80, 76 80 
-             L 50 80 
-             C 58 72, 60 58, 60 48 
-             Z"
-          fill={`url(#${gradCyan})`}
-        />
+      {/*
+        === LAYER 3: Lower B lobe (medium/darker blue) ===
+        Rounded rectangle on the bottom-right.
+      */}
+      <path
+        d={`
+          M 55 56
+          L 55 60
+          L 80 60
+          C 90 60, 95 65, 95 72
+          L 95 78
+          C 95 88, 88 95, 76 95
+          L 55 95
+          L 55 56
+          Z
+        `}
+        fill={`url(#${gradMidBlue})`}
+      />
 
-        {/* Right Forward Loop Extension */}
-        <path
-          d="M 72 10 
-             C 90 10, 104 22, 104 36 
-             C 104 45, 98 50, 90 53 
-             C 100 56, 106 63, 106 70 
-             C 106 78, 96 80, 84 80 
-             L 76 80 
-             C 90 76, 96 68, 94 62 
-             C 92 54, 82 50, 72 50 
-             L 58 50 
-             C 64 42, 64 26, 56 12 
-             L 72 10 
-             Z"
-          fill={`url(#${gradCyan})`}
-          opacity="0.92"
-        />
-
-        {/* Inner Bridge Negative Cutout / Plug Notch */}
-        <path
-          d="M 28 36 
-             L 68 36 
-             C 73 36, 76 40, 76 45 
-             C 76 50, 73 54, 68 54 
-             L 28 54 
-             C 23 54, 20 50, 20 45 
-             C 20 40, 23 36, 28 36 
-             Z"
-          fill="#FFFFFF"
-        />
-      </g>
+      {/*
+        === LAYER 4: White bridge / plug cutout ===
+        A horizontal rounded bar across the center creating
+        the iconic "bridge" negative space.
+      */}
+      <rect
+        x="18"
+        y="40"
+        width="44"
+        height="20"
+        rx="6"
+        ry="6"
+        fill="white"
+      />
     </svg>
   );
 
@@ -156,7 +172,7 @@ export default function CodeBridgeLogo({
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '12px',
+        gap: '10px',
         textDecoration: 'none',
         userSelect: 'none',
       }}
@@ -169,7 +185,7 @@ export default function CodeBridgeLogo({
             style={{
               fontSize: `${currentScale.titleSize}px`,
               fontWeight: 800,
-              letterSpacing: '-0.035em',
+              letterSpacing: '-0.03em',
               color: textColor,
               fontFamily: 'var(--cb-font-sans)',
             }}
@@ -181,7 +197,7 @@ export default function CodeBridgeLogo({
               style={{
                 fontSize: `${currentScale.subtitleSize}px`,
                 fontWeight: 500,
-                letterSpacing: '-0.01em',
+                letterSpacing: '0em',
                 color: tagColor,
                 marginTop: '1px',
                 fontFamily: 'var(--cb-font-sans)',
