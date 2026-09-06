@@ -324,43 +324,27 @@ export default function DashboardLayout({
       <div className="cb-dashboard-main">
         {/* Topbar */}
         <header className="cb-topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              onClick={() => setIsProfileModalOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                transition: 'background-color 0.15s ease',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              title="Open Profile Settings"
-            >
-              <div style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '7px',
-                background: 'linear-gradient(135deg, #0284C7 0%, #00B4D8 100%)',
-                color: '#FFFFFF',
-                fontSize: '11px',
-                fontWeight: 800,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                {initials}
-              </div>
-              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--cb-text-primary)' }}>
-                {user?.firstName} {user?.lastName}
-              </span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              color: 'var(--cb-text-secondary)',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}>
+              {role?.replace(/_/g, ' ')} CONSOLE
+            </span>
             {user?.country?.name && (
-              <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
-                &bull; {user.country.name} ({user.country.currency || ''})
+              <span style={{
+                fontSize: '11px',
+                color: 'var(--cb-text-muted)',
+                backgroundColor: 'var(--cb-bg-subtle)',
+                border: '1px solid var(--cb-border-subtle)',
+                padding: '2px 8px',
+                borderRadius: '6px',
+                fontWeight: 600,
+              }}>
+                {user.country.name} ({user.country.currency || ''})
               </span>
             )}
           </div>
