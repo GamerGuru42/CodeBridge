@@ -87,7 +87,7 @@ export default function HomePage() {
                   maxWidth: '520px',
                   marginBottom: '32px',
                 }}>
-                  CodeBridge connects you with vetted developers and tech talent across Nigeria and Kenya, delivering high-quality solutions, on time, and within budget.
+                  CodeBridge designs, develops, and deploys high-performance digital products and custom business software for companies across Nigeria and Kenya &mdash; delivered on time and within budget.
                 </p>
 
                 {/* Dual Pill CTA Buttons */}
@@ -170,7 +170,7 @@ export default function HomePage() {
                     whiteSpace: 'nowrap',
                     textShadow: '0 1px 2px rgba(255,255,255,0.8)',
                   }}>
-                    Great talent builds great products
+                    Great engineering builds great products
                   </span>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2L14.5 8.5L21 9.5L16 14.5L17.5 21L12 17.5L6.5 21L8 14.5L3 9.5L9.5 8.5L12 2Z" stroke="#00B4D8" strokeWidth="2" fill="rgba(0,180,216,0.15)"/>
@@ -359,7 +359,7 @@ export default function HomePage() {
                   marginBottom: '32px',
                   maxWidth: '440px',
                 }}>
-                  From simple websites to complex enterprise systems, we provide the right talent for your business needs.
+                  From high-converting websites to complex enterprise platforms, we engineer tailored software for your business needs.
                 </p>
 
                 <Link

@@ -8,7 +8,7 @@ export default function Footer() {
     <footer style={{
       backgroundColor: '#070F26',
       borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-      paddingTop: '60px',
+      paddingTop: '64px',
       paddingBottom: '40px',
       marginTop: 'auto',
       color: '#FFFFFF',
@@ -16,17 +16,17 @@ export default function Footer() {
       <div className="cb-container">
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
           gap: '40px',
-          marginBottom: '48px'
+          marginBottom: '52px'
         }}>
-          {/* Col 1: Brand & Scope */}
+          {/* Col 1: Brand & Regional Focus */}
           <div>
             <div style={{ marginBottom: '18px' }}>
-              <CodeBridgeLogo size="md" variant="light-text" href="/" />
+              <CodeBridgeLogo size="md" variant="light-text" href="/" showTagline={true} />
             </div>
-            <p style={{ fontSize: '14px', color: '#94A3B8', lineHeight: 1.6, marginBottom: '20px' }}>
-              International digital products &amp; technology services platform. Connecting African talent with global opportunities.
+            <p style={{ fontSize: '14px', color: '#94A3B8', lineHeight: 1.65, marginBottom: '20px' }}>
+              Digital products &amp; custom technology solutions engineered for market impact. Delivering web platforms, e-commerce, and business management systems for enterprises across Nigeria and Kenya.
             </p>
             <div style={{
               display: 'inline-flex',
@@ -40,21 +40,27 @@ export default function Footer() {
               color: '#CBD5E1',
             }}>
               <Globe2 size={14} color="#00B4D8" />
-              Serving businesses across Nigeria and Kenya
+              Serving businesses across Nigeria &amp; Kenya
             </div>
           </div>
 
-          {/* Col 2: Digital Products */}
+          {/* Col 2: Real Solutions Catalog */}
           <div>
             <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '18px' }}>
               Solutions
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px', color: '#94A3B8' }}>
-              <li><Link href="/services#web-development" style={{ transition: 'color 0.15s' }}>Web Development</Link></li>
-              <li><Link href="/services#mobile-development" style={{ transition: 'color 0.15s' }}>Mobile App Development</Link></li>
-              <li><Link href="/services#ui-ux-design" style={{ transition: 'color 0.15s' }}>UI/UX Design</Link></li>
-              <li><Link href="/services#staff-augmentation" style={{ transition: 'color 0.15s' }}>Staff Augmentation</Link></li>
-              <li><Link href="/services" style={{ color: '#38BDF8' }}>Explore All Solutions &rarr;</Link></li>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '11px', fontSize: '14px', color: '#94A3B8' }}>
+              <li><Link href="/services#business-websites" style={{ transition: 'color 0.15s' }}>Business Websites</Link></li>
+              <li><Link href="/services#ecommerce" style={{ transition: 'color 0.15s' }}>E-Commerce &amp; Storefronts</Link></li>
+              <li><Link href="/services#web-applications" style={{ transition: 'color 0.15s' }}>Custom Web Applications</Link></li>
+              <li><Link href="/services#business-management-systems" style={{ transition: 'color 0.15s' }}>Business Management Systems</Link></li>
+              <li><Link href="/services#booking-systems" style={{ transition: 'color 0.15s' }}>Booking &amp; Reservation Engines</Link></li>
+              <li><Link href="/services#hosting-domain-assistance" style={{ transition: 'color 0.15s' }}>Cloud Hosting &amp; Architecture</Link></li>
+              <li style={{ marginTop: '4px' }}>
+                <Link href="/services" style={{ color: '#38BDF8', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  Explore All 14 Solutions &rarr;
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -63,35 +69,93 @@ export default function Footer() {
             <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '18px' }}>
               Platform
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px', color: '#94A3B8' }}>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '11px', fontSize: '14px', color: '#94A3B8' }}>
               <li><Link href="/how-it-works">How It Works</Link></li>
               <li><Link href="/how-it-works#representatives">Sales Representatives (20% Comm.)</Link></li>
               <li><Link href="/about">About CodeBridge</Link></li>
               <li><Link href="/contact">Contact Us</Link></li>
               <li><Link href="/request-project">Request Project Scope</Link></li>
+              <li><Link href="/about#faq">Frequently Asked Questions</Link></li>
             </ul>
           </div>
 
-          {/* Col 4: Portal Access */}
+          {/* Col 4: Workspaces & Portals Explained */}
           <div>
             <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '18px' }}>
-              Portals
+              Workspaces &amp; Portals
             </h4>
-            <p style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.5, marginBottom: '16px' }}>
-              Client management, milestone invoices, and representative workspaces.
+            <p style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.55, marginBottom: '16px' }}>
+              Dedicated self-service workspaces for our clients and authorized sales partners:
             </p>
+
+            {/* Micro portal explanations */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+              <div style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                fontSize: '12px',
+                color: '#CBD5E1',
+              }}>
+                <strong style={{ color: '#FFFFFF', display: 'block', marginBottom: '2px' }}>Client Portal</strong>
+                Sprint milestones, deliverables &amp; invoice payments
+              </div>
+
+              <div style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                fontSize: '12px',
+                color: '#CBD5E1',
+              }}>
+                <strong style={{ color: '#FFFFFF', display: 'block', marginBottom: '2px' }}>Representative Workspace</strong>
+                Client lead registration &amp; 20% commission tracking
+              </div>
+            </div>
+
+            {/* High-contrast action buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <Link
                 href="/login"
-                className="cb-btn cb-btn-outline-pill cb-btn-sm"
-                style={{ width: '100%', justifyContent: 'center', backgroundColor: 'transparent', color: '#FFFFFF', borderColor: 'rgba(255, 255, 255, 0.2)' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  padding: '9px 16px',
+                  borderRadius: '9999px',
+                  backgroundColor: '#1E293B',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  transition: 'all 0.15s ease',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+                }}
               >
-                Sign In to Portal
+                Sign In to Workspace &rarr;
               </Link>
               <Link
                 href="/register"
-                className="cb-btn cb-btn-navy cb-btn-sm"
-                style={{ width: '100%', justifyContent: 'center', backgroundColor: '#00B4D8', color: '#FFFFFF', borderColor: '#00B4D8' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  padding: '9px 16px',
+                  borderRadius: '9999px',
+                  backgroundColor: '#00B4D8',
+                  color: '#FFFFFF',
+                  border: '1px solid #00B4D8',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  transition: 'all 0.15s ease',
+                  boxShadow: '0 2px 10px rgba(0, 180, 216, 0.3)',
+                }}
               >
                 Get Started
               </Link>
@@ -114,11 +178,14 @@ export default function Footer() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ShieldCheck size={16} color="#10B981" />
             <span>
-              A platform operated by <strong>MarketBridge NG LTD</strong>. All rights reserved.
+              A platform operated by <strong>MarketBridge NG LTD</strong> (RC 1894210). All rights reserved.
             </span>
           </div>
-          <div>
-            Serving businesses in Nigeria &amp; Kenya (NGN &amp; KES).
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <span>Serving businesses in Nigeria (NGN) &amp; Kenya (KES).</span>
+            <Link href="/contact" style={{ color: '#94A3B8', textDecoration: 'underline' }}>
+              support@codebridge.com
+            </Link>
           </div>
         </div>
       </div>

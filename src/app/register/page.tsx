@@ -106,7 +106,7 @@ export default function RegisterPage() {
           Create Your Account
         </h1>
         <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '24px', lineHeight: 1.5 }}>
-          Join CodeBridge and be part of a growing community of talent and opportunities.
+          Join CodeBridge to launch custom software projects or partner as an authorized regional sales representative.
         </p>
 
         {/* Role Switcher Tabs */}
@@ -189,7 +189,7 @@ export default function RegisterPage() {
               Sales Representative
             </div>
             <span style={{ fontSize: '11px', color: accountType === 'REPRESENTATIVE' ? 'rgba(255, 255, 255, 0.9)' : '#64748B', lineHeight: 1.3 }}>
-              Introduce talent, earn 20% commission
+              Introduce client projects, earn 20% commission
             </span>
           </button>
         </div>

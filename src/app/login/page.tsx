@@ -421,7 +421,7 @@ export default function LoginPage() {
               color: '#CBD5E1',
               fontWeight: 400,
             }}>
-              Connecting talent with opportunity across Africa.
+              Ideas to Impact &mdash; High-performance digital products and custom business software engineered for companies across Africa.
             </p>
 
             <div style={{

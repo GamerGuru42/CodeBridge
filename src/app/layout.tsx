@@ -5,17 +5,17 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'CodeBridge — Ideas to Impact | Build Your Project. Bridge to Africa.',
   description:
-    'CodeBridge connects you with vetted developers and tech talent across Nigeria and Kenya, delivering high-quality solutions, on time, and within budget.',
+    'CodeBridge designs, develops, and deploys high-performance digital products and custom business software for companies across Nigeria and Kenya — delivered on time and within budget.',
   keywords: [
     'CodeBridge',
     'Ideas to Impact',
-    'African tech talent',
-    'vetted developers Nigeria',
-    'vetted developers Kenya',
-    'web development',
-    'mobile app development',
-    'UI UX design',
-    'staff augmentation',
+    'Digital products Nigeria',
+    'Digital products Kenya',
+    'Custom software development Africa',
+    'Web application development',
+    'Business management systems',
+    'E-commerce platforms',
+    'Milestone escrow software',
     'Nigeria',
     'Kenya'
   ],

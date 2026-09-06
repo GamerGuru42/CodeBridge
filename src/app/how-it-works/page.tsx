@@ -151,7 +151,7 @@ export default function HowItWorksPage() {
               maxWidth: '700px',
               margin: '0 auto 28px',
             }}>
-              We connect ambitious enterprises with vetted African engineering talent through a disciplined, transparent delivery framework with zero commercial ambiguity.
+              We engineer high-impact digital products and custom software for ambitious enterprises through a disciplined, transparent delivery framework with zero commercial ambiguity.
             </p>
 
             {/* Pillar badges */}
