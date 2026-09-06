@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import ThemeToggle from '@/components/common/ThemeToggle';
+import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 import {
   Layers,
   LayoutDashboard,
@@ -146,29 +147,8 @@ export default function DashboardLayout({
     <div className="cb-dashboard-layout">
       {/* Sidebar */}
       <aside className="cb-sidebar">
-        <div className="cb-sidebar-header">
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '6px',
-              backgroundColor: 'var(--cb-blue-600)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFFFFF'
-            }}>
-              <Layers size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-                CODEBRIDGE
-              </div>
-              <div style={{ fontSize: '10px', color: 'var(--cb-text-muted)', fontWeight: 600 }}>
-                BY MARKETBRIDGE NG
-              </div>
-            </div>
-          </Link>
+        <div className="cb-sidebar-header" style={{ padding: '18px 20px' }}>
+          <CodeBridgeLogo size="md" variant="light-text" href="/" showTagline={true} />
         </div>
 
         {/* User Profile Hub (Positioned UP at Top of Sidebar) */}
@@ -408,27 +388,6 @@ export default function DashboardLayout({
             >
               <Settings size={13} />
               Profile Settings
-            </button>
-
-            <button
-              onClick={handleLogout}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.25)',
-                color: '#F87171',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <LogOut size={13} />
-              Sign Out
             </button>
           </div>
         </header>

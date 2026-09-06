@@ -51,43 +51,10 @@ export default function RepClientsPage() {
     <div>
       {/* Header */}
       <div style={{ marginBottom: '28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-          <button 
-            onClick={() => window.history.back()}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              color: '#94A3B8',
-              fontSize: '13px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-              e.currentTarget.style.color = '#FFFFFF';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-              e.currentTarget.style.color = '#94A3B8';
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            Back to Dashboard
-          </button>
-        </div>
-
         <div className="cb-badge cb-badge-blue" style={{ marginBottom: '8px' }}>
           <Briefcase size={13} /> My Clients & Projects
         </div>
-        <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--cb-text-primary)', letterSpacing: '-0.02em' }}>
           Referred Clients & Active Projects
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
@@ -99,7 +66,7 @@ export default function RepClientsPage() {
       <div className="cb-card" style={{ padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               Active Projects
             </h3>
           </div>
@@ -146,7 +113,7 @@ export default function RepClientsPage() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{p.title}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{p.title}</div>
                       </td>
                       <td>
                         <span className={`cb-badge ${statusBadges[p.status] || 'cb-badge-neutral'}`}>
@@ -159,7 +126,7 @@ export default function RepClientsPage() {
                         </span>
                       </td>
                       <td>
-                        <span style={{ fontWeight: 600, color: '#FFFFFF' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>
                           {((p.budget_minor || 0) / 100).toLocaleString()} {p.currency || currency}
                         </span>
                       </td>
