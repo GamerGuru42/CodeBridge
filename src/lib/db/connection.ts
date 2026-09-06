@@ -106,7 +106,8 @@ export function getSqliteClient(): DatabaseSync {
     // Phase 3 migrations for SQLite
     const repCols = sqliteClient.prepare('PRAGMA table_info(representatives);').all() as any[];
     if (!repCols.some((c: any) => c.name === 'referral_code')) {
-      sqliteClient.exec('ALTER TABLE representatives ADD COLUMN referral_code TEXT UNIQUE;');
+      sqliteClient.exec('ALTER TABLE representatives ADD COLUMN referral_code TEXT;');
+      sqliteClient.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_rep_referral_code ON representatives(referral_code);');
     }
 
     const leadCols = sqliteClient.prepare('PRAGMA table_info(leads);').all() as any[];

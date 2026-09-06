@@ -13,7 +13,7 @@ export async function GET() {
     SELECT u.id, u.email, u.role, u.status, u.email_verified,
            p.first_name, p.last_name, p.phone, p.country_id, p.timezone,
            c.code as country_code, c.name as country_name, c.currency as country_currency,
-           r.approval_status as rep_status, r.commission_rate_bps
+           r.approval_status as rep_status, r.commission_rate_bps, r.referral_code
     FROM users u
     LEFT JOIN user_profiles p ON u.id = p.user_id
     LEFT JOIN countries c ON p.country_id = c.id
@@ -45,6 +45,7 @@ export async function GET() {
       representative: user.role === 'REPRESENTATIVE' ? {
         status: user.rep_status,
         commissionRateBps: user.commission_rate_bps,
+        referralCode: user.referral_code,
       } : null,
     },
   });

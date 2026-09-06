@@ -4,6 +4,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
+import ThemeToggle from '@/components/common/ThemeToggle';
 import {
   Layers,
   LayoutDashboard,
@@ -31,6 +33,7 @@ export default function DashboardLayout({
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -137,6 +140,8 @@ export default function DashboardLayout({
     return 'cb-badge-neutral';
   };
 
+  const initials = `${(user?.firstName || '').charAt(0)}${(user?.lastName || '').charAt(0)}`.toUpperCase() || 'CB';
+
   return (
     <div className="cb-dashboard-layout">
       {/* Sidebar */}
@@ -166,20 +171,141 @@ export default function DashboardLayout({
           </Link>
         </div>
 
-        {/* User Role Card */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--cb-border-subtle)', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-          <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
-            Active Access Tier
+        {/* User Profile Hub (Positioned UP at Top of Sidebar) */}
+        <div style={{
+          padding: '16px 14px',
+          borderBottom: '1px solid var(--cb-border-subtle)',
+          backgroundColor: 'rgba(255, 255, 255, 0.02)',
+        }}>
+          <div
+            onClick={() => setIsProfileModalOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'pointer',
+              padding: '6px 8px',
+              borderRadius: '10px',
+              transition: 'background-color 0.15s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            title="Open Profile Settings"
+          >
+            {/* Avatar Circle with Online Dot */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <div style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #0284C7 0%, #00B4D8 100%)',
+                color: '#FFFFFF',
+                fontSize: '14px',
+                fontWeight: 800,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0, 180, 216, 0.3)',
+              }}>
+                {initials}
+              </div>
+              <div style={{
+                position: 'absolute',
+                bottom: '-2px',
+                right: '-2px',
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                backgroundColor: '#10B981',
+                border: '2px solid #070F26',
+              }} />
+            </div>
+
+            {/* Name, Email */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#FFFFFF',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}>
+                {user?.firstName} {user?.lastName}
+              </div>
+              <div style={{
+                fontSize: '11px',
+                color: 'var(--cb-text-muted)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}>
+                {user?.email}
+              </div>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className={`cb-badge ${getRoleBadgeClass()}`}>
+
+          {/* Access Tier & Country Badges */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', paddingLeft: '8px' }}>
+            <span className={`cb-badge ${getRoleBadgeClass()}`} style={{ fontSize: '10px', padding: '2px 7px' }}>
               {role?.replace('_', ' ')}
             </span>
             {user?.country?.code && (
-              <span className="cb-badge cb-badge-neutral" style={{ fontSize: '11px' }}>
+              <span className="cb-badge cb-badge-neutral" style={{ fontSize: '10px', padding: '2px 7px' }}>
                 {user.country.code}
               </span>
             )}
+          </div>
+
+          {/* Quick Actions: Profile Settings & Sign Out */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
+            <button
+              type="button"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="cb-btn cb-btn-secondary cb-btn-sm"
+              style={{
+                fontSize: '11px',
+                padding: '6px 8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '5px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+              }}
+            >
+              <Settings size={13} />
+              Settings
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="cb-btn cb-btn-outline cb-btn-sm"
+              style={{
+                fontSize: '11px',
+                padding: '6px 8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '5px',
+                borderRadius: '6px',
+                color: '#F87171',
+                borderColor: 'rgba(239, 68, 68, 0.25)',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.25)';
+              }}
+            >
+              <LogOut size={13} />
+              Sign Out
+            </button>
           </div>
         </div>
 
@@ -212,25 +338,6 @@ export default function DashboardLayout({
             );
           })}
         </nav>
-
-        {/* User Card & Logout Footer */}
-        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--cb-border-subtle)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-          <div style={{ marginBottom: '12px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#FFFFFF' }}>
-              {user?.firstName} {user?.lastName}
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {user?.email}
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="cb-btn cb-btn-outline cb-btn-sm"
-            style={{ width: '100%', gap: '6px' }}
-          >
-            <LogOut size={14} /> Sign Out
-          </button>
-        </div>
       </aside>
 
       {/* Main Dashboard Area */}
@@ -238,9 +345,39 @@ export default function DashboardLayout({
         {/* Topbar */}
         <header className="cb-topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#FFFFFF' }}>
-              {user?.firstName} {user?.lastName}
-            </span>
+            <div
+              onClick={() => setIsProfileModalOpen(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                transition: 'background-color 0.15s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              title="Open Profile Settings"
+            >
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '7px',
+                background: 'linear-gradient(135deg, #0284C7 0%, #00B4D8 100%)',
+                color: '#FFFFFF',
+                fontSize: '11px',
+                fontWeight: 800,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                {initials}
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--cb-text-primary)' }}>
+                {user?.firstName} {user?.lastName}
+              </span>
+            </div>
             {user?.country?.name && (
               <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
                 &bull; {user.country.name} ({user.country.currency || ''})
@@ -248,14 +385,38 @@ export default function DashboardLayout({
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <ThemeToggle />
+
+            <button
+              type="button"
+              onClick={() => setIsProfileModalOpen(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                backgroundColor: 'var(--cb-bg-subtle)',
+                border: '1px solid var(--cb-border-subtle)',
+                color: 'var(--cb-text-primary)',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <Settings size={13} />
+              Profile Settings
+            </button>
+
             <button
               onClick={handleLogout}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '6px 14px',
+                padding: '6px 12px',
                 borderRadius: '6px',
                 backgroundColor: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.25)',
@@ -296,6 +457,13 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      <ProfileSettingsModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        user={user}
+        onProfileUpdated={(updated) => setUser(updated)}
+      />
     </div>
   );
 }
