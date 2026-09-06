@@ -7,7 +7,7 @@ import {
   Code,
   Smartphone,
   Layout,
-  Users,
+  Layers,
   ShieldCheck,
   Zap,
   Lock,
@@ -467,7 +467,7 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                {/* Card 4: Staff Augmentation */}
+                {/* Card 4: Business Systems & BMS */}
                 <div style={{
                   padding: '24px',
                   borderRadius: '16px',
@@ -487,13 +487,13 @@ export default function HomePage() {
                     justifyContent: 'center',
                     marginBottom: '16px',
                   }}>
-                    <Users size={20} />
+                    <Layers size={20} />
                   </div>
                   <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D', marginBottom: '8px' }}>
-                    Staff Augmentation
+                    Business Systems &amp; BMS
                   </h3>
                   <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#64748B' }}>
-                    Scale your team with skilled professionals.
+                    Centralized portals, inventory &amp; operations software.
                   </p>
                 </div>
               </div>
