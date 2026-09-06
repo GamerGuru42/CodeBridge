@@ -44,7 +44,7 @@ export default function Navbar() {
       <div className="cb-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '74px' }}>
         {/* Brand Lockup with Official Logo & Return Button */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+          <CodeBridgeLogo size="md" variant="auto" href="/" />
 
         </div>
 
@@ -108,7 +108,7 @@ export default function Navbar() {
           style={{
             background: 'none',
             border: 'none',
-            color: '#0F172A',
+            color: 'var(--cb-text-primary)',
             cursor: 'pointer',
             padding: '8px',
             borderRadius: '6px',

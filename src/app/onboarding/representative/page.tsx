@@ -42,7 +42,7 @@ export default function RepresentativeOnboardingPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F8FAFC',
+      backgroundColor: 'var(--cb-bg-page)',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
@@ -63,9 +63,9 @@ export default function RepresentativeOnboardingPage() {
             gap: '6px',
             padding: '8px 16px',
             borderRadius: '6px',
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            color: '#64748B',
+            backgroundColor: 'var(--cb-bg-card)',
+            border: '1px solid var(--cb-border-subtle)',
+            color: 'var(--cb-text-secondary)',
             fontSize: '13px',
             fontWeight: 600,
             textDecoration: 'none',
@@ -93,9 +93,9 @@ export default function RepresentativeOnboardingPage() {
             gap: '6px',
             padding: '8px 16px',
             borderRadius: '6px',
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            color: '#64748B',
+            backgroundColor: 'var(--cb-bg-card)',
+            border: '1px solid var(--cb-border-subtle)',
+            color: 'var(--cb-text-secondary)',
             fontSize: '13px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -109,7 +109,7 @@ export default function RepresentativeOnboardingPage() {
       {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '14px', flexWrap: 'wrap' }}>
-          <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+          <CodeBridgeLogo size="md" variant="auto" href="/" />
 
         </div>
         <div style={{
@@ -131,15 +131,16 @@ export default function RepresentativeOnboardingPage() {
 
       <div style={{ width: '100%', maxWidth: '520px' }}>
         <div style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--cb-bg-card)',
           borderRadius: '20px',
           padding: '36px',
-          boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #E2E8F0',
+          boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.08)',
+          border: '1px solid var(--cb-border-subtle)',
         }}>
-          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#0B1B3D', marginBottom: '8px', textAlign: 'center', letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--cb-text-primary)', marginBottom: '8px', textAlign: 'center', letterSpacing: '-0.02em' }}>
             Which country will you operate in?
           </h2>
-          <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '28px', textAlign: 'center', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginBottom: '28px', textAlign: 'center', lineHeight: 1.5 }}>
             Select your primary operating market. This assigns your localized currency, client lead pricing tiers, and direct commission settlement channel.
           </p>
 
@@ -164,7 +165,7 @@ export default function RepresentativeOnboardingPage() {
           <form onSubmit={handleComplete}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
               <div className="cb-form-group">
-                <label className="cb-label" style={{ textAlign: 'left', display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#0B1B3D' }}>Country Name *</label>
+                <label className="cb-label" style={{ textAlign: 'left', display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--cb-text-primary)' }}>Country Name *</label>
                 <input
                   type="text"
                   required
@@ -172,7 +173,7 @@ export default function RepresentativeOnboardingPage() {
                   onChange={(e) => setSelectedCountry(e.target.value)}
                   className="cb-input"
                   placeholder="e.g. United States"
-                  style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '15px' }}
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--cb-border-subtle)', backgroundColor: 'var(--cb-bg-input)', color: 'var(--cb-text-primary)', fontSize: '15px' }}
                 />
               </div>
             </div>
@@ -180,7 +181,7 @@ export default function RepresentativeOnboardingPage() {
             <button
               type="submit"
               disabled={loading}
-              className="cb-btn cb-btn-navy"
+              className="cb-btn cb-btn-cyan"
               style={{
                 width: '100%',
                 padding: '14px',

@@ -56,7 +56,7 @@ export default function RegisterPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F8FAFC',
+      backgroundColor: 'var(--cb-bg-page)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -65,15 +65,16 @@ export default function RegisterPage() {
       <div style={{
         width: '100%',
         maxWidth: '560px',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--cb-bg-card)',
         borderRadius: '20px',
         overflow: 'hidden',
-        boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #E2E8F0',
+        boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.08)',
+        border: '1px solid var(--cb-border-subtle)',
         padding: '40px 36px',
       }}>
         {/* Logo & Return Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-          <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+          <CodeBridgeLogo size="md" variant="auto" href="/" />
           
           <Link 
             href="/"
@@ -83,20 +84,20 @@ export default function RegisterPage() {
               gap: '6px',
               fontSize: '13px',
               fontWeight: 500,
-              color: '#64748B',
+              color: 'var(--cb-text-secondary)',
               textDecoration: 'none',
               padding: '6px 12px',
               borderRadius: '6px',
-              backgroundColor: '#F1F5F9',
+              backgroundColor: 'var(--cb-bg-subtle)',
               transition: 'background-color 0.2s, color 0.2s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#E2E8F0';
-              e.currentTarget.style.color = '#0F172A';
+              e.currentTarget.style.backgroundColor = 'var(--cb-border-subtle)';
+              e.currentTarget.style.color = 'var(--cb-text-primary)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#F1F5F9';
-              e.currentTarget.style.color = '#64748B';
+              e.currentTarget.style.backgroundColor = 'var(--cb-bg-subtle)';
+              e.currentTarget.style.color = 'var(--cb-text-secondary)';
             }}
           >
             <ArrowLeft size={14} />
@@ -108,12 +109,12 @@ export default function RegisterPage() {
           fontSize: '26px',
           fontWeight: 800,
           letterSpacing: '-0.025em',
-          color: '#0B1B3D',
+          color: 'var(--cb-text-primary)',
           marginBottom: '6px',
         }}>
           Create Your Account
         </h1>
-        <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '24px', lineHeight: 1.5 }}>
+        <p style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', marginBottom: '24px', lineHeight: 1.5 }}>
           Join CodeBridge to launch custom software projects or partner as an authorized regional sales representative.
         </p>
 
@@ -131,9 +132,9 @@ export default function RegisterPage() {
             style={{
               padding: '16px 14px',
               borderRadius: '12px',
-              border: accountType === 'CLIENT' ? '2px solid #0B1B3D' : '1px solid #E2E8F0',
-              backgroundColor: accountType === 'CLIENT' ? '#F1F5F9' : '#FFFFFF',
-              color: '#0F172A',
+              border: accountType === 'CLIENT' ? '2px solid #00B4D8' : '1px solid var(--cb-border-subtle)',
+              backgroundColor: accountType === 'CLIENT' ? 'var(--cb-bg-subtle)' : 'var(--cb-bg-card)',
+              color: 'var(--cb-text-primary)',
               cursor: 'pointer',
               textAlign: 'center',
               display: 'flex',
@@ -147,16 +148,16 @@ export default function RegisterPage() {
               width: '32px',
               height: '32px',
               borderRadius: '9999px',
-              backgroundColor: accountType === 'CLIENT' ? '#0B1B3D' : '#E2E8F0',
-              color: accountType === 'CLIENT' ? '#FFFFFF' : '#475569',
+              backgroundColor: accountType === 'CLIENT' ? '#00B4D8' : 'var(--cb-bg-subtle)',
+              color: accountType === 'CLIENT' ? '#FFFFFF' : 'var(--cb-text-secondary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <Briefcase size={16} />
             </div>
-            <div style={{ fontWeight: 700, fontSize: '14px', color: '#0B1B3D' }}>Client Account</div>
-            <span style={{ fontSize: '11px', color: '#64748B', lineHeight: 1.3 }}>
+            <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--cb-text-primary)' }}>Client Account</div>
+            <span style={{ fontSize: '11px', color: 'var(--cb-text-muted)', lineHeight: 1.3 }}>
               Request tech services &amp; track projects
             </span>
           </button>
@@ -168,9 +169,9 @@ export default function RegisterPage() {
             style={{
               padding: '16px 14px',
               borderRadius: '12px',
-              border: accountType === 'REPRESENTATIVE' ? '2px solid #00B4D8' : '1px solid #E2E8F0',
-              backgroundColor: accountType === 'REPRESENTATIVE' ? '#00B4D8' : '#FFFFFF',
-              color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : '#0F172A',
+              border: accountType === 'REPRESENTATIVE' ? '2px solid #00B4D8' : '1px solid var(--cb-border-subtle)',
+              backgroundColor: accountType === 'REPRESENTATIVE' ? '#00B4D8' : 'var(--cb-bg-card)',
+              color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : 'var(--cb-text-primary)',
               cursor: 'pointer',
               textAlign: 'center',
               display: 'flex',
@@ -185,18 +186,18 @@ export default function RegisterPage() {
               width: '32px',
               height: '32px',
               borderRadius: '9999px',
-              backgroundColor: accountType === 'REPRESENTATIVE' ? 'rgba(255, 255, 255, 0.2)' : '#E2E8F0',
-              color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : '#475569',
+              backgroundColor: accountType === 'REPRESENTATIVE' ? 'rgba(255, 255, 255, 0.2)' : 'var(--cb-bg-subtle)',
+              color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : 'var(--cb-text-secondary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <Users size={16} />
             </div>
-            <div style={{ fontWeight: 700, fontSize: '14px', color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : '#0B1B3D' }}>
+            <div style={{ fontWeight: 700, fontSize: '14px', color: accountType === 'REPRESENTATIVE' ? '#FFFFFF' : 'var(--cb-text-primary)' }}>
               Sales Representative
             </div>
-            <span style={{ fontSize: '11px', color: accountType === 'REPRESENTATIVE' ? 'rgba(255, 255, 255, 0.9)' : '#64748B', lineHeight: 1.3 }}>
+            <span style={{ fontSize: '11px', color: accountType === 'REPRESENTATIVE' ? 'rgba(255, 255, 255, 0.9)' : 'var(--cb-text-muted)', lineHeight: 1.3 }}>
               Introduce client projects, earn commission
             </span>
           </button>
@@ -233,14 +234,14 @@ export default function RegisterPage() {
                 padding: '16px 20px',
                 fontSize: '15px',
                 fontWeight: 600,
-                backgroundColor: '#FFFFFF',
-                color: '#1F2937',
+                backgroundColor: 'var(--cb-bg-card)',
+                color: 'var(--cb-text-primary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '12px',
                 boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
-                border: '1px solid #CBD5E1',
+                border: '1px solid var(--cb-border-subtle)',
                 textDecoration: 'none',
                 transition: 'all 0.15s ease',
               }}
@@ -252,19 +253,19 @@ export default function RegisterPage() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
               </svg>
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>Continue with Google</div>
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>Quick and secure registration</div>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>Continue with Google</div>
+                <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)', fontWeight: 500 }}>Quick and secure registration</div>
               </div>
             </a>
 
             <div style={{
               marginTop: '20px',
               padding: '12px 16px',
-              backgroundColor: '#F8FAFC',
+              backgroundColor: 'var(--cb-bg-subtle)',
               borderRadius: '10px',
-              border: '1px solid #E2E8F0',
+              border: '1px solid var(--cb-border-subtle)',
               fontSize: '12px',
-              color: '#64748B',
+              color: 'var(--cb-text-secondary)',
               lineHeight: 1.5,
             }}>
               Instant workspace activation &bull; Global support &bull; Direct monthly commission settlement
@@ -277,7 +278,7 @@ export default function RegisterPage() {
           <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
                   First Name
                 </label>
                 <input
@@ -290,14 +291,16 @@ export default function RegisterPage() {
                     width: '100%',
                     padding: '10px 12px',
                     borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
+                    border: '1px solid var(--cb-border-subtle)',
+                    backgroundColor: 'var(--cb-bg-input)',
+                    color: 'var(--cb-text-primary)',
                     fontSize: '14px',
                     outline: 'none',
                   }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
                   Last Name
                 </label>
                 <input
@@ -310,7 +313,9 @@ export default function RegisterPage() {
                     width: '100%',
                     padding: '10px 12px',
                     borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
+                    border: '1px solid var(--cb-border-subtle)',
+                    backgroundColor: 'var(--cb-bg-input)',
+                    color: 'var(--cb-text-primary)',
                     fontSize: '14px',
                     outline: 'none',
                   }}
@@ -319,11 +324,11 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
                 Business / Company Name
               </label>
               <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--cb-text-muted)' }}>
                   <Building size={16} />
                 </div>
                 <input
@@ -336,7 +341,9 @@ export default function RegisterPage() {
                     width: '100%',
                     padding: '10px 12px 10px 36px',
                     borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
+                    border: '1px solid var(--cb-border-subtle)',
+                    backgroundColor: 'var(--cb-bg-input)',
+                    color: 'var(--cb-text-primary)',
                     fontSize: '14px',
                     outline: 'none',
                   }}
@@ -346,11 +353,11 @@ export default function RegisterPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
                   Work Email
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                  <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--cb-text-muted)' }}>
                     <Mail size={16} />
                   </div>
                   <input
@@ -363,7 +370,9 @@ export default function RegisterPage() {
                       width: '100%',
                       padding: '10px 12px 10px 36px',
                       borderRadius: '8px',
-                      border: '1px solid #CBD5E1',
+                      border: '1px solid var(--cb-border-subtle)',
+                      backgroundColor: 'var(--cb-bg-input)',
+                      color: 'var(--cb-text-primary)',
                       fontSize: '14px',
                       outline: 'none',
                     }}
@@ -372,11 +381,11 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
                   Country
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                  <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--cb-text-muted)' }}>
                     <Globe size={16} />
                   </div>
                   <select
@@ -386,10 +395,11 @@ export default function RegisterPage() {
                       width: '100%',
                       padding: '10px 12px 10px 36px',
                       borderRadius: '8px',
-                      border: '1px solid #CBD5E1',
+                      border: '1px solid var(--cb-border-subtle)',
+                      backgroundColor: 'var(--cb-bg-input)',
+                      color: 'var(--cb-text-primary)',
                       fontSize: '14px',
                       outline: 'none',
-                      backgroundColor: '#FFFFFF',
                     }}
                   >
                     <option value="NG">Nigeria</option>
@@ -400,11 +410,11 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
                 Phone Number
               </label>
               <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--cb-text-muted)' }}>
                   <Phone size={16} />
                 </div>
                 <input
@@ -416,7 +426,9 @@ export default function RegisterPage() {
                     width: '100%',
                     padding: '10px 12px 10px 36px',
                     borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
+                    border: '1px solid var(--cb-border-subtle)',
+                    backgroundColor: 'var(--cb-bg-input)',
+                    color: 'var(--cb-text-primary)',
                     fontSize: '14px',
                     outline: 'none',
                   }}
@@ -425,11 +437,11 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
                 Password (min. 8 characters)
               </label>
               <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--cb-text-muted)' }}>
                   <Lock size={16} />
                 </div>
                 <input
@@ -442,7 +454,9 @@ export default function RegisterPage() {
                     width: '100%',
                     padding: '10px 12px 10px 36px',
                     borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
+                    border: '1px solid var(--cb-border-subtle)',
+                    backgroundColor: 'var(--cb-bg-input)',
+                    color: 'var(--cb-text-primary)',
                     fontSize: '14px',
                     outline: 'none',
                   }}
@@ -453,7 +467,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="cb-btn cb-btn-navy"
+              className="cb-btn cb-btn-cyan"
               style={{
                 width: '100%',
                 padding: '12px',
@@ -469,9 +483,9 @@ export default function RegisterPage() {
         )}
 
         {/* Footer Link */}
-        <div style={{ marginTop: '28px', textAlign: 'center', fontSize: '13px', color: '#64748B' }}>
+        <div style={{ marginTop: '28px', textAlign: 'center', fontSize: '13px', color: 'var(--cb-text-secondary)' }}>
           Already have an account?{' '}
-          <Link href="/login" style={{ color: '#0284C7', fontWeight: 600 }}>
+          <Link href="/login" style={{ color: '#00B4D8', fontWeight: 600 }}>
             Sign in
           </Link>
         </div>

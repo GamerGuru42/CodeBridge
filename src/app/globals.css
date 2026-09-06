@@ -113,6 +113,16 @@ button, input, select, textarea {
   font-size: inherit;
 }
 
+input::placeholder, textarea::placeholder, select::placeholder {
+  color: var(--cb-text-muted) !important;
+  opacity: 0.85;
+}
+
+select option {
+  background-color: var(--cb-bg-card);
+  color: var(--cb-text-primary);
+}
+
 /* Layout Utilities */
 .cb-container {
   width: 100%;
@@ -245,7 +255,7 @@ button, input, select, textarea {
 }
 
 .cb-btn-secondary:hover {
-  background-color: var(--cb-navy-700);
+  background-color: var(--cb-border-subtle);
   border-color: var(--cb-border-light);
 }
 
@@ -256,8 +266,8 @@ button, input, select, textarea {
 }
 
 .cb-btn-outline:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: #FFFFFF;
+  background-color: var(--cb-bg-subtle);
+  border-color: var(--cb-border-focus);
 }
 
 .cb-btn-danger {
@@ -300,16 +310,17 @@ button, input, select, textarea {
 }
 
 .cb-btn-outline-pill {
-  background-color: #FFFFFF;
-  color: #0F172A !important;
-  border: 1px solid #E2E8F0;
+  background-color: var(--cb-bg-card);
+  color: var(--cb-text-primary) !important;
+  border: 1px solid var(--cb-border-subtle);
   border-radius: var(--cb-radius-full);
   font-weight: 500;
+  transition: all 0.15s ease;
 }
 
 .cb-btn-outline-pill:hover {
-  background-color: #F8FAFC;
-  border-color: #CBD5E1;
+  background-color: var(--cb-bg-subtle);
+  border-color: var(--cb-border-light);
 }
 
 .cb-btn-cyan {

@@ -17,11 +17,11 @@ function RequestProjectContent() {
     <>
       <Navbar />
 
-      <main style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+      <main style={{ minHeight: '100vh', backgroundColor: 'var(--cb-bg-page)' }}>
         <section style={{
-          background: 'linear-gradient(180deg, #EDF7FF 0%, #F8FAFC 100%)',
+          background: 'linear-gradient(180deg, var(--cb-bg-subtle) 0%, var(--cb-bg-page) 100%)',
           padding: '64px 0 44px',
-          borderBottom: '1px solid #E2E8F0',
+          borderBottom: '1px solid var(--cb-border-subtle)',
         }}>
           <div className="cb-container" style={{ maxWidth: '840px', margin: '0 auto' }}>
 
@@ -29,8 +29,8 @@ function RequestProjectContent() {
             <div style={{ textAlign: 'center' }}>
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px',
-                borderRadius: '9999px', backgroundColor: '#E0F2FE', border: '1px solid #BAE6FD',
-                color: '#0284C7', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em',
+                borderRadius: '9999px', backgroundColor: 'rgba(0, 180, 216, 0.12)', border: '1px solid rgba(0, 180, 216, 0.25)',
+                color: '#00B4D8', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em',
                 textTransform: 'uppercase', marginBottom: '20px',
               }}>
                 <Sparkles size={14} />
@@ -39,7 +39,7 @@ function RequestProjectContent() {
 
               <h1 style={{
                 fontSize: 'clamp(32px, 5vw, 46px)', fontWeight: 900, letterSpacing: '-0.03em',
-                lineHeight: 1.15, color: '#0B1B3D', marginBottom: '16px',
+                lineHeight: 1.15, color: 'var(--cb-text-primary)', marginBottom: '16px',
               }}>
                 Request a Project{' '}
                 <span style={{
@@ -50,7 +50,7 @@ function RequestProjectContent() {
                 </span>
               </h1>
 
-              <p style={{ fontSize: '17px', lineHeight: 1.65, color: '#475569', maxWidth: '700px', margin: '0 auto' }}>
+              <p style={{ fontSize: '17px', lineHeight: 1.65, color: 'var(--cb-text-secondary)', maxWidth: '700px', margin: '0 auto' }}>
                 Provide your functional requirements below. Our engineering leads will review your specifications and formulate a structured milestone scope with institutional escrow guarantees.
               </p>
             </div>
@@ -76,6 +76,7 @@ function RequestProjectContent() {
                   borderRadius: '16px',
                   padding: '28px',
                   color: '#FFFFFF',
+                  border: '1px solid var(--cb-border-subtle)',
                 }}>
                   <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px',

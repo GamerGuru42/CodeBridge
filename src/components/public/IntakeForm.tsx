@@ -178,21 +178,21 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
         margin: '0 auto',
       }}>
         <div style={{
-          width: '72px', height: '72px', borderRadius: '50%', backgroundColor: '#DCFCE7', border: '2px solid #86EFAC',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: '#16A34A',
+          width: '72px', height: '72px', borderRadius: '50%', backgroundColor: 'rgba(5, 150, 105, 0.15)', border: '2px solid rgba(5, 150, 105, 0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: '#10B981',
         }}>
           <CheckCircle2 size={40} />
         </div>
-        <h2 style={{ fontSize: '26px', fontWeight: 900, color: '#0B1B3D', marginBottom: '12px' }}>
+        <h2 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--cb-text-primary)', marginBottom: '12px' }}>
           Project Scoping Request Submitted!
         </h2>
-        <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.65, marginBottom: '24px' }}>
+        <p style={{ fontSize: '15px', color: 'var(--cb-text-secondary)', lineHeight: 1.65, marginBottom: '24px' }}>
           {successLead.message} Your technical requirements have been recorded into our project evaluation queue with permanent reference:
         </p>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '10px 20px', borderRadius: '10px',
-          backgroundColor: '#F8FAFC', border: '1px solid #CBD5E1', fontFamily: 'monospace', fontSize: '15px',
-          fontWeight: 700, color: '#0284C7', marginBottom: '32px',
+          backgroundColor: 'var(--cb-bg-subtle)', border: '1px solid var(--cb-border-subtle)', fontFamily: 'monospace', fontSize: '15px',
+          fontWeight: 700, color: 'var(--cb-cyan-500)', marginBottom: '32px',
         }}>
           Reference ID: {successLead.leadId}
         </div>
@@ -213,22 +213,22 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
   }
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', borderRadius: '18px', border: '1px solid #E2E8F0', padding: '38px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)' }}>
+    <div style={{ backgroundColor: 'var(--cb-bg-card)', borderRadius: '18px', border: '1px solid var(--cb-border-subtle)', padding: '38px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)' }}>
       {/* Progress Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', position: 'relative' }}>
         {[1, 2, 3, 4, 5].map(i => (
           <div key={i} style={{ 
             width: '32px', height: '32px', borderRadius: '50%', 
-            backgroundColor: step >= i ? '#0284C7' : '#F1F5F9', 
-            color: step >= i ? '#FFFFFF' : '#94A3B8',
+            backgroundColor: step >= i ? 'var(--cb-cyan-600)' : 'var(--cb-bg-subtle)', 
+            color: step >= i ? '#FFFFFF' : 'var(--cb-text-muted)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', 
             fontWeight: 700, fontSize: '14px', zIndex: 2
           }}>
             {i}
           </div>
         ))}
-        <div style={{ position: 'absolute', top: '15px', left: '16px', right: '16px', height: '2px', backgroundColor: '#F1F5F9', zIndex: 1 }}>
-          <div style={{ width: `${(step - 1) * 25}%`, height: '100%', backgroundColor: '#0284C7', transition: 'width 0.3s ease' }} />
+        <div style={{ position: 'absolute', top: '15px', left: '16px', right: '16px', height: '2px', backgroundColor: 'var(--cb-bg-subtle)', zIndex: 1 }}>
+          <div style={{ width: `${(step - 1) * 25}%`, height: '100%', backgroundColor: 'var(--cb-cyan-600)', transition: 'width 0.3s ease' }} />
         </div>
       </div>
 
@@ -242,17 +242,17 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
         {step === 1 && (
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0B1B3D', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Building size={20} color="#0284C7" /> 1. Your Business
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Business / Company Name *</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Business / Company Name *</label>
                 <input type="text" value={formData.businessName} onChange={e => setFormData({...formData, businessName: e.target.value})} placeholder="e.g. Acme Logistics Ltd" style={inputStyle} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Industry / Sector</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Industry / Sector</label>
                   <select value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} style={inputStyle}>
                     <option value="Corporate & SME">Corporate & SME</option>
                     <option value="Retail & Commerce">Retail & Commerce</option>
@@ -260,15 +260,15 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Operating Market</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Operating Market</label>
                   <select value={formData.countryCode} onChange={e => handleCountryChange(e.target.value)} style={inputStyle}>
-                    <option value="NG">Nigeria Hub (NGN)</option>
-                    <option value="KE">Kenya Hub (KES)</option>
+                    <option value="NG">Nigeria (NGN)</option>
+                    <option value="KE">Kenya (KES)</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Business Description *</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Business Description *</label>
                 <textarea value={formData.businessDescription} onChange={e => setFormData({...formData, businessDescription: e.target.value})} rows={3} placeholder="What does your business do?" style={{...inputStyle, resize: 'vertical'}} />
               </div>
             </div>
@@ -277,26 +277,26 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
 
         {step === 2 && (
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0B1B3D', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <User size={20} color="#0284C7" /> 2. Contact Details
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>First Name *</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>First Name *</label>
                   <input type="text" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Last Name *</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Last Name *</label>
                   <input type="text" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} style={inputStyle} />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Work Email *</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Work Email *</label>
                 <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="you@company.com" style={inputStyle} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Phone / WhatsApp *</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Phone / WhatsApp *</label>
                 <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} style={inputStyle} />
               </div>
             </div>
@@ -305,24 +305,24 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
 
         {step === 3 && (
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0B1B3D', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FileText size={20} color="#0284C7" /> 3. Your Project
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Service Category</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Service Category</label>
                 <select value={formData.serviceCategory} onChange={e => setFormData({...formData, serviceCategory: e.target.value})} style={inputStyle}>
                   {servicesList.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                   <option value="Other">Other</option>
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Functional Scope & Requirements *</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Functional Scope & Requirements *</label>
                 <textarea value={formData.requirements} onChange={e => setFormData({...formData, requirements: e.target.value})} rows={5} placeholder="Describe the application goals, key features, required user roles..." style={{...inputStyle, resize: 'vertical'}} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Expected Timeline</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Expected Timeline</label>
                   <select value={formData.timeline} onChange={e => setFormData({...formData, timeline: e.target.value})} style={inputStyle}>
                     <option value="1-2 months">1-2 months</option>
                     <option value="2-4 months">2-4 months</option>
@@ -331,7 +331,7 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Estimated Budget ({formData.currency})</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Estimated Budget ({formData.currency})</label>
                   <input type="number" step="1000" value={formData.estimatedBudget} onChange={e => setFormData({...formData, estimatedBudget: e.target.value})} style={inputStyle} />
                 </div>
               </div>
@@ -341,34 +341,34 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
 
         {step === 4 && (
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0B1B3D', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Lock size={20} color="#0284C7" /> 4. Your Account
             </h3>
-            <p style={{ fontSize: '14px', color: '#475569', marginBottom: '20px' }}>
+            <p style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', marginBottom: '20px' }}>
               We need to securely associate this request with your CodeBridge client portal.
             </p>
             
             <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
               <button type="button" onClick={() => setFormData({...formData, authMode: 'register'})} style={{
-                flex: 1, padding: '10px', borderRadius: '8px', border: formData.authMode === 'register' ? '2px solid #0284C7' : '1px solid #CBD5E1', backgroundColor: formData.authMode === 'register' ? '#EFF6FF' : '#FFFFFF', fontWeight: 700, cursor: 'pointer'
+                flex: 1, padding: '10px', borderRadius: '8px', border: formData.authMode === 'register' ? '2px solid #0284C7' : '1px solid var(--cb-border-subtle)', backgroundColor: formData.authMode === 'register' ? 'var(--cb-bg-subtle)' : 'var(--cb-bg-card)', color: 'var(--cb-text-primary)', fontWeight: 700, cursor: 'pointer'
               }}>New Account</button>
               <button type="button" onClick={() => setFormData({...formData, authMode: 'login'})} style={{
-                flex: 1, padding: '10px', borderRadius: '8px', border: formData.authMode === 'login' ? '2px solid #0284C7' : '1px solid #CBD5E1', backgroundColor: formData.authMode === 'login' ? '#EFF6FF' : '#FFFFFF', fontWeight: 700, cursor: 'pointer'
+                flex: 1, padding: '10px', borderRadius: '8px', border: formData.authMode === 'login' ? '2px solid #0284C7' : '1px solid var(--cb-border-subtle)', backgroundColor: formData.authMode === 'login' ? 'var(--cb-bg-subtle)' : 'var(--cb-bg-card)', color: 'var(--cb-text-primary)', fontWeight: 700, cursor: 'pointer'
               }}>Sign In</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Email (from Step 2)</label>
-                <input type="email" value={formData.email} disabled style={{...inputStyle, backgroundColor: '#F1F5F9', color: '#64748B'}} />
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Email (from Step 2)</label>
+                <input type="email" value={formData.email} disabled style={{...inputStyle, backgroundColor: 'var(--cb-bg-subtle)', color: 'var(--cb-text-muted)'}} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Password *</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Password *</label>
                 <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} style={inputStyle} />
               </div>
               {formData.authMode === 'register' && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>Confirm Password *</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '6px' }}>Confirm Password *</label>
                   <input type="password" value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})} style={inputStyle} />
                 </div>
               )}
@@ -378,10 +378,10 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
 
         {step === 5 && (
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0B1B3D', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <CheckCircle2 size={20} color="#0284C7" /> 5. Review & Submit
             </h3>
-            <div style={{ backgroundColor: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '20px', fontSize: '14px', color: '#334155', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ backgroundColor: 'var(--cb-bg-subtle)', borderRadius: '12px', border: '1px solid var(--cb-border-subtle)', padding: '20px', fontSize: '14px', color: 'var(--cb-text-primary)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div><strong>Business:</strong> {formData.businessName}</div>
               <div><strong>Contact:</strong> {formData.firstName} {formData.lastName} ({formData.email})</div>
               <div><strong>Service:</strong> {formData.serviceCategory}</div>
@@ -394,7 +394,7 @@ export default function IntakeForm({ initialService = 'Business Websites' }: { i
         <div style={{ display: 'flex', gap: '16px', marginTop: '10px' }}>
           {step > 1 && (
             <button type="button" onClick={prevStep} style={{
-              flex: 1, padding: '16px', borderRadius: '10px', backgroundColor: '#FFFFFF', color: '#334155', border: '1px solid #CBD5E1', fontWeight: 700, cursor: 'pointer'
+              flex: 1, padding: '16px', borderRadius: '10px', backgroundColor: 'var(--cb-bg-card)', color: 'var(--cb-text-primary)', border: '1px solid var(--cb-border-subtle)', fontWeight: 700, cursor: 'pointer'
             }}>
               <ArrowLeft size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Back
             </button>
@@ -423,9 +423,11 @@ const inputStyle = {
   width: '100%',
   padding: '11px 14px',
   borderRadius: '8px',
-  border: '1px solid #CBD5E1',
-  color: '#0F172A',
+  border: '1px solid var(--cb-border-subtle)',
+  backgroundColor: 'var(--cb-bg-input)',
+  color: 'var(--cb-text-primary)',
   fontSize: '14px',
   outline: 'none',
   boxSizing: 'border-box' as 'border-box',
 };
+

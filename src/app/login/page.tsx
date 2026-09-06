@@ -79,7 +79,7 @@ export default function LoginPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F8FAFC',
+      backgroundColor: 'var(--cb-bg-page)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -89,10 +89,11 @@ export default function LoginPage() {
       <div style={{
         width: '100%',
         maxWidth: '920px',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--cb-bg-card)',
         borderRadius: '20px',
         overflow: 'hidden',
-        boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.1), 0 0 0 1px #E2E8F0',
+        boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.1)',
+        border: '1px solid var(--cb-border-subtle)',
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
       }}>
@@ -102,7 +103,7 @@ export default function LoginPage() {
         <div style={{ padding: '44px 38px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           {/* Logo & Return Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-            <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+            <CodeBridgeLogo size="md" variant="auto" href="/" />
             
             <Link 
               href="/"
@@ -112,20 +113,20 @@ export default function LoginPage() {
                 gap: '6px',
                 fontSize: '13px',
                 fontWeight: 500,
-                color: '#64748B',
+                color: 'var(--cb-text-secondary)',
                 textDecoration: 'none',
                 padding: '6px 12px',
                 borderRadius: '6px',
-                backgroundColor: '#F1F5F9',
+                backgroundColor: 'var(--cb-bg-subtle)',
                 transition: 'background-color 0.2s, color 0.2s',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#E2E8F0';
-                e.currentTarget.style.color = '#0F172A';
+                e.currentTarget.style.backgroundColor = 'var(--cb-border-subtle)';
+                e.currentTarget.style.color = 'var(--cb-text-primary)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#F1F5F9';
-                e.currentTarget.style.color = '#64748B';
+                e.currentTarget.style.backgroundColor = 'var(--cb-bg-subtle)';
+                e.currentTarget.style.color = 'var(--cb-text-secondary)';
               }}
             >
               <ArrowLeft size={14} />
@@ -137,12 +138,12 @@ export default function LoginPage() {
             fontSize: '26px',
             fontWeight: 800,
             letterSpacing: '-0.025em',
-            color: '#0B1B3D',
+            color: 'var(--cb-text-primary)',
             marginBottom: '6px',
           }}>
             Welcome Back
           </h1>
-          <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '24px' }}>
+          <p style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', marginBottom: '24px' }}>
             Sign in to your CodeBridge account
           </p>
 
@@ -174,15 +175,15 @@ export default function LoginPage() {
               padding: '12px 20px',
               fontSize: '14px',
               fontWeight: 600,
-              backgroundColor: '#FFFFFF',
-              color: '#1F2937',
+              backgroundColor: 'var(--cb-bg-card)',
+              color: 'var(--cb-text-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '12px',
               textDecoration: 'none',
               boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-              border: '1px solid #E2E8F0',
+              border: '1px solid var(--cb-border-subtle)',
               marginBottom: '20px',
               transition: 'background-color 0.15s ease',
             }}
@@ -202,19 +203,19 @@ export default function LoginPage() {
             alignItems: 'center',
             margin: '0 0 20px 0',
           }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
-            <span style={{ padding: '0 12px', fontSize: '13px', color: '#94A3B8' }}>or</span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--cb-border-subtle)' }} />
+            <span style={{ padding: '0 12px', fontSize: '13px', color: 'var(--cb-text-muted)' }}>or</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--cb-border-subtle)' }} />
           </div>
 
           {/* Email / Password Form (Clients, Admins, Operations, Devs) */}
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
                 Email address
               </label>
               <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--cb-text-muted)' }}>
                   <Mail size={16} />
                 </div>
                 <input
@@ -227,25 +228,25 @@ export default function LoginPage() {
                     width: '100%',
                     padding: '11px 12px 11px 36px',
                     borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
-                    backgroundColor: '#FFFFFF',
-                    color: '#0F172A',
+                    border: '1px solid var(--cb-border-subtle)',
+                    backgroundColor: 'var(--cb-bg-input)',
+                    color: 'var(--cb-text-primary)',
                     fontSize: '14px',
                     outline: 'none',
                     transition: 'border-color 0.15s',
                   }}
                   onFocus={(e) => e.target.style.borderColor = '#00B4D8'}
-                  onBlur={(e) => e.target.style.borderColor = '#CBD5E1'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--cb-border-subtle)'}
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
                 Password
               </label>
               <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--cb-text-muted)' }}>
                   <Lock size={16} />
                 </div>
                 <input
@@ -258,15 +259,15 @@ export default function LoginPage() {
                     width: '100%',
                     padding: '11px 38px 11px 36px',
                     borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
-                    backgroundColor: '#FFFFFF',
-                    color: '#0F172A',
+                    border: '1px solid var(--cb-border-subtle)',
+                    backgroundColor: 'var(--cb-bg-input)',
+                    color: 'var(--cb-text-primary)',
                     fontSize: '14px',
                     outline: 'none',
                     transition: 'border-color 0.15s',
                   }}
                   onFocus={(e) => e.target.style.borderColor = '#00B4D8'}
-                  onBlur={(e) => e.target.style.borderColor = '#CBD5E1'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--cb-border-subtle)'}
                 />
                 <button
                   type="button"
@@ -278,7 +279,7 @@ export default function LoginPage() {
                     transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
-                    color: '#94A3B8',
+                    color: 'var(--cb-text-muted)',
                     cursor: 'pointer',
                     padding: '4px',
                   }}
@@ -290,7 +291,7 @@ export default function LoginPage() {
 
             {/* Remember Me & Forgot Password */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#475569' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--cb-text-secondary)' }}>
                 <input
                   type="checkbox"
                   checked={rememberMe}
@@ -300,7 +301,7 @@ export default function LoginPage() {
                 Remember me
               </label>
 
-              <Link href="/contact" style={{ color: '#0284C7', fontWeight: 500 }}>
+              <Link href="/contact" style={{ color: '#00B4D8', fontWeight: 500 }}>
                 Forgot password?
               </Link>
             </div>
@@ -309,7 +310,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="cb-btn cb-btn-navy"
+              className="cb-btn cb-btn-cyan"
               style={{
                 width: '100%',
                 padding: '12px',
@@ -324,9 +325,9 @@ export default function LoginPage() {
           </form>
 
           {/* Register Link */}
-          <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '13px', color: '#64748B' }}>
+          <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '13px', color: 'var(--cb-text-secondary)' }}>
             Don&apos;t have an account?{' '}
-            <Link href="/register" style={{ color: '#0284C7', fontWeight: 600 }}>
+            <Link href="/register" style={{ color: '#00B4D8', fontWeight: 600 }}>
               Register here
             </Link>
           </div>
@@ -339,7 +340,7 @@ export default function LoginPage() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#94A3B8',
+                color: 'var(--cb-text-muted)',
                 fontSize: '12px',
                 cursor: 'pointer',
                 display: 'inline-flex',
@@ -367,9 +368,9 @@ export default function LoginPage() {
                       padding: '4px 8px',
                       fontSize: '11px',
                       borderRadius: '4px',
-                      border: '1px solid #E2E8F0',
-                      backgroundColor: '#F8FAFC',
-                      color: '#475569',
+                      border: '1px solid var(--cb-border-subtle)',
+                      backgroundColor: 'var(--cb-bg-subtle)',
+                      color: 'var(--cb-text-secondary)',
                       cursor: 'pointer',
                     }}
                   >

@@ -132,10 +132,10 @@ export default function ChatDrawer({ isOpen, onClose, entityId, entityType, curr
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              backgroundColor: 'rgba(255,255,255,0.02)',
+              backgroundColor: 'var(--cb-bg-card)',
             }}>
               <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#FFF' }}>Discussion</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>Discussion</h3>
                 <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
                   {entityType === 'LEAD' ? 'Lead' : 'Project'} &bull; {entityId?.substring(0, 8).toUpperCase()}
                 </p>
@@ -167,9 +167,9 @@ export default function ChatDrawer({ isOpen, onClose, entityId, entityType, curr
                         borderRadius: '16px',
                         borderBottomRightRadius: isMe ? '4px' : '16px',
                         borderBottomLeftRadius: !isMe ? '4px' : '16px',
-                        backgroundColor: isMe ? 'var(--cb-blue-600)' : 'rgba(255,255,255,0.05)',
+                        backgroundColor: isMe ? '#0284C7' : 'var(--cb-bg-subtle)',
                         border: isMe ? 'none' : '1px solid var(--cb-border-subtle)',
-                        color: '#FFF',
+                        color: isMe ? '#FFFFFF' : 'var(--cb-text-primary)',
                         fontSize: '14px',
                         lineHeight: 1.5,
                       }}>
@@ -189,7 +189,7 @@ export default function ChatDrawer({ isOpen, onClose, entityId, entityType, curr
             <div style={{
               padding: '20px',
               borderTop: '1px solid var(--cb-border-subtle)',
-              backgroundColor: 'rgba(0,0,0,0.2)',
+              backgroundColor: 'var(--cb-bg-card)',
             }}>
               <form onSubmit={handleSend} style={{ display: 'flex', gap: '10px' }}>
                 <input
@@ -198,12 +198,19 @@ export default function ChatDrawer({ isOpen, onClose, entityId, entityType, curr
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
                   className="cb-input"
-                  style={{ flex: 1, borderRadius: '20px', padding: '10px 16px' }}
+                  style={{
+                    flex: 1,
+                    borderRadius: '20px',
+                    padding: '10px 16px',
+                    backgroundColor: 'var(--cb-bg-input)',
+                    color: 'var(--cb-text-primary)',
+                    border: '1px solid var(--cb-border-subtle)',
+                  }}
                 />
                 <button
                   type="submit"
                   disabled={sending || !newMessage.trim()}
-                  className="cb-btn cb-btn-primary"
+                  className="cb-btn cb-btn-cyan"
                   style={{ borderRadius: '50%', width: '42px', height: '42px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                 >
                   {sending ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
