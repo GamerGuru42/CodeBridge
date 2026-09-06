@@ -8,6 +8,7 @@ import {
   Smartphone,
   Layout,
   Layers,
+  Users,
   ShieldCheck,
   Zap,
   Lock,
