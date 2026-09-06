@@ -74,7 +74,34 @@ export default function RegisterPage() {
         {/* Logo & Return Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <CodeBridgeLogo size="md" variant="dark-text" href="/" />
-
+          
+          <Link 
+            href="/"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              fontWeight: 500,
+              color: '#64748B',
+              textDecoration: 'none',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              backgroundColor: '#F1F5F9',
+              transition: 'background-color 0.2s, color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#E2E8F0';
+              e.currentTarget.style.color = '#0F172A';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#F1F5F9';
+              e.currentTarget.style.color = '#64748B';
+            }}
+          >
+            <ArrowLeft size={14} />
+            Return to Home
+          </Link>
         </div>
 
         <h1 style={{
