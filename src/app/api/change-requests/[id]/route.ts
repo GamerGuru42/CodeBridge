@@ -2,6 +2,61 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query, queryOne, execute, transaction } from '@/lib/db/connection';
 import { getCurrentSession as getSession } from '@/lib/auth/session';
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { id: crId } = await params;
+    const cr = await queryOne<any>(`
+      SELECT cr.*, p.title as project_title, p.code as project_code,
+             u.first_name as requester_first_name, u.last_name as requester_last_name
+      FROM change_requests cr
+      JOIN projects p ON cr.project_id = p.id
+      LEFT JOIN user_profiles u ON cr.requested_by = u.user_id
+      WHERE cr.id = ?
+    `, [crId]);
+
+    if (!cr) return NextResponse.json({ error: 'Change request not found' }, { status: 404 });
+
+    // Authorization check
+    if (['SUPER_ADMIN', 'ADMIN'].includes(session.role)) {
+      return NextResponse.json({ success: true, data: cr });
+    }
+
+    if (session.role === 'CLIENT') {
+      const client = await queryOne<any>('SELECT id FROM clients WHERE user_id = ?', [session.userId]);
+      const project = await queryOne<any>('SELECT client_id FROM projects WHERE id = ?', [cr.project_id]);
+      if (client && project && project.client_id === client.id) {
+        return NextResponse.json({ success: true, data: cr });
+      }
+    }
+
+    if (session.role === 'REPRESENTATIVE') {
+      const rep = await queryOne<any>('SELECT id FROM representatives WHERE user_id = ?', [session.userId]);
+      const project = await queryOne<any>('SELECT representative_id FROM projects WHERE id = ?', [cr.project_id]);
+      if (rep && project && project.representative_id === rep.id) {
+        return NextResponse.json({ success: true, data: cr });
+      }
+    }
+
+    if (session.role === 'DEVELOPER') {
+      const member = await queryOne('SELECT id FROM project_members WHERE project_id = ? AND user_id = ?', [cr.project_id, session.userId]);
+      if (member) {
+        return NextResponse.json({ success: true, data: cr });
+      }
+    }
+
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  } catch (err: any) {
+    console.error('Failed to get change request:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -17,7 +72,7 @@ export async function PATCH(
 
     const { id: crId } = await params;
     
-    const cr = await queryOne('SELECT * FROM change_requests WHERE id = ?', [crId]);
+    const cr = await queryOne<any>('SELECT * FROM change_requests WHERE id = ?', [crId]);
     if (!cr) return NextResponse.json({ error: 'Change request not found' }, { status: 404 });
 
     const body = await req.json();
@@ -43,7 +98,7 @@ export async function PATCH(
       `, [
         impactAssessment || null,
         reviewNotes || null,
-        requiresProposalRevision ? 1 : 0,
+        requiresProposalRevision === undefined ? null : (requiresProposalRevision ? 1 : 0),
         session.userId,
         now,
         now,
@@ -52,6 +107,7 @@ export async function PATCH(
       
       return NextResponse.json({ success: true, status: 'APPROVED' });
     }
+
     
     if (action === 'REJECT') {
       if (cr.status !== 'PENDING' && cr.status !== 'UNDER_REVIEW') {

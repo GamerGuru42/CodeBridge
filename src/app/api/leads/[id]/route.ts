@@ -4,10 +4,64 @@ import { getCurrentSession, recordAuditLog } from '@/lib/auth/session';
 import { queryOne, execute, transaction } from '@/lib/db/connection';
 import { LeadStatus } from '@/lib/db/types';
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id: leadId } = await params;
+    const lead = await queryOne(`
+      SELECT l.*, c.code as country_code, c.name as country_name,
+             p.first_name as rep_first_name, p.last_name as rep_last_name
+      FROM leads l
+      JOIN countries c ON l.country_id = c.id
+      LEFT JOIN representatives r ON l.representative_id = r.id
+      LEFT JOIN users u ON r.user_id = u.id
+      LEFT JOIN user_profiles p ON u.id = p.user_id
+      WHERE l.id = ?
+    `, [leadId]);
+
+    if (!lead) {
+      return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+    }
+
+    // Role-based authorization
+    if (session.role === 'CLIENT') {
+      const client = await queryOne('SELECT id FROM clients WHERE user_id = ?', [session.userId]);
+      if (!client || lead.client_id !== client.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } else if (session.role === 'REPRESENTATIVE') {
+      const rep = await queryOne('SELECT id FROM representatives WHERE user_id = ?', [session.userId]);
+      if (!rep || lead.representative_id !== rep.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } else if (session.role === 'COUNTRY_MANAGER') {
+      const profile = await queryOne('SELECT country_id FROM user_profiles WHERE user_id = ?', [session.userId]);
+      if (!profile?.country_id || lead.country_id !== profile.country_id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } else if (!['SUPER_ADMIN', 'ADMIN'].includes(session.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    return NextResponse.json({ lead });
+  } catch (err: any) {
+    console.error('Failed to fetch lead:', err);
+    return NextResponse.json({ error: 'Failed to fetch lead' }, { status: 500 });
+  }
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+
   try {
     const session = await getCurrentSession();
     if (!session) {

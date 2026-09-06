@@ -32,8 +32,14 @@ async function checkAccess(session: any, projectId: string): Promise<Project | n
     if (profile && project.country_id === profile.country_id) return project;
   }
 
+  if (session.role === 'DEVELOPER') {
+    const member = await queryOne('SELECT id FROM project_members WHERE project_id = ? AND user_id = ?', [projectId, session.userId]);
+    if (member) return project;
+  }
+
   return null;
 }
+
 
 export async function GET(
   req: NextRequest,

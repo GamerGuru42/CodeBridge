@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=cb6" />
@@ -43,7 +43,11 @@ export default function RootLayout({
         <link rel="icon" type="image/svg+xml" href="/icon.svg?v=cb6" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=cb6" />
       </head>
-      <body>{children}</body>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

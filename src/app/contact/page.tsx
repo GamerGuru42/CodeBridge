@@ -37,23 +37,22 @@ export default function ContactPage() {
     setFeedback('');
 
     try {
-      const res = await fetch('/api/request-project', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          businessName: formData.name ? `${formData.name} Inquiry` : 'General Client Inquiry',
-          contactPerson: formData.name,
+          name: formData.name,
           email: formData.email,
           phone: formData.phone || '',
-          countryCode: formData.country,
-          businessType: 'Direct Contact Inquiry',
-          serviceCategory: formData.category,
-          requirements: `[Subject: ${formData.subject || 'Direct Message'}]\n\n${formData.message}`,
-          estimatedBudget: 0,
+          country: formData.country,
+          category: formData.category,
+          subject: formData.subject,
+          message: formData.message,
         }),
       });
 
       const data = await res.json();
+
 
       if (res.ok) {
         setStatus('success');

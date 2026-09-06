@@ -39,11 +39,19 @@ export async function GET(req: NextRequest) {
       } else {
         leadsSql += ' ORDER BY l.created_at DESC';
       }
+    } else if (role === 'CLIENT') {
+      const client = await queryOne('SELECT id FROM clients WHERE user_id = ?', [userId]);
+      if (!client) {
+        return NextResponse.json({ leads: [] });
+      }
+      leadsSql += ' WHERE l.client_id = ? ORDER BY l.created_at DESC';
+      params = [client.id];
     } else if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
       leadsSql += ' ORDER BY l.created_at DESC';
     } else {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
 
     const leads = await query(leadsSql, params);
     return NextResponse.json({ leads });

@@ -20,7 +20,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const reps = await query(`
+    let sql = `
       SELECT r.id, r.user_id, r.approval_status, r.commission_rate_bps,
              r.referral_code, r.approved_at, r.notes, r.created_at,
              u.email, u.status as user_status,
@@ -33,8 +33,23 @@ export async function GET() {
       JOIN users u ON r.user_id = u.id
       LEFT JOIN user_profiles p ON u.id = p.user_id
       JOIN countries c ON r.country_id = c.id
-      ORDER BY r.created_at DESC
-    `);
+    `;
+    const params: any[] = [];
+
+    if (session.role === 'COUNTRY_MANAGER') {
+      const profile = await queryOne<{ country_id: string }>('SELECT country_id FROM user_profiles WHERE user_id = ?', [session.userId]);
+      if (profile?.country_id) {
+        sql += ' WHERE r.country_id = ?';
+        params.push(profile.country_id);
+      } else {
+        sql += ' WHERE 1 = 0';
+      }
+    }
+
+    sql += ' ORDER BY r.created_at DESC';
+
+    const reps = await query(sql, params);
+
 
     return NextResponse.json({ representatives: reps });
   } catch (err: any) {
