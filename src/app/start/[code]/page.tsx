@@ -48,7 +48,19 @@ export default function ReferralStartPage({ params }: { params: Promise<{ code: 
   }, [code, router]);
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 relative">
+      <div className="absolute top-6 left-6">
+        <a 
+          href="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-sm font-medium shadow-sm hover:bg-slate-700 hover:text-white transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back to Home
+        </a>
+      </div>
+      
       <div className="max-w-md w-full bg-slate-800 rounded-2xl shadow-xl p-8 text-center border border-slate-700">
         
         {status === 'loading' && (

@@ -49,7 +49,34 @@ export default function RepresentativeOnboardingPage() {
       alignItems: 'center',
       padding: '40px 20px',
     }}>
-      {/* Top Header with Logout */}
+      {/* Top Header with Back and Logout */}
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        left: '20px',
+      }}>
+        <Link 
+          href="/login"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            backgroundColor: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            color: '#64748B',
+            fontSize: '13px',
+            fontWeight: 600,
+            textDecoration: 'none',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          <ArrowLeft size={16} />
+          Back to Login
+        </Link>
+      </div>
+
       <div style={{
         position: 'absolute',
         top: '20px',
