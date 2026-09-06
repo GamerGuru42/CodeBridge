@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   ArrowRight,
@@ -66,7 +67,7 @@ export default function ServicesPage() {
       features: [
         'Product variations & real-time inventory management',
         'Customer accounts & order history portals',
-        'Multi-currency (NGN & KES) pricing readiness',
+        'Multi-currency pricing readiness',
         'Automated order confirmation receipts & email webhooks'
       ],
       recommendedFor: 'Retailers, DTC brands, wholesale distributors'
@@ -247,7 +248,7 @@ export default function ServicesPage() {
         'Enterprise DNS configuration & multi-domain routing',
         'Automated SSL/TLS encryption certificate lifecycle',
         'Serverless or containerized deployment (Vercel, AWS, Supabase)',
-        'Global CDN caching for instant loading across Africa and abroad'
+        'Global CDN caching for instant loading globally'
       ],
       recommendedFor: 'Fast-scaling platforms, corporate portals, digital startups'
     }
@@ -266,59 +267,51 @@ export default function ServicesPage() {
     ? allServices
     : allServices.filter(s => s.filterKey === activeFilter);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as any } },
+  };
+
   return (
     <>
       <Navbar />
 
-      <main style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+      <main style={{ minHeight: '100vh', backgroundColor: 'var(--cb-bg-page)' }}>
         {/* ================================================================= */}
         {/* 1. HERO SECTION WITH RICH BRANDING                                */}
         {/* ================================================================= */}
         <section style={{
-          background: 'linear-gradient(180deg, #EDF7FF 0%, #F8FAFC 100%)',
-          padding: '64px 0 48px',
-          borderBottom: '1px solid #E2E8F0',
+          background: 'linear-gradient(180deg, rgba(0, 180, 216, 0.05) 0%, transparent 100%)',
+          padding: '80px 0 60px',
+          borderBottom: '1px solid var(--cb-border-subtle)',
         }}>
           <div className="cb-container" style={{ maxWidth: '860px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
-              <Link
-                href="/"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '9999px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #CBD5E1',
-                  color: '#0B1B3D',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <ArrowLeft size={14} />
-                Return to Home
-              </Link>
-            </div>
 
-            <div style={{ textAlign: 'center' }}>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              style={{ textAlign: 'center' }}
+            >
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
               padding: '6px 16px',
               borderRadius: '9999px',
-              backgroundColor: '#E0F2FE',
-              border: '1px solid #BAE6FD',
-              color: '#0284C7',
+              backgroundColor: 'rgba(0, 180, 216, 0.1)',
+              border: '1px solid rgba(0, 180, 216, 0.2)',
+              color: 'var(--cb-cyan-500)',
               fontSize: '12px',
               fontWeight: 700,
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              marginBottom: '20px',
+              marginBottom: '24px',
             }}>
               <Sparkles size={14} />
               Full Engineering Catalog • 14 Disciplines
@@ -329,15 +322,11 @@ export default function ServicesPage() {
               fontWeight: 900,
               letterSpacing: '-0.03em',
               lineHeight: 1.15,
-              color: '#0B1B3D',
-              marginBottom: '16px',
+              color: 'var(--cb-text-primary)',
+              marginBottom: '20px',
             }}>
               Digital Products &amp; Engineering Services Built for{' '}
-              <span style={{
-                background: 'linear-gradient(135deg, #0284C7 0%, #00B4D8 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>
+              <span className="cb-text-gradient">
                 Market Impact
               </span>
             </h1>
@@ -345,44 +334,44 @@ export default function ServicesPage() {
             <p style={{
               fontSize: '17px',
               lineHeight: 1.65,
-              color: '#475569',
+              color: 'var(--cb-text-secondary)',
               marginBottom: '32px',
               maxWidth: '720px',
               margin: '0 auto 32px',
             }}>
-              From high-converting corporate websites to complex mission-critical business software, CodeBridge delivers vetted African engineering excellence with institutional reliability.
+              From high-converting corporate websites to complex mission-critical business software, CodeBridge delivers vetted engineering excellence with institutional reliability.
             </p>
 
             {/* Trust Highlights Strip */}
-            <div style={{
+            <div 
+              className="cb-glass"
+              style={{
               display: 'flex',
               flexWrap: 'wrap',
               justifyContent: 'center',
               gap: '20px',
               padding: '16px 24px',
-              backgroundColor: '#FFFFFF',
               borderRadius: '16px',
-              border: '1px solid #E2E8F0',
-              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.03)',
+              boxShadow: 'var(--cb-shadow-sm)',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#0B1B3D' }}>
-                <CheckCircle2 size={16} color="#0284C7" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)' }}>
+                <CheckCircle2 size={16} style={{ color: 'var(--cb-cyan-500)' }} />
                 <span>Fixed Milestone Scopes</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#0B1B3D' }}>
-                <CheckCircle2 size={16} color="#0284C7" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)' }}>
+                <CheckCircle2 size={16} style={{ color: 'var(--cb-cyan-500)' }} />
                 <span>100% Milestone Escrow Protection</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#0B1B3D' }}>
-                <CheckCircle2 size={16} color="#0284C7" />
-                <span>Local Support in Nigeria &amp; Kenya</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)' }}>
+                <CheckCircle2 size={16} style={{ color: 'var(--cb-cyan-500)' }} />
+                <span>Global Support</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#0B1B3D' }}>
-                <CheckCircle2 size={16} color="#0284C7" />
-                <span>Transparent Commercial Billing (NGN / KES)</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)' }}>
+                <CheckCircle2 size={16} style={{ color: 'var(--cb-cyan-500)' }} />
+                <span>Transparent Commercial Billing</span>
               </div>
             </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -412,12 +401,12 @@ export default function ServicesPage() {
                       borderRadius: '9999px',
                       fontSize: '13px',
                       fontWeight: isActive ? 700 : 500,
-                      color: isActive ? '#FFFFFF' : '#475569',
-                      backgroundColor: isActive ? '#0B1B3D' : '#FFFFFF',
-                      border: `1px solid ${isActive ? '#0B1B3D' : '#E2E8F0'}`,
+                      color: isActive ? 'var(--cb-bg-page)' : 'var(--cb-text-secondary)',
+                      backgroundColor: isActive ? 'var(--cb-text-primary)' : 'var(--cb-bg-card)',
+                      border: `1px solid ${isActive ? 'transparent' : 'var(--cb-border-subtle)'}`,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
-                      boxShadow: isActive ? '0 4px 12px rgba(11, 27, 61, 0.15)' : 'none',
+                      boxShadow: isActive ? '0 4px 12px rgba(0, 0, 0, 0.1)' : 'none',
                     }}
                   >
                     <span>{tab.label}</span>
@@ -430,8 +419,8 @@ export default function ServicesPage() {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      backgroundColor: isActive ? '#0284C7' : '#F1F5F9',
-                      color: isActive ? '#FFFFFF' : '#64748B',
+                      backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : 'var(--cb-bg-subtle)',
+                      color: isActive ? '#FFFFFF' : 'var(--cb-text-muted)',
                     }}>
                       {tab.count}
                     </span>
@@ -447,26 +436,36 @@ export default function ServicesPage() {
         {/* ================================================================= */}
         <section style={{ padding: '24px 0 80px' }}>
           <div className="cb-container">
-            <div style={{
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              key={activeFilter}
+              style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
               gap: '28px',
             }}>
+              <AnimatePresence mode="popLayout">
               {filteredServices.map((service) => {
                 const Icon = service.icon;
                 return (
-                  <div
+                  <motion.div
+                    layout
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit={{ opacity: 0, scale: 0.9 }}
                     key={service.id}
                     id={service.id}
+                    className="cb-glass"
+                    whileHover={{ y: -5 }}
                     style={{
-                      backgroundColor: '#FFFFFF',
                       borderRadius: '20px',
-                      border: '1px solid #E2E8F0',
-                      boxShadow: '0 10px 30px -5px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02)',
+                      boxShadow: 'var(--cb-shadow-sm)',
                       padding: '32px 28px',
                       display: 'flex',
                       flexDirection: 'column',
-                      transition: 'all 0.2s ease',
                     }}
                   >
                     {/* Card Header: Icon & Category Tag */}
@@ -475,12 +474,12 @@ export default function ServicesPage() {
                         width: '52px',
                         height: '52px',
                         borderRadius: '14px',
-                        backgroundColor: '#F0F9FF',
-                        border: '1px solid #BAE6FD',
+                        backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                        border: '1px solid rgba(0, 180, 216, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#0284C7',
+                        color: 'var(--cb-cyan-500)',
                       }}>
                         <Icon size={26} />
                       </div>
@@ -491,8 +490,8 @@ export default function ServicesPage() {
                         letterSpacing: '0.05em',
                         padding: '4px 10px',
                         borderRadius: '6px',
-                        backgroundColor: '#F1F5F9',
-                        color: '#475569',
+                        backgroundColor: 'var(--cb-bg-subtle)',
+                        color: 'var(--cb-text-secondary)',
                       }}>
                         {service.category}
                       </span>
@@ -502,7 +501,7 @@ export default function ServicesPage() {
                     <h3 style={{
                       fontSize: '20px',
                       fontWeight: 800,
-                      color: '#0B1B3D',
+                      color: 'var(--cb-text-primary)',
                       letterSpacing: '-0.02em',
                       marginBottom: '10px',
                       lineHeight: 1.3,
@@ -514,7 +513,7 @@ export default function ServicesPage() {
                     <p style={{
                       fontSize: '14px',
                       lineHeight: 1.6,
-                      color: '#475569',
+                      color: 'var(--cb-text-secondary)',
                       marginBottom: '20px',
                     }}>
                       {service.desc}
@@ -523,22 +522,22 @@ export default function ServicesPage() {
                     {/* Recommended For pill */}
                     <div style={{
                       fontSize: '12px',
-                      color: '#0284C7',
-                      backgroundColor: '#F0F9FF',
-                      border: '1px solid #E0F2FE',
+                      color: 'var(--cb-cyan-600)',
+                      backgroundColor: 'rgba(0, 180, 216, 0.05)',
+                      border: '1px solid rgba(0, 180, 216, 0.15)',
                       borderRadius: '8px',
                       padding: '6px 12px',
                       marginBottom: '20px',
                       fontWeight: 500,
                     }}>
-                      <strong>Best For:</strong> {service.recommendedFor}
+                      <strong style={{ color: 'var(--cb-text-primary)' }}>Best For:</strong> {service.recommendedFor}
                     </div>
 
                     {/* Deliverables Box */}
                     <div style={{
-                      backgroundColor: '#F8FAFC',
+                      backgroundColor: 'var(--cb-bg-subtle)',
                       borderRadius: '12px',
-                      border: '1px solid #E2E8F0',
+                      border: '1px solid var(--cb-border-subtle)',
                       padding: '16px 18px',
                       marginBottom: '24px',
                       flex: 1,
@@ -548,15 +547,15 @@ export default function ServicesPage() {
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.06em',
-                        color: '#64748B',
+                        color: 'var(--cb-text-muted)',
                         marginBottom: '12px',
                       }}>
                         Key Deliverables &amp; Capabilities
                       </div>
                       <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', padding: 0, margin: 0 }}>
                         {service.features.map((feature, fIdx) => (
-                          <li key={fIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: '#334155', lineHeight: 1.45 }}>
-                            <CheckCircle2 size={16} color="#0284C7" style={{ flexShrink: 0, marginTop: '2px' }} />
+                          <li key={fIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--cb-text-primary)', lineHeight: 1.45 }}>
+                            <CheckCircle2 size={16} style={{ color: 'var(--cb-cyan-500)', flexShrink: 0, marginTop: '2px' }} />
                             <span>{feature}</span>
                           </li>
                         ))}
@@ -566,41 +565,38 @@ export default function ServicesPage() {
                     {/* Action Button */}
                     <Link
                       href={`/request-project?service=${encodeURIComponent(service.title)}`}
+                      className="cb-btn cb-btn-outline-pill"
                       style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
                         width: '100%',
-                        padding: '12px 18px',
-                        borderRadius: '10px',
-                        backgroundColor: '#0B1B3D',
-                        color: '#FFFFFF',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        textDecoration: 'none',
-                        transition: 'background-color 0.15s ease',
+                        display: 'inline-flex',
+                        justifyContent: 'center',
                       }}
                     >
                       <span>Scope this Project</span>
                       <ArrowRight size={16} />
                     </Link>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+              </AnimatePresence>
+            </motion.div>
 
             {/* ============================================================= */}
             {/* 4. CUSTOM BESPOKE SOLUTION CALLOUT                            */}
             {/* ============================================================= */}
-            <div style={{
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              style={{
               marginTop: '64px',
-              backgroundColor: '#070F26',
+              background: 'linear-gradient(135deg, var(--cb-navy-950) 0%, var(--cb-navy-800) 100%)',
               borderRadius: '24px',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               padding: '48px 36px',
               textAlign: 'center',
-              boxShadow: '0 20px 45px -10px rgba(7, 15, 38, 0.4)',
+              boxShadow: 'var(--cb-shadow-lg)',
               position: 'relative',
               overflow: 'hidden',
             }}>
@@ -642,47 +638,34 @@ export default function ServicesPage() {
                 </p>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', justifyContent: 'center' }}>
-                  <Link
-                    href="/request-project"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '14px 28px',
-                      borderRadius: '12px',
-                      backgroundColor: '#0284C7',
-                      color: '#FFFFFF',
-                      fontSize: '15px',
-                      fontWeight: 700,
-                      textDecoration: 'none',
-                      boxShadow: '0 4px 15px rgba(2, 132, 199, 0.35)',
-                    }}
-                  >
-                    <span>Discuss Your Custom Requirements</span>
-                    <ArrowRight size={16} />
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href="/request-project"
+                      className="cb-btn cb-btn-cyan"
+                      style={{ padding: '14px 28px', fontSize: '15px' }}
+                    >
+                      <span>Discuss Your Custom Requirements</span>
+                      <ArrowRight size={16} />
+                    </Link>
+                  </motion.div>
 
-                  <Link
-                    href="/contact"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '14px 24px',
-                      borderRadius: '12px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      color: '#FFFFFF',
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      textDecoration: 'none',
-                    }}
-                  >
-                    <span>Contact Technical Desk</span>
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href="/contact"
+                      className="cb-btn cb-btn-outline-pill"
+                      style={{
+                        padding: '14px 24px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        borderColor: 'rgba(255, 255, 255, 0.15)',
+                        color: '#FFFFFF',
+                      }}
+                    >
+                      <span>Contact Technical Desk</span>
+                    </Link>
+                  </motion.div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
       </main>

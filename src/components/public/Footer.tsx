@@ -26,7 +26,7 @@ export default function Footer() {
               <CodeBridgeLogo size="md" variant="light-text" href="/" showTagline={true} />
             </div>
             <p style={{ fontSize: '14px', color: '#94A3B8', lineHeight: 1.65, marginBottom: '20px' }}>
-              Digital products &amp; custom technology solutions engineered for market impact. Delivering web platforms, e-commerce, and business management systems for enterprises across Nigeria and Kenya.
+              Digital products &amp; custom technology solutions engineered for market impact. Delivering web platforms, e-commerce, and business management systems for enterprises globally.
             </p>
             <div style={{
               display: 'inline-flex',
@@ -40,7 +40,7 @@ export default function Footer() {
               color: '#CBD5E1',
             }}>
               <Globe2 size={14} color="#00B4D8" />
-              Serving businesses across Nigeria &amp; Kenya
+              Serving businesses globally
             </div>
           </div>
 
@@ -71,7 +71,7 @@ export default function Footer() {
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '11px', fontSize: '14px', color: '#94A3B8' }}>
               <li><Link href="/how-it-works">How It Works</Link></li>
-              <li><Link href="/how-it-works#representatives">Sales Representatives (20% Comm.)</Link></li>
+              <li><Link href="/how-it-works#representatives">Sales Representatives</Link></li>
               <li><Link href="/about">About CodeBridge</Link></li>
               <li><Link href="/contact">Contact Us</Link></li>
               <li><Link href="/request-project">Request Project Scope</Link></li>
@@ -111,7 +111,7 @@ export default function Footer() {
                 color: '#CBD5E1',
               }}>
                 <strong style={{ color: '#FFFFFF', display: 'block', marginBottom: '2px' }}>Representative Workspace</strong>
-                Client lead registration &amp; 20% commission tracking
+                Client lead registration &amp; commission tracking
               </div>
             </div>
 
@@ -182,10 +182,7 @@ export default function Footer() {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-            <span>Serving businesses in Nigeria (NGN) &amp; Kenya (KES).</span>
-            <Link href="/contact" style={{ color: '#94A3B8', textDecoration: 'underline' }}>
-              support@codebridge.com
-            </Link>
+            <span>Serving businesses globally.</span>
           </div>
         </div>
       </div>

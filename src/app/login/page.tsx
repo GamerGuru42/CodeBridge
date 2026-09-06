@@ -103,26 +103,7 @@ export default function LoginPage() {
           {/* Logo & Return Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
             <CodeBridgeLogo size="md" variant="dark-text" href="/" />
-            <Link
-              href="/"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                backgroundColor: '#F1F5F9',
-                border: '1px solid #E2E8F0',
-                color: '#0284C7',
-                fontSize: '12px',
-                fontWeight: 700,
-                textDecoration: 'none',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <ArrowLeft size={13} />
-              Return to Home
-            </Link>
+
           </div>
 
           <h1 style={{
@@ -421,7 +402,7 @@ export default function LoginPage() {
               color: '#CBD5E1',
               fontWeight: 400,
             }}>
-              Ideas to Impact &mdash; High-performance digital products and custom business software engineered for companies across Africa.
+              Ideas to Impact &mdash; High-performance digital products and custom business software engineered for companies globally.
             </p>
 
             <div style={{
@@ -436,7 +417,7 @@ export default function LoginPage() {
               fontSize: '12px',
               color: '#94A3B8',
             }}>
-              <span>Serving Nigeria &bull; Kenya</span>
+              <span>Serving businesses globally</span>
             </div>
           </div>
         </div>

@@ -1,6 +1,9 @@
+"use client";
+
 // src/app/page.tsx
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 import {
@@ -8,19 +11,25 @@ import {
   Smartphone,
   Layout,
   Layers,
-  Users,
   ShieldCheck,
   Zap,
   Lock,
-  FileText,
-  Star,
-  Clock,
   ArrowRight,
 } from 'lucide-react';
 
 export default function HomePage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as any } },
+  };
+
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ backgroundColor: 'var(--cb-bg-page)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
 
       <main style={{ flex: 1 }}>
@@ -29,7 +38,6 @@ export default function HomePage() {
         {/* ================================================================= */}
         <section style={{
           padding: '70px 0 60px',
-          backgroundColor: '#FFFFFF',
           position: 'relative',
           overflow: 'hidden',
         }}>
@@ -54,152 +62,188 @@ export default function HomePage() {
               alignItems: 'center',
             }}>
               {/* Left Column: Headline, Copy, Dual Pill Buttons, Trust Props */}
-              <div>
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 {/* Eyebrow Pill */}
-                <div style={{
+                <motion.div variants={itemVariants} style={{
+                  display: 'inline-block',
                   fontSize: '12px',
                   fontWeight: 800,
                   letterSpacing: '0.08em',
-                  color: '#0284C7',
+                  color: 'var(--cb-cyan-500)',
+                  backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                  padding: '6px 12px',
+                  borderRadius: '100px',
                   textTransform: 'uppercase',
-                  marginBottom: '18px',
+                  marginBottom: '24px',
                 }}>
-                  GLOBAL TECH TALENT &bull; AFRICA&apos;S GROWTH
-                </div>
+                  GLOBAL TECH TALENT &bull; WORLD CLASS ENGINEERING
+                </motion.div>
 
                 {/* Main Headline */}
-                <h1 style={{
+                <motion.h1 variants={itemVariants} style={{
                   fontSize: 'clamp(38px, 5.2vw, 58px)',
                   fontWeight: 900,
                   lineHeight: 1.12,
                   letterSpacing: '-0.03em',
-                  color: '#0B1B3D',
+                  color: 'var(--cb-text-primary)',
                   marginBottom: '20px',
                 }}>
                   Build Your Project.<br />
-                  Bridge to <span style={{ color: '#00B4D8' }}>Africa.</span>
-                </h1>
+                  Bridge to <span className="cb-text-gradient">Success.</span>
+                </motion.h1>
 
                 {/* Subtitle */}
-                <p style={{
+                <motion.p variants={itemVariants} style={{
                   fontSize: 'clamp(15px, 1.8vw, 17px)',
                   lineHeight: 1.6,
-                  color: '#475569',
+                  color: 'var(--cb-text-secondary)',
                   maxWidth: '520px',
                   marginBottom: '32px',
                 }}>
-                  CodeBridge designs, develops, and deploys high-performance digital products and custom business software for companies across Nigeria and Kenya &mdash; delivered on time and within budget.
-                </p>
+                  CodeBridge designs, develops, and deploys high-performance digital products and custom business software for companies globally &mdash; delivered on time and within budget.
+                </motion.p>
 
                 {/* Dual Pill CTA Buttons */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', marginBottom: '40px' }}>
-                  <Link
-                    href="/request-project"
-                    className="cb-btn cb-btn-navy"
-                    style={{ padding: '13px 28px', fontSize: '15px' }}
-                  >
-                    Get Started
-                  </Link>
-                  <Link
-                    href="/how-it-works"
-                    className="cb-btn cb-btn-outline-pill"
-                    style={{ padding: '13px 28px', fontSize: '15px' }}
-                  >
-                    Learn More
-                  </Link>
-                </div>
+                <motion.div variants={itemVariants} style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', marginBottom: '40px' }}>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href="/request-project"
+                      className="cb-btn cb-btn-cyan"
+                      style={{ padding: '13px 28px', fontSize: '15px' }}
+                    >
+                      Get Started
+                    </Link>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href="/how-it-works"
+                      className="cb-btn cb-btn-outline-pill"
+                      style={{ padding: '13px 28px', fontSize: '15px', borderColor: 'var(--cb-border-light)', color: 'var(--cb-text-primary)' }}
+                    >
+                      Learn More
+                    </Link>
+                  </motion.div>
+                </motion.div>
 
                 {/* Trust / Value Props Row */}
-                <div style={{
+                <motion.div variants={itemVariants} style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                   gap: '16px',
-                  paddingTop: '16px',
-                  borderTop: '1px solid #F1F5F9',
+                  paddingTop: '20px',
+                  borderTop: '1px solid var(--cb-border-subtle)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                    <div style={{ color: '#0B1B3D', marginTop: '2px' }}>
-                      <ShieldCheck size={20} color="#0B1B3D" />
+                    <div style={{ color: 'var(--cb-text-primary)', marginTop: '2px' }}>
+                      <ShieldCheck size={20} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B1B3D' }}>Vetted Talent</div>
-                      <div style={{ fontSize: '11px', color: '#64748B' }}>Pre-screened professionals</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>Vetted Talent</div>
+                      <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Pre-screened professionals</div>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                    <div style={{ color: '#0B1B3D', marginTop: '2px' }}>
-                      <Zap size={20} color="#0B1B3D" />
+                    <div style={{ color: 'var(--cb-text-primary)', marginTop: '2px' }}>
+                      <Zap size={20} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B1B3D' }}>Fast Delivery</div>
-                      <div style={{ fontSize: '11px', color: '#64748B' }}>Get results, on time</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>Fast Delivery</div>
+                      <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Get results, on time</div>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                    <div style={{ color: '#0B1B3D', marginTop: '2px' }}>
-                      <Lock size={20} color="#0B1B3D" />
+                    <div style={{ color: 'var(--cb-text-primary)', marginTop: '2px' }}>
+                      <Lock size={20} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#0B1B3D' }}>Secure &amp; Reliable</div>
-                      <div style={{ fontSize: '11px', color: '#64748B' }}>Your project, our priority</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>Secure &amp; Reliable</div>
+                      <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Your project, our priority</div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
               {/* Right Column: Hero Visual with Doodles and Floating Badge */}
-              <div style={{ position: 'relative' }}>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+                style={{ position: 'relative' }}
+              >
                 {/* Playful Doodles: Top right star and curved note */}
-                <div style={{
-                  position: 'absolute',
-                  top: '-24px',
-                  right: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                }}>
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  style={{
+                    position: 'absolute',
+                    top: '-24px',
+                    right: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    zIndex: 2,
+                    pointerEvents: 'none',
+                  }}
+                >
                   <span style={{
                     fontFamily: 'cursive, var(--cb-font-sans)',
                     fontSize: '15px',
                     fontWeight: 600,
-                    color: '#0284C7',
+                    color: 'var(--cb-cyan-500)',
                     transform: 'rotate(4deg)',
                     whiteSpace: 'nowrap',
-                    textShadow: '0 1px 2px rgba(255,255,255,0.8)',
+                    textShadow: '0 1px 2px rgba(255,255,255,0.2)',
                   }}>
                     Great engineering builds great products
                   </span>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L14.5 8.5L21 9.5L16 14.5L17.5 21L12 17.5L6.5 21L8 14.5L3 9.5L9.5 8.5L12 2Z" stroke="#00B4D8" strokeWidth="2" fill="rgba(0,180,216,0.15)"/>
+                    <path d="M12 2L14.5 8.5L21 9.5L16 14.5L17.5 21L12 17.5L6.5 21L8 14.5L3 9.5L9.5 8.5L12 2Z" stroke="var(--cb-cyan-400)" strokeWidth="2" fill="rgba(0,180,216,0.15)"/>
                   </svg>
-                </div>
+                </motion.div>
 
                 {/* Hand-drawn curved arrow doodle */}
-                <div style={{
-                  position: 'absolute',
-                  top: '10px',
-                  left: '-10px',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                }}>
+                <motion.div
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 1 }}
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '-10px',
+                    zIndex: 2,
+                    pointerEvents: 'none',
+                  }}
+                >
                   <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <path d="M8 28 C 14 12, 28 8, 36 14" stroke="#00B4D8" strokeWidth="2.5" strokeLinecap="round"/>
-                    <path d="M30 8 L 36 14 L 32 20" stroke="#00B4D8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <motion.path 
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 1.5, delay: 0.8 }}
+                      d="M8 28 C 14 12, 28 8, 36 14" stroke="var(--cb-cyan-400)" strokeWidth="2.5" strokeLinecap="round"
+                    />
+                    <motion.path 
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.5, delay: 2.3 }}
+                      d="M30 8 L 36 14 L 32 20" stroke="var(--cb-cyan-400)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    />
                   </svg>
-                </div>
+                </motion.div>
 
                 {/* Hero Collaboration Image Container */}
                 <div style={{
                   position: 'relative',
                   borderRadius: '24px',
                   overflow: 'hidden',
-                  boxShadow: '0 20px 40px -12px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04)',
+                  boxShadow: 'var(--cb-shadow-lg)',
                   aspectRatio: '3/2',
-                  backgroundColor: '#F1F5F9',
+                  backgroundColor: 'var(--cb-bg-subtle)',
                 }}>
                   <Image
                     src="/images/hero-talent.jpg"
@@ -209,167 +253,77 @@ export default function HomePage() {
                     priority
                     style={{ objectFit: 'cover' }}
                   />
-
-                  {/* Floating Flag Badge (Nigeria & Kenya) - Repositioned cleanly to bottom-left */}
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '18px',
-                    left: '20px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-                    backdropFilter: 'blur(10px)',
-                    padding: '8px 16px',
-                    borderRadius: '9999px',
-                    boxShadow: '0 12px 28px -4px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.06)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    zIndex: 3,
-                  }}>
-                    {/* High-fidelity circular flag badges (prevents Windows OS from displaying ugly text 'NG KE') */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      {/* Nigeria Flag */}
-                      <svg width="22" height="22" viewBox="0 0 32 32" style={{ borderRadius: '50%', boxShadow: '0 1px 3px rgba(0,0,0,0.18)', flexShrink: 0 }} aria-label="Nigeria Flag">
-                        <rect width="10.67" height="32" x="0" fill="#008751" />
-                        <rect width="10.67" height="32" x="10.67" fill="#FFFFFF" />
-                        <rect width="10.67" height="32" x="21.33" fill="#008751" />
-                      </svg>
-                      {/* Kenya Flag */}
-                      <svg width="22" height="22" viewBox="0 0 32 32" style={{ borderRadius: '50%', boxShadow: '0 1px 3px rgba(0,0,0,0.18)', flexShrink: 0 }} aria-label="Kenya Flag">
-                        <rect width="32" height="9" y="0" fill="#000000" />
-                        <rect width="32" height="2.5" y="9" fill="#FFFFFF" />
-                        <rect width="32" height="9" y="11.5" fill="#BB0000" />
-                        <rect width="32" height="2.5" y="20.5" fill="#FFFFFF" />
-                        <rect width="32" height="9" y="23" fill="#006600" />
-                        <ellipse cx="16" cy="16" rx="3.5" ry="7" fill="#BB0000" stroke="#FFFFFF" strokeWidth="0.8" />
-                        <ellipse cx="16" cy="16" rx="1" ry="5.5" fill="#000000" />
-                      </svg>
-                    </div>
-
-                    <div style={{ lineHeight: 1.25 }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#0B1B3D', whiteSpace: 'nowrap' }}>
-                        Serving businesses
-                      </div>
-                      <div style={{ fontSize: '11px', fontWeight: 500, color: '#64748B', whiteSpace: 'nowrap' }}>
-                        in Nigeria &amp; Kenya
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
 
-        {/* ================================================================= */}
-        {/* 2. METRICS / SOCIAL PROOF STRIP                                   */}
-        {/* ================================================================= */}
-        <section style={{
-          backgroundColor: '#FFFFFF',
-          borderTop: '1px solid #F1F5F9',
-          borderBottom: '1px solid #F1F5F9',
-          padding: '36px 0',
-        }}>
-          <div className="cb-container">
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-              gap: '24px',
-              textAlign: 'center',
-            }}>
-              {/* Stat 1 */}
-              <div style={{ padding: '8px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#0B1B3D', marginBottom: '8px' }}>
-                  <Users size={22} />
-                </div>
-                <div style={{ fontSize: '28px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.03em' }}>500+</div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: '#64748B' }}>Verified Developers</div>
-              </div>
 
-              {/* Stat 2 */}
-              <div style={{ padding: '8px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#0B1B3D', marginBottom: '8px' }}>
-                  <FileText size={22} />
-                </div>
-                <div style={{ fontSize: '28px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.03em' }}>300+</div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: '#64748B' }}>Projects Delivered</div>
-              </div>
-
-              {/* Stat 3 */}
-              <div style={{ padding: '8px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#0B1B3D', marginBottom: '8px' }}>
-                  <Star size={22} />
-                </div>
-                <div style={{ fontSize: '28px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.03em' }}>98%</div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: '#64748B' }}>Client Satisfaction</div>
-              </div>
-
-              {/* Stat 4 */}
-              <div style={{ padding: '8px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#0B1B3D', marginBottom: '8px' }}>
-                  <Clock size={22} />
-                </div>
-                <div style={{ fontSize: '28px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.03em' }}>24/7</div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: '#64748B' }}>Support</div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* ================================================================= */}
         {/* 3. SERVICES SHOWCASE SECTION                                      */}
         {/* ================================================================= */}
         <section style={{
           padding: '80px 0',
-          backgroundColor: '#FFFFFF',
+          position: 'relative',
         }}>
           <div className="cb-container">
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '48px',
-              alignItems: 'center',
-            }}>
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={containerVariants}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gap: '48px',
+                alignItems: 'center',
+              }}
+            >
               {/* Left Column: Heading, Description, CTA */}
               <div>
-                <div style={{
+                <motion.div variants={itemVariants} style={{
                   fontSize: '12px',
                   fontWeight: 800,
                   letterSpacing: '0.08em',
-                  color: '#0284C7',
+                  color: 'var(--cb-cyan-500)',
                   textTransform: 'uppercase',
                   marginBottom: '14px',
                 }}>
                   OUR SERVICES
-                </div>
+                </motion.div>
 
-                <h2 style={{
+                <motion.h2 variants={itemVariants} style={{
                   fontSize: 'clamp(28px, 3.6vw, 40px)',
                   fontWeight: 900,
                   lineHeight: 1.2,
                   letterSpacing: '-0.03em',
-                  color: '#00B4D8',
+                  color: 'var(--cb-text-primary)',
                   marginBottom: '18px',
                 }}>
                   Comprehensive Tech Talent &amp; Development Solutions
-                </h2>
+                </motion.h2>
 
-                <p style={{
+                <motion.p variants={itemVariants} style={{
                   fontSize: '15px',
                   lineHeight: 1.6,
-                  color: '#475569',
+                  color: 'var(--cb-text-secondary)',
                   marginBottom: '32px',
                   maxWidth: '440px',
                 }}>
                   From high-converting websites to complex enterprise platforms, we engineer tailored software for your business needs.
-                </p>
+                </motion.p>
 
-                <Link
-                  href="/services"
-                  className="cb-btn cb-btn-navy"
-                  style={{ padding: '13px 28px', fontSize: '14px' }}
-                >
-                  Explore All Services
-                </Link>
+                <motion.div variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ display: 'inline-block' }}>
+                  <Link
+                    href="/services"
+                    className="cb-btn cb-btn-cyan"
+                    style={{ padding: '13px 28px', fontSize: '14px' }}
+                  >
+                    Explore All Services
+                  </Link>
+                </motion.div>
               </div>
 
               {/* Right Column: 2x2 Service Cards Grid */}
@@ -378,127 +332,46 @@ export default function HomePage() {
                 gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
                 gap: '20px',
               }}>
-                {/* Card 1: Web Development */}
-                <div style={{
-                  padding: '24px',
-                  borderRadius: '16px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '8px',
-                    backgroundColor: '#0B1B3D',
-                    color: '#FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '16px',
-                  }}>
-                    <Code size={20} />
-                  </div>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D', marginBottom: '8px' }}>
-                    Web Development
-                  </h3>
-                  <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#64748B' }}>
-                    Modern, scalable web applications for your business.
-                  </p>
-                </div>
-
-                {/* Card 2: Mobile App Development */}
-                <div style={{
-                  padding: '24px',
-                  borderRadius: '16px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '8px',
-                    backgroundColor: '#0B1B3D',
-                    color: '#FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '16px',
-                  }}>
-                    <Smartphone size={20} />
-                  </div>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D', marginBottom: '8px' }}>
-                    Mobile App Development
-                  </h3>
-                  <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#64748B' }}>
-                    iOS and Android apps that users love.
-                  </p>
-                </div>
-
-                {/* Card 3: UI/UX Design */}
-                <div style={{
-                  padding: '24px',
-                  borderRadius: '16px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '8px',
-                    backgroundColor: '#0B1B3D',
-                    color: '#FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '16px',
-                  }}>
-                    <Layout size={20} />
-                  </div>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D', marginBottom: '8px' }}>
-                    UI/UX Design
-                  </h3>
-                  <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#64748B' }}>
-                    Beautiful, intuitive designs that convert.
-                  </p>
-                </div>
-
-                {/* Card 4: Business Systems & BMS */}
-                <div style={{
-                  padding: '24px',
-                  borderRadius: '16px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '8px',
-                    backgroundColor: '#0B1B3D',
-                    color: '#FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '16px',
-                  }}>
-                    <Layers size={20} />
-                  </div>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D', marginBottom: '8px' }}>
-                    Business Systems &amp; BMS
-                  </h3>
-                  <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#64748B' }}>
-                    Centralized portals, inventory &amp; operations software.
-                  </p>
-                </div>
+                {[
+                  { title: "Web Development", icon: <Code size={20} />, desc: "Modern, scalable web applications for your business." },
+                  { title: "Mobile App Development", icon: <Smartphone size={20} />, desc: "iOS and Android apps that users love." },
+                  { title: "UI/UX Design", icon: <Layout size={20} />, desc: "Beautiful, intuitive designs that convert." },
+                  { title: "Business Systems & BMS", icon: <Layers size={20} />, desc: "Centralized portals, inventory & operations software." }
+                ].map((service, idx) => (
+                  <motion.div
+                    key={idx}
+                    variants={itemVariants}
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    className="cb-glass"
+                    style={{
+                      padding: '24px',
+                      borderRadius: '16px',
+                      boxShadow: 'var(--cb-shadow-sm)',
+                    }}
+                  >
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '8px',
+                      backgroundColor: 'var(--cb-cyan-500)',
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '16px',
+                    }}>
+                      {service.icon}
+                    </div>
+                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--cb-text-primary)', marginBottom: '8px' }}>
+                      {service.title}
+                    </h3>
+                    <p style={{ fontSize: '13px', lineHeight: 1.5, color: 'var(--cb-text-secondary)' }}>
+                      {service.desc}
+                    </p>
+                  </motion.div>
+                ))}
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -506,17 +379,36 @@ export default function HomePage() {
         {/* 4. TRUSTED BY FORWARD-THINKING BUSINESSES BANNER                  */}
         {/* ================================================================= */}
         <section style={{
-          backgroundColor: '#0B1B3D',
-          padding: '60px 0',
+          background: 'linear-gradient(135deg, var(--cb-navy-950) 0%, var(--cb-navy-800) 100%)',
+          padding: '80px 0',
           textAlign: 'center',
           color: '#FFFFFF',
+          position: 'relative',
         }}>
-          <div className="cb-container">
+          {/* Decorative glow */}
+          <div style={{
+             position: 'absolute',
+             top: '50%',
+             left: '50%',
+             transform: 'translate(-50%, -50%)',
+             width: '60%',
+             height: '60%',
+             background: 'radial-gradient(ellipse at center, rgba(0, 180, 216, 0.15) 0%, transparent 70%)',
+             pointerEvents: 'none',
+          }}></div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="cb-container" style={{ position: 'relative', zIndex: 1 }}
+          >
             <h2 style={{
               fontSize: 'clamp(24px, 3.2vw, 34px)',
               fontWeight: 800,
               letterSpacing: '-0.02em',
-              marginBottom: '12px',
+              marginBottom: '16px',
               color: '#FFFFFF',
             }}>
               Trusted by Forward-Thinking Businesses
@@ -528,9 +420,9 @@ export default function HomePage() {
               margin: '0 auto',
               lineHeight: 1.6,
             }}>
-              From startups to established companies, we help organizations build, scale, and succeed.
+              From startups to established companies, we help organizations build, scale, and succeed with cutting-edge engineering.
             </p>
-          </div>
+          </motion.div>
         </section>
       </main>
 

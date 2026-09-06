@@ -74,26 +74,7 @@ export default function RegisterPage() {
         {/* Logo & Return Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <CodeBridgeLogo size="md" variant="dark-text" href="/" />
-          <Link
-            href="/"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              backgroundColor: '#F1F5F9',
-              border: '1px solid #E2E8F0',
-              color: '#0284C7',
-              fontSize: '12px',
-              fontWeight: 700,
-              textDecoration: 'none',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            <ArrowLeft size={13} />
-            Return to Home
-          </Link>
+
         </div>
 
         <h1 style={{
@@ -189,7 +170,7 @@ export default function RegisterPage() {
               Sales Representative
             </div>
             <span style={{ fontSize: '11px', color: accountType === 'REPRESENTATIVE' ? 'rgba(255, 255, 255, 0.9)' : '#64748B', lineHeight: 1.3 }}>
-              Introduce client projects, earn 20% commission
+              Introduce client projects, earn commission
             </span>
           </button>
         </div>
@@ -259,7 +240,7 @@ export default function RegisterPage() {
               color: '#64748B',
               lineHeight: 1.5,
             }}>
-              Instant workspace activation &bull; Choice of 🇳🇬 Nigeria or 🇰🇪 Kenya post-login &bull; Direct monthly commission settlement
+              Instant workspace activation &bull; Global support &bull; Direct monthly commission settlement
             </div>
           </div>
         ) : (
@@ -384,8 +365,8 @@ export default function RegisterPage() {
                       backgroundColor: '#FFFFFF',
                     }}
                   >
-                    <option value="NG">🇳🇬 Nigeria (NGN)</option>
-                    <option value="KE">🇰🇪 Kenya (KES)</option>
+                    <option value="NG">Nigeria</option>
+                    <option value="KE">Kenya</option>
                   </select>
                 </div>
               </div>

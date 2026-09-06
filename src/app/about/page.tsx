@@ -4,6 +4,7 @@
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,12 +23,12 @@ export default function AboutPage() {
   const corePillars = [
     {
       icon: Globe,
-      title: 'Multi-Country Operational Footprint',
-      desc: 'CodeBridge operates primary operational hubs in Lagos, Nigeria and Nairobi, Kenya. The entire platform architecture — ISO currencies (NGN & KES), country scopes, representative networks, and billing pipelines — is built for seamless regional execution.',
+      title: 'Global Operational Footprint',
+      desc: 'CodeBridge operates globally, seamlessly handling international project execution and cross-border collaboration.',
       highlights: [
-        'Dedicated country management in Nigeria & Kenya',
+        'Dedicated international management',
         'Strict currency boundary isolation (zero FX ambiguity)',
-        'Local commercial presence with global engineering standards'
+        'Global commercial presence with high engineering standards'
       ]
     },
     {
@@ -62,106 +63,97 @@ export default function AboutPage() {
     }
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as any } },
+  };
+
   return (
     <>
       <Navbar />
 
-      <main style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+      <main style={{ minHeight: '100vh', backgroundColor: 'var(--cb-bg-page)' }}>
         {/* ================================================================= */}
         {/* 1. HERO SECTION                                                   */}
         {/* ================================================================= */}
         <section style={{
-          background: 'linear-gradient(180deg, #EDF7FF 0%, #F8FAFC 100%)',
-          padding: '64px 0 48px',
-          borderBottom: '1px solid #E2E8F0',
+          background: 'linear-gradient(180deg, rgba(0, 180, 216, 0.05) 0%, transparent 100%)',
+          padding: '80px 0 60px',
+          borderBottom: '1px solid var(--cb-border-subtle)',
         }}>
           <div className="cb-container" style={{ maxWidth: '820px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
-              <Link
-                href="/"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '9999px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #CBD5E1',
-                  color: '#0B1B3D',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <ArrowLeft size={14} />
-                Return to Home
-              </Link>
-            </div>
-
-            <div style={{ textAlign: 'center' }}>
-            <div style={{
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              style={{ textAlign: 'center' }}
+            >
+            <motion.div variants={itemVariants} style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
               padding: '6px 16px',
               borderRadius: '9999px',
-              backgroundColor: '#E0F2FE',
-              border: '1px solid #BAE6FD',
-              color: '#0284C7',
+              backgroundColor: 'rgba(0, 180, 216, 0.1)',
+              border: '1px solid rgba(0, 180, 216, 0.2)',
+              color: 'var(--cb-cyan-500)',
               fontSize: '12px',
               fontWeight: 700,
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              marginBottom: '20px',
+              marginBottom: '24px',
             }}>
               <Sparkles size={14} />
               Corporate Structure &amp; Engineering Mission
-            </div>
+            </motion.div>
 
-            <h1 style={{
+            <motion.h1 variants={itemVariants} style={{
               fontSize: 'clamp(32px, 5vw, 46px)',
               fontWeight: 900,
               letterSpacing: '-0.03em',
               lineHeight: 1.15,
-              color: '#0B1B3D',
-              marginBottom: '16px',
+              color: 'var(--cb-text-primary)',
+              marginBottom: '20px',
             }}>
               Connecting Global Demand with Africa&apos;s{' '}
-              <span style={{
-                background: 'linear-gradient(135deg, #0284C7 0%, #00B4D8 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>
+              <span className="cb-text-gradient">
                 Premier Tech Talent
               </span>
-            </h1>
+            </motion.h1>
 
-            <p style={{
+            <motion.p variants={itemVariants} style={{
               fontSize: '17px',
               lineHeight: 1.65,
-              color: '#475569',
+              color: 'var(--cb-text-secondary)',
               maxWidth: '720px',
               margin: '0 auto 24px',
             }}>
               CodeBridge is a dedicated digital products and engineering platform operated by <strong>MarketBridge NG LTD</strong>. Built for business, designed for scale.
-            </p>
-            </div>
+            </motion.p>
+            </motion.div>
           </div>
         </section>
 
         {/* ================================================================= */}
         {/* 2. CORPORATE GOVERNANCE CARD                                      */}
         {/* ================================================================= */}
-        <section style={{ padding: '60px 0 30px' }}>
+        <section style={{ padding: '80px 0 40px' }}>
           <div className="cb-container">
-            <div style={{
-              backgroundColor: '#FFFFFF',
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="cb-glass"
+              style={{
               borderRadius: '24px',
-              border: '1px solid #E2E8F0',
               padding: '44px 36px',
-              boxShadow: '0 12px 36px -6px rgba(15, 23, 42, 0.05)',
+              boxShadow: 'var(--cb-shadow-md)',
               marginBottom: '64px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
@@ -169,33 +161,33 @@ export default function AboutPage() {
                   width: '48px',
                   height: '48px',
                   borderRadius: '12px',
-                  backgroundColor: '#E0F2FE',
+                  backgroundColor: 'rgba(0, 180, 216, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#0284C7',
+                  color: 'var(--cb-cyan-500)',
                 }}>
                   <ShieldCheck size={26} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--cb-cyan-600)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Institutional Backing
                   </div>
-                  <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.02em' }}>
+                  <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--cb-text-primary)', letterSpacing: '-0.02em' }}>
                     Corporate Governance: MarketBridge NG LTD
                   </h2>
                 </div>
               </div>
 
-              <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.7, marginBottom: '28px', maxWidth: '840px' }}>
+              <p style={{ fontSize: '15px', color: 'var(--cb-text-secondary)', lineHeight: 1.7, marginBottom: '28px', maxWidth: '840px' }}>
                 CodeBridge is built and owned by <strong>MarketBridge NG LTD</strong> as its flagship technology and digital-products business platform. By combining institutional governance with agile, vetted engineering squads, CodeBridge delivers the reliability of a tier-1 consultancy with the speed and capital efficiency of an elite product studio.
               </p>
 
               {/* Visual Governance Hierarchy Card */}
               <div style={{
-                backgroundColor: '#F8FAFC',
+                backgroundColor: 'var(--cb-bg-subtle)',
                 borderRadius: '16px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--cb-border-subtle)',
                 padding: '24px 28px',
               }}>
                 <div style={{
@@ -204,76 +196,62 @@ export default function AboutPage() {
                   gap: '20px',
                 }}>
                   <div style={{
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'var(--cb-bg-card)',
                     borderRadius: '12px',
-                    border: '1px solid #E2E8F0',
+                    border: '1px solid var(--cb-border-subtle)',
                     padding: '20px',
-                    boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)',
+                    boxShadow: 'var(--cb-shadow-sm)',
                   }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
                       Parent Organization
                     </div>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#0B1B3D', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--cb-text-primary)', marginBottom: '4px' }}>
                       MarketBridge NG LTD
                     </div>
-                    <div style={{ fontSize: '13px', color: '#64748B' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--cb-text-secondary)' }}>
                       Corporate Governance, Legal Frameworks &amp; Milestone Escrow Security
                     </div>
                   </div>
 
                   <div style={{
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'var(--cb-bg-card)',
                     borderRadius: '12px',
-                    border: '1px solid #0284C7',
+                    border: '1px solid var(--cb-cyan-500)',
                     padding: '20px',
-                    boxShadow: '0 4px 12px rgba(2, 132, 199, 0.08)',
+                    boxShadow: 'var(--cb-shadow-glow)',
                   }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#0284C7', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--cb-cyan-500)', textTransform: 'uppercase', marginBottom: '6px' }}>
                       Technology Platform
                     </div>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#0B1B3D', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--cb-text-primary)', marginBottom: '4px' }}>
                       CodeBridge
                     </div>
-                    <div style={{ fontSize: '13px', color: '#0284C7', fontWeight: 600 }}>
+                    <div style={{ fontSize: '13px', color: 'var(--cb-cyan-600)', fontWeight: 600 }}>
                       &ldquo;Ideas to Impact • Built for Business&rdquo;
-                    </div>
-                  </div>
-
-                  <div style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '12px',
-                    border: '1px solid #E2E8F0',
-                    padding: '20px',
-                    boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)',
-                  }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      Regional Hubs
-                    </div>
-                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#0B1B3D', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>Nigeria 🇳🇬</span>
-                      <span style={{ color: '#94A3B8' }}>•</span>
-                      <span>Kenya 🇰🇪</span>
-                    </div>
-                    <div style={{ fontSize: '13px', color: '#64748B' }}>
-                      Localized Commercial Scoping, Currency Locks (NGN / KES) &amp; Partner Networks
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* ============================================================= */}
             {/* 3. FOUR CORE PHILOSOPHY PILLARS                               */}
             {/* ============================================================= */}
-            <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 40px' }}>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 40px' }}
+            >
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
                 padding: '4px 12px',
                 borderRadius: '6px',
-                backgroundColor: '#F0F9FF',
-                color: '#0284C7',
+                backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                color: 'var(--cb-cyan-500)',
                 fontSize: '12px',
                 fontWeight: 700,
                 textTransform: 'uppercase',
@@ -282,31 +260,38 @@ export default function AboutPage() {
                 <Award size={14} />
                 Our Core Principles
               </div>
-              <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#0B1B3D', letterSpacing: '-0.02em', marginBottom: '8px' }}>
+              <h2 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)', letterSpacing: '-0.02em', marginBottom: '8px' }}>
                 The CodeBridge Standard
               </h2>
-              <p style={{ fontSize: '15px', color: '#64748B' }}>
+              <p style={{ fontSize: '15px', color: 'var(--cb-text-secondary)' }}>
                 Why modern companies trust CodeBridge for mission-critical software engineering.
               </p>
-            </div>
+            </motion.div>
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-              gap: '28px',
-              marginBottom: '64px',
-            }}>
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={containerVariants}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+                gap: '28px',
+                marginBottom: '64px',
+              }}
+            >
               {corePillars.map((pillar, idx) => {
                 const Icon = pillar.icon;
                 return (
-                  <div
+                  <motion.div
                     key={idx}
+                    variants={itemVariants}
+                    whileHover={{ y: -8 }}
+                    className="cb-glass"
                     style={{
-                      backgroundColor: '#FFFFFF',
                       borderRadius: '20px',
-                      border: '1px solid #E2E8F0',
                       padding: '32px 28px',
-                      boxShadow: '0 8px 24px -4px rgba(15, 23, 42, 0.04)',
+                      boxShadow: 'var(--cb-shadow-sm)',
                       display: 'flex',
                       flexDirection: 'column',
                     }}
@@ -315,108 +300,111 @@ export default function AboutPage() {
                       width: '48px',
                       height: '48px',
                       borderRadius: '12px',
-                      backgroundColor: '#F0F9FF',
-                      border: '1px solid #BAE6FD',
+                      backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                      border: '1px solid rgba(0, 180, 216, 0.2)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#0284C7',
+                      color: 'var(--cb-cyan-500)',
                       marginBottom: '18px',
                     }}>
                       <Icon size={24} />
                     </div>
 
-                    <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0B1B3D', marginBottom: '10px', lineHeight: 1.3 }}>
+                    <h3 style={{ fontSize: '19px', fontWeight: 800, color: 'var(--cb-text-primary)', marginBottom: '10px', lineHeight: 1.3 }}>
                       {pillar.title}
                     </h3>
 
-                    <p style={{ fontSize: '14px', color: '#475569', lineHeight: 1.6, marginBottom: '20px', flex: 1 }}>
+                    <p style={{ fontSize: '14px', color: 'var(--cb-text-secondary)', lineHeight: 1.6, marginBottom: '20px', flex: 1 }}>
                       {pillar.desc}
                     </p>
 
                     <div style={{
-                      backgroundColor: '#F8FAFC',
+                      backgroundColor: 'var(--cb-bg-subtle)',
                       borderRadius: '10px',
                       padding: '14px',
-                      border: '1px solid #E2E8F0',
+                      border: '1px solid var(--cb-border-subtle)',
                     }}>
                       <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', padding: 0, margin: 0 }}>
                         {pillar.highlights.map((h, hIdx) => (
-                          <li key={hIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#334155' }}>
-                            <CheckCircle2 size={15} color="#0284C7" style={{ flexShrink: 0, marginTop: '2px' }} />
+                          <li key={hIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: 'var(--cb-text-primary)' }}>
+                            <CheckCircle2 size={15} className="text-cyan-500" style={{ color: 'var(--cb-cyan-500)', flexShrink: 0, marginTop: '2px' }} />
                             <span>{h}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
 
             {/* ============================================================= */}
             {/* 4. CALL TO ACTION                                             */}
             {/* ============================================================= */}
-            <div style={{
-              backgroundColor: '#070F26',
-              borderRadius: '24px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              padding: '48px 36px',
-              textAlign: 'center',
-              boxShadow: '0 20px 45px -10px rgba(7, 15, 38, 0.4)',
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              style={{
+                background: 'linear-gradient(135deg, var(--cb-navy-950) 0%, var(--cb-navy-800) 100%)',
+                borderRadius: '24px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '48px 36px',
+                textAlign: 'center',
+                boxShadow: 'var(--cb-shadow-lg)',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: '-50%',
+                left: '-50%',
+                width: '200%',
+                height: '200%',
+                background: 'radial-gradient(circle at 50% 50%, rgba(0, 180, 216, 0.15) 0%, transparent 60%)',
+                pointerEvents: 'none',
+              }}></div>
+              
               <div style={{ position: 'relative', zIndex: 1, maxWidth: '640px', margin: '0 auto' }}>
                 <h3 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', marginBottom: '12px' }}>
                   Partner with CodeBridge Today
                 </h3>
                 <p style={{ fontSize: '15px', color: '#94A3B8', lineHeight: 1.6, marginBottom: '28px' }}>
-                  Whether you are looking to build a high-performance business platform or apply to become a regional sales representative in Nigeria or Kenya.
+                  Whether you are looking to build a high-performance business platform or apply to become a regional sales representative.
                 </p>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', justifyContent: 'center' }}>
-                  <Link
-                    href="/request-project"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '14px 28px',
-                      borderRadius: '12px',
-                      backgroundColor: '#0284C7',
-                      color: '#FFFFFF',
-                      fontSize: '15px',
-                      fontWeight: 700,
-                      textDecoration: 'none',
-                      boxShadow: '0 4px 15px rgba(2, 132, 199, 0.4)',
-                    }}
-                  >
-                    <span>Request Project Proposal</span>
-                    <ArrowRight size={16} />
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href="/request-project"
+                      className="cb-btn cb-btn-cyan"
+                      style={{ padding: '14px 28px', fontSize: '15px' }}
+                    >
+                      <span>Request Project Proposal</span>
+                      <ArrowRight size={16} />
+                    </Link>
+                  </motion.div>
 
-                  <Link
-                    href="/register"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '14px 24px',
-                      borderRadius: '12px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      color: '#FFFFFF',
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      textDecoration: 'none',
-                    }}
-                  >
-                    <span>Become a Representative</span>
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href="/register"
+                      className="cb-btn cb-btn-outline-pill"
+                      style={{
+                        padding: '14px 24px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        borderColor: 'rgba(255, 255, 255, 0.15)',
+                        color: '#FFFFFF',
+                      }}
+                    >
+                      <span>Become a Representative</span>
+                    </Link>
+                  </motion.div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
       </main>

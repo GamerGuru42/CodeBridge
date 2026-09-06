@@ -1,13 +1,13 @@
 // src/components/common/CodeBridgeLogo.tsx
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 interface CodeBridgeLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | number;
-  variant?: 'dark-text' | 'light-text' | 'icon-only';
+  variant?: 'dark-text' | 'light-text' | 'icon-only' | 'auto';
   showTagline?: boolean;
   href?: string | null;
   className?: string;
@@ -16,12 +16,19 @@ interface CodeBridgeLogoProps {
 
 export default function CodeBridgeLogo({
   size = 'md',
-  variant = 'dark-text',
+  variant = 'auto',
   showTagline = true,
   href = '/',
   className = '',
   priority = true,
 }: CodeBridgeLogoProps) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Dimensions map
   const isIconOnly = variant === 'icon-only';
 
@@ -59,11 +66,18 @@ export default function CodeBridgeLogo({
   // Determine image source based on variant & tagline
   let src = '/images/codebridge-logo-full.png';
   let alt = 'CodeBridge — Ideas to Impact';
+  
+  let actualVariant = variant;
+  if (variant === 'auto' && mounted) {
+    actualVariant = resolvedTheme === 'dark' ? 'light-text' : 'dark-text';
+  } else if (variant === 'auto' && !mounted) {
+    actualVariant = 'dark-text'; // default before hydration
+  }
 
   if (isIconOnly) {
     src = '/images/codebridge-icon.png';
     alt = 'CodeBridge Icon';
-  } else if (variant === 'light-text') {
+  } else if (actualVariant === 'light-text') {
     src = showTagline
       ? '/images/codebridge-logo-light.png'
       : '/images/codebridge-logo-notag-light.png';

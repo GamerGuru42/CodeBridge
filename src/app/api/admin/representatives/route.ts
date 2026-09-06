@@ -4,6 +4,15 @@ import { getCurrentSession, recordAuditLog } from '@/lib/auth/session';
 import { query, queryOne, execute, transaction } from '@/lib/db/connection';
 import { RepApprovalStatus } from '@/lib/db/types';
 
+function generateReferralCode(): string {
+  const chars = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
 export async function GET() {
   try {
     const session = await getCurrentSession();
@@ -13,7 +22,7 @@ export async function GET() {
 
     const reps = await query(`
       SELECT r.id, r.user_id, r.approval_status, r.commission_rate_bps,
-             r.approved_at, r.notes, r.created_at,
+             r.referral_code, r.approved_at, r.notes, r.created_at,
              u.email, u.status as user_status,
              p.first_name, p.last_name, p.phone,
              c.code as country_code, c.name as country_name, c.currency,
@@ -54,8 +63,13 @@ export async function POST(req: NextRequest) {
     }
 
     let newStatus: RepApprovalStatus;
+    let newReferralCode: string | null = rep.referral_code || null;
+
     if (action === 'APPROVE') {
       newStatus = 'ACTIVE';
+      if (!newReferralCode) {
+        newReferralCode = generateReferralCode();
+      }
     } else if (action === 'REJECT') {
       newStatus = 'REJECTED';
     } else if (action === 'SUSPEND') {
@@ -73,6 +87,7 @@ export async function POST(req: NextRequest) {
         UPDATE representatives
         SET approval_status = ?,
             commission_rate_bps = ?,
+            referral_code = COALESCE(referral_code, ?),
             approved_at = CASE WHEN ? = 'ACTIVE' THEN datetime('now') ELSE approved_at END,
             approved_by = CASE WHEN ? = 'ACTIVE' THEN ? ELSE approved_by END,
             notes = COALESCE(?, notes),
@@ -81,6 +96,7 @@ export async function POST(req: NextRequest) {
       `, [
         newStatus,
         rateBps,
+        newReferralCode,
         newStatus,
         newStatus,
         session.userId,

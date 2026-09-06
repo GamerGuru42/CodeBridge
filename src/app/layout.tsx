@@ -1,23 +1,21 @@
 // src/app/layout.tsx
 import type { Metadata } from 'next';
+import { ThemeProvider } from '@/components/common/ThemeProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CodeBridge — Ideas to Impact | Build Your Project. Bridge to Africa.',
+  title: 'CodeBridge — Ideas to Impact | Build Your Project. Bridge to the World.',
   description:
-    'CodeBridge designs, develops, and deploys high-performance digital products and custom business software for companies across Nigeria and Kenya — delivered on time and within budget.',
+    'CodeBridge designs, develops, and deploys high-performance digital products and custom business software for companies globally — delivered on time and within budget.',
   keywords: [
     'CodeBridge',
     'Ideas to Impact',
-    'Digital products Nigeria',
-    'Digital products Kenya',
-    'Custom software development Africa',
+    'Digital products',
+    'Custom software development',
     'Web application development',
     'Business management systems',
     'E-commerce platforms',
-    'Milestone escrow software',
-    'Nigeria',
-    'Kenya'
+    'Milestone escrow software'
   ],
   icons: {
     icon: [

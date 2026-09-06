@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS representatives (
   country_id TEXT NOT NULL REFERENCES countries(id),
   approval_status TEXT NOT NULL DEFAULT 'PENDING' CHECK (approval_status IN ('PENDING', 'ACTIVE', 'SUSPENDED', 'REJECTED')),
   commission_rate_bps INTEGER NOT NULL DEFAULT 2000, -- 2000 basis points = 20.00%
+  referral_code TEXT UNIQUE,
   approved_at TEXT,
   approved_by TEXT REFERENCES users(id),
   notes TEXT,
@@ -68,6 +69,7 @@ CREATE TABLE IF NOT EXISTS clients (
 -- Leads (Lead lifecycle: NEW -> CONTACTED -> QUALIFIED -> REQUIREMENTS_COLLECTED -> PROPOSAL -> WON / LOST)
 CREATE TABLE IF NOT EXISTS leads (
   id TEXT PRIMARY KEY,
+  client_id TEXT REFERENCES clients(id),
   business_name TEXT NOT NULL,
   contact_person TEXT NOT NULL,
   email TEXT NOT NULL,
@@ -75,8 +77,11 @@ CREATE TABLE IF NOT EXISTS leads (
   country_id TEXT NOT NULL REFERENCES countries(id),
   business_type TEXT NOT NULL,
   requirements TEXT NOT NULL,
+  service_id TEXT REFERENCES services(id),
+  timeline TEXT,
   estimated_budget_minor INTEGER NOT NULL DEFAULT 0, -- Minor currency units (no float)
   currency TEXT NOT NULL DEFAULT 'NGN',
+  referral_source TEXT NOT NULL DEFAULT 'DIRECT',
   representative_id TEXT REFERENCES representatives(id),
   status TEXT NOT NULL DEFAULT 'NEW' CHECK (status IN ('NEW', 'CONTACTED', 'QUALIFIED', 'REQUIREMENTS_COLLECTED', 'PROPOSAL', 'WON', 'LOST')),
   notes TEXT,
@@ -316,6 +321,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   message TEXT NOT NULL,
   type TEXT NOT NULL DEFAULT 'INFO',
   is_read INTEGER NOT NULL DEFAULT 0,
+  link_url TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -323,10 +329,43 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE TABLE IF NOT EXISTS messages (
   id TEXT PRIMARY KEY,
   project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
+  lead_id TEXT REFERENCES leads(id) ON DELETE CASCADE,
+  message_type TEXT NOT NULL DEFAULT 'CHAT',
   sender_id TEXT NOT NULL REFERENCES users(id),
   recipient_id TEXT REFERENCES users(id),
   content TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Message Read Cursors
+CREATE TABLE IF NOT EXISTS message_read_cursors (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  lead_id TEXT REFERENCES leads(id) ON DELETE CASCADE,
+  project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
+  last_read_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Change Requests
+CREATE TABLE IF NOT EXISTS change_requests (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  proposal_id TEXT REFERENCES proposals(id),
+  requested_by TEXT NOT NULL REFERENCES users(id),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  impact_assessment TEXT,
+  status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN (
+    'PENDING', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'IMPLEMENTED'
+  )),
+  reviewed_by TEXT REFERENCES users(id),
+  reviewed_at TEXT,
+  review_notes TEXT,
+  requires_proposal_revision INTEGER NOT NULL DEFAULT 0,
+  new_proposal_id TEXT REFERENCES proposals(id),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- Project Documents / Files
@@ -359,9 +398,20 @@ CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
 CREATE INDEX IF NOT EXISTS idx_leads_rep ON leads(representative_id);
 CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
 CREATE INDEX IF NOT EXISTS idx_leads_country ON leads(country_id);
+CREATE INDEX IF NOT EXISTS idx_leads_client ON leads(client_id);
+CREATE INDEX IF NOT EXISTS idx_leads_referral_source ON leads(referral_source);
 CREATE INDEX IF NOT EXISTS idx_projects_client ON projects(client_id);
 CREATE INDEX IF NOT EXISTS idx_projects_rep ON projects(representative_id);
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_commissions_rep ON commissions(representative_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_rep_referral_code ON representatives(referral_code);
+CREATE INDEX IF NOT EXISTS idx_messages_lead ON messages(lead_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_read_cursor_user_lead
+  ON message_read_cursors(user_id, lead_id) WHERE lead_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_read_cursor_user_project
+  ON message_read_cursors(user_id, project_id) WHERE project_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_change_requests_project ON change_requests(project_id);
+CREATE INDEX IF NOT EXISTS idx_change_requests_status ON change_requests(status);
 `;

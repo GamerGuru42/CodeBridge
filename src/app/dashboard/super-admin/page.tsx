@@ -191,7 +191,7 @@ export default function SuperAdminDashboard() {
             Modeled Commission Accruals (Phase 1 Data Architecture — No Real Money Movement)
           </div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
-            Configurable 20% representative rate stored in minor integer units without floating point.
+            Configurable representative rate stored in minor integer units without floating point.
           </div>
         </div>
 
@@ -375,7 +375,7 @@ export default function SuperAdminDashboard() {
                               className="cb-btn cb-btn-primary cb-btn-sm"
                               style={{ backgroundColor: 'var(--cb-emerald-500)', borderColor: 'transparent' }}
                             >
-                              <CheckCircle2 size={13} /> Approve (20%)
+                              <CheckCircle2 size={13} /> Approve
                             </button>
                             <button
                               onClick={() => handleRepAction(r.id, 'REJECT')}

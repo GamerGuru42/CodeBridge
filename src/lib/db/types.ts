@@ -12,6 +12,12 @@ export type UserStatus = 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED';
 
 export type RepApprovalStatus = 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED';
 
+export type ReferralSource = 'DIRECT' | 'REFERRAL' | 'OTHER';
+
+export type MessageType = 'CHAT' | 'SYSTEM' | 'PROPOSAL_UPDATE' | 'CHANGE_REQUEST';
+
+export type ChangeRequestStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'IMPLEMENTED';
+
 export type LeadStatus =
   | 'NEW'
   | 'CONTACTED'
@@ -130,6 +136,7 @@ export interface Representative {
   country_id: string;
   approval_status: RepApprovalStatus;
   commission_rate_bps: number; // 2000 = 20.00%
+  referral_code?: string;
   approved_at?: string;
   approved_by?: string;
   notes?: string;
@@ -151,6 +158,7 @@ export interface Client {
 
 export interface Lead {
   id: string;
+  client_id?: string;
   business_name: string;
   contact_person: string;
   email: string;
@@ -158,8 +166,11 @@ export interface Lead {
   country_id: string;
   business_type: string;
   requirements: string;
+  service_id?: string;
+  timeline?: string;
   estimated_budget_minor: number; // In minor currency units (e.g. cents/kobo)
   currency: CurrencyCode;
+  referral_source: ReferralSource;
   representative_id?: string;
   status: LeadStatus;
   notes?: string;
@@ -349,6 +360,55 @@ export interface Proposal {
   approved_at?: string;
   approved_version?: number;
   rejected_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: string;
+  is_read: number;
+  link_url?: string;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  project_id?: string;
+  lead_id?: string;
+  message_type: MessageType;
+  sender_id: string;
+  recipient_id?: string;
+  content: string;
+  created_at: string;
+}
+
+export interface MessageReadCursor {
+  id: string;
+  user_id: string;
+  lead_id?: string;
+  project_id?: string;
+  last_read_at: string;
+  updated_at: string;
+}
+
+export interface ChangeRequest {
+  id: string;
+  project_id: string;
+  proposal_id?: string;
+  requested_by: string;
+  title: string;
+  description: string;
+  impact_assessment?: string;
+  status: ChangeRequestStatus;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  review_notes?: string;
+  requires_proposal_revision: number;
+  new_proposal_id?: string;
   created_at: string;
   updated_at: string;
 }

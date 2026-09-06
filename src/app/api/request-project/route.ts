@@ -1,11 +1,16 @@
 // src/app/api/request-project/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { execute, queryOne } from '@/lib/db/connection';
-import { recordAuditLog } from '@/lib/auth/session';
-import { CurrencyCode } from '@/lib/db/types';
+import { execute, queryOne, transaction } from '@/lib/db/connection';
+import { getCurrentSession as getSession, recordAuditLog } from '@/lib/auth/session';
+import { CurrencyCode, ReferralSource } from '@/lib/db/types';
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session || session.role !== 'CLIENT') {
+      return NextResponse.json({ error: 'Unauthorized. You must be signed in as a client to submit a project request.' }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       businessName,
@@ -18,6 +23,7 @@ export async function POST(req: NextRequest) {
       requirements,
       estimatedBudget,
       currency,
+      timeline,
     } = body;
 
     if (!businessName || !contactPerson || !email || !requirements) {
@@ -27,42 +33,119 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Lookup client_id based on session.userId
+    const client = await queryOne('SELECT id FROM clients WHERE user_id = ?', [session.userId]);
+    if (!client) {
+      return NextResponse.json({ error: 'Client record not found for this user.' }, { status: 403 });
+    }
+    const clientId = client.id;
+
+    // Deduplication check
+    const duplicate = await queryOne(
+      "SELECT id FROM leads WHERE client_id = ? AND business_name = ? AND status NOT IN ('WON', 'LOST')",
+      [clientId, businessName.trim()]
+    );
+    if (duplicate) {
+      // Audit log the duplicate rejection
+      await recordAuditLog({
+        userId: session.userId,
+        action: 'DUPLICATE_LEAD_REJECTED',
+        entity: 'leads',
+        entityId: duplicate.id,
+        metadata: { businessName },
+        ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1'
+      });
+      return NextResponse.json({ error: 'You already have an active request for this business.' }, { status: 409 });
+    }
+
     const targetCode = (countryCode || 'KE').toUpperCase();
-    const country = await queryOne('SELECT id, currency FROM countries WHERE code = ?', [targetCode]);
-    const countryId = country ? country.id : 'c_ke';
-    const chosenCurrency: CurrencyCode = (currency || country?.currency || 'KES') as CurrencyCode;
+    const countryInfo = await queryOne('SELECT id, currency FROM countries WHERE code = ?', [targetCode]);
+    const countryId = countryInfo ? countryInfo.id : 'c_ke';
+    const chosenCurrency: CurrencyCode = (currency || countryInfo?.currency || 'KES') as CurrencyCode;
 
     const budgetNumber = Number(estimatedBudget) || 0;
     const estimatedBudgetMinor = Math.round(budgetNumber * 100);
 
     const leadId = `lead_pub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
 
-    await execute(`
-      INSERT INTO leads (
-        id, business_name, contact_person, email, phone,
-        country_id, business_type, requirements, estimated_budget_minor,
-        currency, representative_id, status, notes, created_at, updated_at
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'NEW', ?, datetime('now'), datetime('now'))
-    `, [
-      leadId,
-      businessName.trim(),
-      contactPerson.trim(),
-      email.trim().toLowerCase(),
-      phone || '',
-      countryId,
-      businessType || serviceCategory || 'Digital Product',
-      requirements.trim(),
-      estimatedBudgetMinor,
-      chosenCurrency,
-      `Submitted through CodeBridge Public Web Scoping Form (Service: ${serviceCategory || 'General'})`
-    ]);
+    // Process Referral Attribution
+    const cbRef = req.cookies.get('cb_ref')?.value;
+    let representativeId = null;
+    let referralSource: ReferralSource = 'DIRECT';
+    let systemNotes = `Submitted through CodeBridge Public Web Scoping Form (Service: ${serviceCategory || 'General'})`;
+
+    if (cbRef) {
+      // Always preserve the fact that they came through a referral route
+      referralSource = 'REFERRAL';
+      const rep = await queryOne(
+        "SELECT id FROM representatives WHERE referral_code = ? AND approval_status = 'ACTIVE'",
+        [cbRef]
+      );
+      if (rep) {
+        representativeId = rep.id;
+      } else {
+        // Flag for attribution review rather than assigning as DIRECT
+        systemNotes += `\n[ATTRIBUTION REVIEW REQUIRED] Failed to resolve or validate active referral code: ${cbRef}`;
+        
+        await recordAuditLog({
+          userId: session.userId,
+          action: 'REFERRAL_ATTRIBUTION_FAILED',
+          entity: 'leads',
+          entityId: leadId,
+          metadata: { providedCode: cbRef },
+          ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1'
+        });
+      }
+    }
+
+    // Lookup service ID if exists
+    const serviceInfo = await queryOne('SELECT id FROM services WHERE name = ?', [serviceCategory || null]);
+    const serviceId = serviceInfo ? serviceInfo.id : null;
+
+    await transaction(async (tx) => {
+      await tx.execute(`
+        INSERT INTO leads (
+          id, client_id, business_name, contact_person, email, phone,
+          country_id, business_type, requirements, estimated_budget_minor,
+          currency, representative_id, referral_source, service_id, timeline,
+          status, notes, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW', ?, datetime('now'), datetime('now'))
+      `, [
+        leadId,
+        clientId,
+        businessName.trim(),
+        contactPerson.trim(),
+        email.trim().toLowerCase(),
+        phone || '',
+        countryId,
+        businessType || serviceCategory || 'Digital Product',
+        requirements.trim(),
+        estimatedBudgetMinor,
+        chosenCurrency,
+        representativeId,
+        referralSource,
+        serviceId,
+        timeline || null,
+        systemNotes
+      ]);
+
+      // System message for lead conversation
+      const messageId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      await tx.execute(`
+        INSERT INTO messages (id, lead_id, sender_id, content, message_type, created_at)
+        VALUES (?, ?, ?, ?, 'SYSTEM', datetime('now'))
+      `, [messageId, leadId, session.userId, `Project request submitted by ${contactPerson.trim()}.`]);
+    });
+
+    const auditAction = representativeId ? 'REFERRAL_ATTRIBUTED' : (cbRef && !representativeId ? 'REFERRAL_ATTRIBUTION_FAILED' : 'PUBLIC_LEAD_SUBMISSION');
 
     await recordAuditLog({
-      action: 'PUBLIC_LEAD_SUBMISSION',
+      userId: session.userId,
+      action: auditAction,
       entity: 'leads',
       entityId: leadId,
-      metadata: { businessName, country: targetCode, currency: chosenCurrency },
+      metadata: { businessName, country: targetCode, currency: chosenCurrency, referralSource, representativeId },
       ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1'
     });
 
@@ -76,3 +159,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to submit project request.' }, { status: 500 });
   }
 }
+

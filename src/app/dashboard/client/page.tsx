@@ -12,8 +12,11 @@ import {
   User,
   Plus,
   ShieldCheck,
-  FileText
+  FileText,
+  MessageSquare
 } from 'lucide-react';
+
+import ChatDrawer from '@/components/dashboard/ChatDrawer';
 
 export default function ClientDashboard() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -26,6 +29,11 @@ export default function ClientDashboard() {
   const [rejectionMode, setRejectionMode] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionFeedback, setActionFeedback] = useState('');
+
+  // Chat State
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatEntityId, setChatEntityId] = useState<string | null>(null);
+  const [chatEntityType, setChatEntityType] = useState<'LEAD' | 'PROJECT'>('PROJECT');
 
   const loadData = async () => {
     try {
@@ -640,6 +648,18 @@ export default function ClientDashboard() {
                       </div>
                     </div>
                   )}
+
+                  <button
+                    onClick={() => {
+                      setChatEntityId(proj.id);
+                      setChatEntityType('PROJECT');
+                      setChatOpen(true);
+                    }}
+                    className="cb-btn cb-btn-secondary cb-btn-sm"
+                    style={{ gap: '6px' }}
+                  >
+                    <MessageSquare size={14} /> Message Team
+                  </button>
                 </div>
 
                 {isAwaitingPayment && (
@@ -732,6 +752,18 @@ export default function ClientDashboard() {
           })}
         </div>
       )}
+
+      {/* Chat Drawer */}
+      <ChatDrawer
+        isOpen={chatOpen}
+        onClose={() => {
+          setChatOpen(false);
+          loadData(); // Refresh unread count when chat is closed
+        }}
+        entityId={chatEntityId}
+        entityType={chatEntityType}
+        currentUser={currentUser}
+      />
     </div>
   );
 }

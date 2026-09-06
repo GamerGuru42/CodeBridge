@@ -9,7 +9,7 @@ import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 
 export default function RepresentativeOnboardingPage() {
   const router = useRouter();
-  const [selectedCountry, setSelectedCountry] = useState<'NG' | 'KE'>('NG');
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -49,31 +49,41 @@ export default function RepresentativeOnboardingPage() {
       alignItems: 'center',
       padding: '40px 20px',
     }}>
+      {/* Top Header with Logout */}
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+      }}>
+        <button
+          onClick={async () => {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            router.push('/login');
+          }}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            backgroundColor: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            color: '#64748B',
+            fontSize: '13px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          Sign Out
+        </button>
+      </div>
+
       {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '14px', flexWrap: 'wrap' }}>
           <CodeBridgeLogo size="md" variant="dark-text" href="/" />
-          <Link
-            href="/"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #CBD5E1',
-              color: '#0284C7',
-              fontSize: '12px',
-              fontWeight: 700,
-              textDecoration: 'none',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            <ArrowLeft size={13} />
-            Return to Home
-          </Link>
+
         </div>
         <div style={{
           display: 'inline-flex',
@@ -103,7 +113,7 @@ export default function RepresentativeOnboardingPage() {
             Which country will you operate in?
           </h2>
           <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '28px', textAlign: 'center', lineHeight: 1.5 }}>
-            Select your primary operating market. This assigns your localized currency, client lead pricing tiers, and direct 20% commission settlement channel.
+            Select your primary operating market. This assigns your localized currency, client lead pricing tiers, and direct commission settlement channel.
           </p>
 
           {errorMsg && (
@@ -126,72 +136,17 @@ export default function RepresentativeOnboardingPage() {
 
           <form onSubmit={handleComplete}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '28px' }}>
-              {/* Option 1: Nigeria */}
-              <div
-                onClick={() => setSelectedCountry('NG')}
-                style={{
-                  padding: '18px 20px',
-                  borderRadius: '12px',
-                  border: selectedCountry === 'NG' ? '2px solid #00B4D8' : '1px solid #CBD5E1',
-                  backgroundColor: selectedCountry === 'NG' ? 'rgba(0, 180, 216, 0.06)' : '#FFFFFF',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.15s ease',
-                  boxShadow: selectedCountry === 'NG' ? '0 4px 12px rgba(0, 180, 216, 0.12)' : 'none',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <span style={{ fontSize: '28px' }}>🇳🇬</span>
-                  <div>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D' }}>
-                      Nigeria
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#64748B' }}>
-                      Base Currency: NGN (₦) &bull; West Africa Operations
-                    </div>
-                  </div>
-                </div>
-                {selectedCountry === 'NG' ? (
-                  <CheckCircle2 size={22} color="#00B4D8" />
-                ) : (
-                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid #CBD5E1' }} />
-                )}
-              </div>
-
-              {/* Option 2: Kenya */}
-              <div
-                onClick={() => setSelectedCountry('KE')}
-                style={{
-                  padding: '18px 20px',
-                  borderRadius: '12px',
-                  border: selectedCountry === 'KE' ? '2px solid #00B4D8' : '1px solid #CBD5E1',
-                  backgroundColor: selectedCountry === 'KE' ? 'rgba(0, 180, 216, 0.06)' : '#FFFFFF',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.15s ease',
-                  boxShadow: selectedCountry === 'KE' ? '0 4px 12px rgba(0, 180, 216, 0.12)' : 'none',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <span style={{ fontSize: '28px' }}>🇰🇪</span>
-                  <div>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#0B1B3D' }}>
-                      Kenya
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#64748B' }}>
-                      Base Currency: KES (KSh) &bull; East Africa Operations
-                    </div>
-                  </div>
-                </div>
-                {selectedCountry === 'KE' ? (
-                  <CheckCircle2 size={22} color="#00B4D8" />
-                ) : (
-                  <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid #CBD5E1' }} />
-                )}
+              <div className="cb-form-group">
+                <label className="cb-label" style={{ textAlign: 'left', display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#0B1B3D' }}>Country Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={selectedCountry}
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                  className="cb-input"
+                  placeholder="e.g. United States"
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '15px' }}
+                />
               </div>
             </div>
 

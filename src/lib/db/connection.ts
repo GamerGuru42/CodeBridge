@@ -102,7 +102,38 @@ export function getSqliteClient(): DatabaseSync {
       sqliteClient.exec('ALTER TABLE users ADD COLUMN google_id TEXT;');
     }
     sqliteClient.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);');
-  } catch {}
+
+    // Phase 3 migrations for SQLite
+    const repCols = sqliteClient.prepare('PRAGMA table_info(representatives);').all() as any[];
+    if (!repCols.some((c: any) => c.name === 'referral_code')) {
+      sqliteClient.exec('ALTER TABLE representatives ADD COLUMN referral_code TEXT UNIQUE;');
+    }
+
+    const leadCols = sqliteClient.prepare('PRAGMA table_info(leads);').all() as any[];
+    if (!leadCols.some((c: any) => c.name === 'client_id')) {
+      sqliteClient.exec(`
+        ALTER TABLE leads ADD COLUMN client_id TEXT REFERENCES clients(id);
+        ALTER TABLE leads ADD COLUMN service_id TEXT REFERENCES services(id);
+        ALTER TABLE leads ADD COLUMN timeline TEXT;
+        ALTER TABLE leads ADD COLUMN referral_source TEXT NOT NULL DEFAULT 'DIRECT';
+      `);
+    }
+
+    const notifCols = sqliteClient.prepare('PRAGMA table_info(notifications);').all() as any[];
+    if (!notifCols.some((c: any) => c.name === 'link_url')) {
+      sqliteClient.exec('ALTER TABLE notifications ADD COLUMN link_url TEXT;');
+    }
+
+    const msgCols = sqliteClient.prepare('PRAGMA table_info(messages);').all() as any[];
+    if (!msgCols.some((c: any) => c.name === 'lead_id')) {
+      sqliteClient.exec(`
+        ALTER TABLE messages ADD COLUMN lead_id TEXT REFERENCES leads(id) ON DELETE CASCADE;
+        ALTER TABLE messages ADD COLUMN message_type TEXT NOT NULL DEFAULT 'CHAT';
+      `);
+    }
+  } catch (err) {
+    console.error('Error applying SQLite migrations:', err);
+  }
 
   return sqliteClient;
 }
@@ -117,6 +148,19 @@ async function ensurePostgresSchema(pg: postgres.Sql): Promise<void> {
         await pg.unsafe(`
           ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT;
           CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
+          
+          -- Phase 3 Migrations
+          ALTER TABLE representatives ADD COLUMN IF NOT EXISTS referral_code TEXT UNIQUE;
+          
+          ALTER TABLE leads ADD COLUMN IF NOT EXISTS client_id TEXT REFERENCES clients(id);
+          ALTER TABLE leads ADD COLUMN IF NOT EXISTS service_id TEXT REFERENCES services(id);
+          ALTER TABLE leads ADD COLUMN IF NOT EXISTS timeline TEXT;
+          ALTER TABLE leads ADD COLUMN IF NOT EXISTS referral_source TEXT NOT NULL DEFAULT 'DIRECT';
+          
+          ALTER TABLE notifications ADD COLUMN IF NOT EXISTS link_url TEXT;
+          
+          ALTER TABLE messages ADD COLUMN IF NOT EXISTS lead_id TEXT REFERENCES leads(id) ON DELETE CASCADE;
+          ALTER TABLE messages ADD COLUMN IF NOT EXISTS message_type TEXT NOT NULL DEFAULT 'CHAT';
         `);
       } catch (err: any) {
         console.error('Error ensuring PostgreSQL schema:', err.message);

@@ -19,7 +19,6 @@ import {
   Code,
   FolderGit2,
   CheckSquare,
-  ArrowLeft
 } from 'lucide-react';
 
 export default function DashboardLayout({
@@ -31,6 +30,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -44,6 +44,13 @@ export default function DashboardLayout({
       .then((data) => {
         if (data?.authenticated) {
           setUser(data.user);
+          // Fetch unread count after auth
+          fetch('/api/messages/unread-count')
+            .then(res => res.json())
+            .then(d => {
+              if (d.unreadCount) setUnreadCount(d.unreadCount);
+            })
+            .catch(console.error);
         }
         setLoading(false);
       })
@@ -102,7 +109,7 @@ export default function DashboardLayout({
       case 'REPRESENTATIVE':
         return [
           { href: '/dashboard/representative', label: 'My Leads & Pipeline', icon: LayoutDashboard },
-          { href: '/dashboard/client', label: 'My Clients & Projects', icon: Briefcase },
+          { href: '/dashboard/representative/clients', label: 'My Clients & Projects', icon: Briefcase, badge: unreadCount },
         ];
       case 'DEVELOPER':
         return [
@@ -111,7 +118,7 @@ export default function DashboardLayout({
         ];
       case 'CLIENT':
         return [
-          { href: '/dashboard/client', label: 'My Projects & Milestones', icon: Briefcase },
+          { href: '/dashboard/client', label: 'My Projects & Milestones', icon: Briefcase, badge: unreadCount },
           { href: '/request-project', label: 'Request New Project', icon: CheckSquare },
         ];
       default:
@@ -159,26 +166,6 @@ export default function DashboardLayout({
           </Link>
         </div>
 
-        {/* Quick Return to Website link */}
-        <div style={{ padding: '10px 20px', borderBottom: '1px solid var(--cb-border-subtle)', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-          <Link
-            href="/"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '12px',
-              color: '#38BDF8',
-              fontWeight: 600,
-              textDecoration: 'none',
-              transition: 'opacity 0.15s ease',
-            }}
-          >
-            <ArrowLeft size={13} />
-            <span>Return to Website</span>
-          </Link>
-        </div>
-
         {/* User Role Card */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--cb-border-subtle)', backgroundColor: 'rgba(255,255,255,0.02)' }}>
           <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
@@ -200,7 +187,7 @@ export default function DashboardLayout({
         <nav className="cb-sidebar-nav">
           {navLinks.map((item, idx) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || (item.href !== '/dashboard/representative' && item.href !== '/dashboard/admin' && item.href !== '/dashboard/client' && pathname.startsWith(item.href + '/'));
             return (
               <Link
                 key={idx}
@@ -208,7 +195,19 @@ export default function DashboardLayout({
                 className={`cb-nav-link ${isActive ? 'active' : ''}`}
               >
                 <Icon size={18} />
-                <span>{item.label}</span>
+                <span style={{ flex: 1 }}>{item.label}</span>
+                {(item as any).badge > 0 && (
+                  <span style={{
+                    backgroundColor: 'var(--cb-blue-600)',
+                    color: '#FFF',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    borderRadius: '10px'
+                  }}>
+                    {(item as any).badge}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -240,44 +239,36 @@ export default function DashboardLayout({
         <header className="cb-topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '14px', fontWeight: 600, color: '#FFFFFF' }}>
-              CodeBridge Operational Workspace
+              {user?.firstName} {user?.lastName}
             </span>
-            <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
-              &bull; Market: {user?.country?.name || 'International'} ({user?.country?.currency || 'KES/NGN'})
-            </span>
+            {user?.country?.name && (
+              <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
+                &bull; {user.country.name} ({user.country.currency || ''})
+              </span>
+            )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Link
-              href="/"
+            <button
+              onClick={handleLogout}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '5px 12px',
+                padding: '6px 14px',
                 borderRadius: '6px',
-                backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                border: '1px solid rgba(56, 189, 248, 0.25)',
-                color: '#38BDF8',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                color: '#F87171',
                 fontSize: '12px',
                 fontWeight: 600,
-                textDecoration: 'none',
+                cursor: 'pointer',
                 transition: 'all 0.15s ease',
               }}
             >
-              <ArrowLeft size={13} />
-              Return to Website
-            </Link>
-            <div style={{
-              fontSize: '12px',
-              padding: '4px 10px',
-              backgroundColor: 'rgba(255,255,255,0.04)',
-              borderRadius: '6px',
-              color: 'var(--cb-text-secondary)',
-              border: '1px solid var(--cb-border-subtle)'
-            }}>
-              Parent Entity: <strong>MarketBridge NG LTD</strong>
-            </div>
+              <LogOut size={13} />
+              Sign Out
+            </button>
           </div>
         </header>
 

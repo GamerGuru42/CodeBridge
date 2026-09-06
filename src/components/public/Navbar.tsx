@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Menu, X, User, ArrowRight, ArrowLeft } from 'lucide-react';
 import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
+import ThemeToggle from '@/components/common/ThemeToggle';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -33,8 +34,8 @@ export default function Navbar() {
 
   return (
     <header style={{
-      borderBottom: '1px solid #F1F5F9',
-      backgroundColor: '#FFFFFF',
+      borderBottom: '1px solid var(--cb-border-subtle)',
+      backgroundColor: 'var(--cb-bg-page)',
       position: 'sticky',
       top: 0,
       zIndex: 100,
@@ -44,29 +45,7 @@ export default function Navbar() {
         {/* Brand Lockup with Official Logo & Return Button */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <CodeBridgeLogo size="md" variant="dark-text" href="/" />
-          {pathname !== '/' && (
-            <Link
-              href="/"
-              className="navbar-return-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                backgroundColor: '#F0F9FF',
-                border: '1px solid #BAE6FD',
-                color: '#0284C7',
-                fontSize: '12px',
-                fontWeight: 700,
-                textDecoration: 'none',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <ArrowLeft size={13} />
-              <span>Return to Home</span>
-            </Link>
-          )}
+
         </div>
 
         {/* Desktop Navigation */}
@@ -80,7 +59,7 @@ export default function Navbar() {
                 style={{
                   fontSize: '14px',
                   fontWeight: isActive ? 600 : 500,
-                  color: isActive ? '#0B1B3D' : '#475569',
+                  color: isActive ? 'var(--cb-text-primary)' : 'var(--cb-text-secondary)',
                   transition: 'color 0.15s ease',
                   textDecoration: 'none',
                 }}
@@ -93,6 +72,7 @@ export default function Navbar() {
 
         {/* Action Buttons */}
         <div style={{ display: 'none', alignItems: 'center', gap: '12px' }} className="desktop-actions">
+          <ThemeToggle />
           {currentUser ? (
             <Link
               href="/dashboard"
@@ -143,8 +123,8 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div style={{
-          backgroundColor: '#FFFFFF',
-          borderBottom: '1px solid #E2E8F0',
+          backgroundColor: 'var(--cb-bg-page)',
+          borderBottom: '1px solid var(--cb-border-subtle)',
           padding: '20px',
           display: 'flex',
           flexDirection: 'column',
@@ -159,35 +139,19 @@ export default function Navbar() {
               style={{
                 fontSize: '15px',
                 fontWeight: 500,
-                color: pathname === link.href ? '#0B1B3D' : '#475569',
+                color: pathname === link.href ? 'var(--cb-text-primary)' : 'var(--cb-text-secondary)',
               }}
             >
               {link.name}
             </Link>
           ))}
-          {pathname !== '/' && (
-            <Link
-              href="/"
-              onClick={() => setMobileMenuOpen(false)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                backgroundColor: '#EFF6FF',
-                border: '1px solid #BFDBFE',
-                color: '#0284C7',
-                fontSize: '13px',
-                fontWeight: 700,
-                textDecoration: 'none',
-              }}
-            >
-              <ArrowLeft size={15} />
-              Return to Home
-            </Link>
-          )}
-          <div style={{ height: '1px', backgroundColor: '#F1F5F9', margin: '4px 0' }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+            <span style={{ fontSize: '15px', fontWeight: 500, color: 'var(--cb-text-secondary)' }}>Appearance</span>
+            <ThemeToggle />
+          </div>
+
+          <div style={{ height: '1px', backgroundColor: 'var(--cb-border-subtle)', margin: '4px 0' }} />
           {currentUser ? (
             <Link
               href="/dashboard"
@@ -220,15 +184,6 @@ export default function Navbar() {
       )}
 
       <style jsx>{`
-        .navbar-return-btn:hover {
-          background-color: #E0F2FE !important;
-          border-color: #7DD3FC !important;
-        }
-        @media (max-width: 480px) {
-          .navbar-return-btn span {
-            display: none;
-          }
-        }
         @media (min-width: 900px) {
           .desktop-nav {
             display: flex !important;

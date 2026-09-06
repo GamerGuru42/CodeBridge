@@ -13,8 +13,11 @@ import {
   ArrowRight,
   DollarSign,
   Layers,
-  Clock
+  Clock,
+  MessageSquare
 } from 'lucide-react';
+
+import ChatDrawer from '@/components/dashboard/ChatDrawer';
 
 export default function RepresentativeDashboard() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -25,6 +28,11 @@ export default function RepresentativeDashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [feedback, setFeedback] = useState('');
 
+  // Chat State
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatEntityId, setChatEntityId] = useState<string | null>(null);
+  const [chatEntityType, setChatEntityType] = useState<'LEAD' | 'PROJECT'>('LEAD');
+
   // Add lead form state
   const [newLead, setNewLead] = useState({
     businessName: '',
@@ -33,8 +41,8 @@ export default function RepresentativeDashboard() {
     phone: '',
     businessType: 'Restaurant & Hospitality',
     requirements: '',
-    estimatedBudget: '280000',
-    currency: 'KES',
+    estimatedBudget: '',
+    currency: 'USD',
     notes: '',
   });
 
@@ -54,7 +62,7 @@ export default function RepresentativeDashboard() {
           setNewLead((prev) => ({
             ...prev,
             currency: d.user.country.currency,
-            estimatedBudget: d.user.country.currency === 'NGN' ? '1800000' : '280000',
+            estimatedBudget: '',
           }));
         }
       }
@@ -108,8 +116,8 @@ export default function RepresentativeDashboard() {
           phone: '',
           businessType: 'Business Websites',
           requirements: '',
-          estimatedBudget: '250000',
-          currency: currentUser?.country?.currency || 'KES',
+          estimatedBudget: '',
+          currency: currentUser?.country?.currency || 'USD',
           notes: '',
         });
         loadData();
@@ -159,7 +167,7 @@ export default function RepresentativeDashboard() {
   const totalVerifiedPaidMinor = invoices.reduce((acc, inv) => acc + (inv.amount_paid_minor || 0), 0);
   const verifiedCommEventsMinor = Math.floor((totalVerifiedPaidMinor * repRateBps) / 10000);
 
-  const currency = currentUser?.country?.currency || 'KES';
+  const currency = currentUser?.country?.currency || 'USD';
 
   return (
     <div>
@@ -283,7 +291,7 @@ export default function RepresentativeDashboard() {
                   <th>Scope</th>
                   <th>Contract Value</th>
                   <th>Status</th>
-                  <th>Informational 20% Comm.</th>
+                  <th>Informational {commRatePct}% Comm.</th>
                 </tr>
               </thead>
               <tbody>
@@ -456,7 +464,7 @@ export default function RepresentativeDashboard() {
                   <th>Service Category</th>
                   <th>Estimated Budget</th>
                   <th>Status</th>
-                  <th>Potential 20% Comm.</th>
+                  <th>Potential {commRatePct}% Comm.</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -495,6 +503,17 @@ export default function RepresentativeDashboard() {
                       <td>
                         {isApproved ? (
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            <button
+                              onClick={() => {
+                                setChatEntityId(l.id);
+                                setChatEntityType('LEAD');
+                                setChatOpen(true);
+                              }}
+                              className="cb-btn cb-btn-secondary cb-btn-sm"
+                              style={{ gap: '4px' }}
+                            >
+                              <MessageSquare size={12} /> Chat
+                            </button>
                             {l.status === 'NEW' && (
                               <button
                                 onClick={() => handleUpdateStatus(l.id, 'CONTACTED')}
@@ -579,7 +598,7 @@ export default function RepresentativeDashboard() {
                     value={newLead.businessName}
                     onChange={(e) => setNewLead({ ...newLead, businessName: e.target.value })}
                     className="cb-input"
-                    placeholder="e.g. Mombasa Safari Resort"
+                    placeholder="e.g. Acme Corporation"
                   />
                 </div>
 
@@ -602,7 +621,7 @@ export default function RepresentativeDashboard() {
                       value={newLead.phone}
                       onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
                       className="cb-input"
-                      placeholder="+254... or +234..."
+                      placeholder="+1 (555) 000-0000"
                     />
                   </div>
                 </div>
@@ -615,7 +634,7 @@ export default function RepresentativeDashboard() {
                     value={newLead.email}
                     onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
                     className="cb-input"
-                    placeholder="contact@business.ke"
+                    placeholder="contact@business.com"
                   />
                 </div>
 
@@ -677,6 +696,18 @@ export default function RepresentativeDashboard() {
           </div>
         </div>
       )}
+
+      {/* Chat Drawer */}
+      <ChatDrawer
+        isOpen={chatOpen}
+        onClose={() => {
+          setChatOpen(false);
+          loadData();
+        }}
+        entityId={chatEntityId}
+        entityType={chatEntityType}
+        currentUser={currentUser}
+      />
     </div>
   );
 }

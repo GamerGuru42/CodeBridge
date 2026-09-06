@@ -20,8 +20,11 @@ import {
   X,
   RefreshCw,
   Eye,
-  AlertTriangle
+  AlertTriangle,
+  MessageSquare
 } from 'lucide-react';
+
+import ChatDrawer from '@/components/dashboard/ChatDrawer';
 
 export default function AdminOpsDashboard() {
   const [leads, setLeads] = useState<any[]>([]);
@@ -33,6 +36,13 @@ export default function AdminOpsDashboard() {
   const [feedback, setFeedback] = useState('');
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
   const [selectedLeadForProposal, setSelectedLeadForProposal] = useState<any>(null);
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Chat State
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatEntityId, setChatEntityId] = useState<string | null>(null);
+  const [chatEntityType, setChatEntityType] = useState<'LEAD' | 'PROJECT'>('LEAD');
 
   // Filters and search
   const [invoiceFilterStatus, setInvoiceFilterStatus] = useState('ALL');
@@ -66,7 +76,8 @@ export default function AdminOpsDashboard() {
 
   const loadData = async () => {
     try {
-      const [resLeads, resReps, resProjects, resProposals, resInvoices] = await Promise.all([
+      const [resMe, resLeads, resReps, resProjects, resProposals, resInvoices] = await Promise.all([
+        fetch('/api/me'),
         fetch('/api/leads'),
         fetch('/api/admin/representatives'),
         fetch('/api/projects'),
@@ -74,6 +85,10 @@ export default function AdminOpsDashboard() {
         fetch('/api/invoices'),
       ]);
 
+      if (resMe.ok) {
+        const d = await resMe.json();
+        setCurrentUser(d.user || null);
+      }
       if (resLeads.ok) {
         const d = await resLeads.json();
         setLeads(d.leads || []);
@@ -842,6 +857,17 @@ export default function AdminOpsDashboard() {
                             Won via Proposal Approval
                           </span>
                         )}
+                        <button
+                          onClick={() => {
+                            setChatEntityId(l.id);
+                            setChatEntityType('LEAD');
+                            setChatOpen(true);
+                          }}
+                          className="cb-btn cb-btn-secondary cb-btn-sm"
+                          style={{ gap: '4px' }}
+                        >
+                          <MessageSquare size={12} /> Chat
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1163,6 +1189,18 @@ export default function AdminOpsDashboard() {
           </div>
         </div>
       )}
+
+      {/* Chat Drawer */}
+      <ChatDrawer
+        isOpen={chatOpen}
+        onClose={() => {
+          setChatOpen(false);
+          loadData();
+        }}
+        entityId={chatEntityId}
+        entityType={chatEntityType}
+        currentUser={currentUser}
+      />
     </div>
   );
 }

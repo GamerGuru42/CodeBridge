@@ -544,6 +544,20 @@ export async function PATCH(
             SET status = 'WON', updated_at = datetime('now')
             WHERE id = ?
           `, [proposal.lead_id]);
+
+          // Migrate messages from lead to the new project
+          await tx.execute(`
+            UPDATE messages
+            SET project_id = ?
+            WHERE lead_id = ? AND project_id IS NULL
+          `, [finalProjectId, proposal.lead_id]);
+
+          // Migrate message read cursors from lead to the new project
+          await tx.execute(`
+            UPDATE message_read_cursors
+            SET project_id = ?, lead_id = NULL
+            WHERE lead_id = ? AND project_id IS NULL
+          `, [finalProjectId, proposal.lead_id]);
         }
       });
 

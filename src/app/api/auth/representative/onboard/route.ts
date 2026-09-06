@@ -1,6 +1,6 @@
 // src/app/api/auth/representative/onboard/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { queryOne, transaction } from '@/lib/db/connection';
+import { queryOne, transaction, execute } from '@/lib/db/connection';
 import { verifyOnboardingToken, signSessionToken } from '@/lib/auth/jwt';
 import { SESSION_COOKIE_NAME, recordAuditLog } from '@/lib/auth/session';
 
@@ -25,24 +25,27 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { countryCode } = body;
 
-    const normalizedCountry = (countryCode || '').trim().toUpperCase();
-    if (normalizedCountry !== 'NG' && normalizedCountry !== 'KE') {
+    const normalizedCountryName = (countryCode || '').trim();
+    if (!normalizedCountryName) {
       return NextResponse.json(
-        { error: 'Please select a valid operating country: Nigeria (NG) or Kenya (KE).' },
+        { error: 'Please provide a valid operating country.' },
         { status: 400 }
       );
     }
 
-    const countryId = normalizedCountry === 'KE' ? 'c_ke' : 'c_ng';
-    const timezone = normalizedCountry === 'KE' ? 'Africa/Nairobi' : 'Africa/Lagos';
+    // Verify or create country in database
+    let country = await queryOne('SELECT id, currency FROM countries WHERE LOWER(name) = ? OR code = ?', [normalizedCountryName.toLowerCase(), normalizedCountryName.toUpperCase()]);
+    let countryId;
+    let timezone = 'UTC';
 
-    // Verify country exists in database
-    const country = await queryOne('SELECT id, currency FROM countries WHERE id = ?', [countryId]);
     if (!country) {
-      return NextResponse.json(
-        { error: 'Operating country record not found in system.' },
-        { status: 500 }
-      );
+      countryId = `c_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      await execute(`
+        INSERT INTO countries (id, code, name, currency, phone_code, timezone, is_active)
+        VALUES (?, ?, ?, 'USD', '', 'UTC', 1)
+      `, [countryId, normalizedCountryName.substring(0, 2).toUpperCase(), normalizedCountryName]);
+    } else {
+      countryId = country.id;
     }
 
     // Check if an account with this google_id or email already exists
@@ -113,7 +116,7 @@ export async function POST(req: NextRequest) {
         payload.avatarUrl || null,
       ]);
 
-      // 3. Insert Representative record (Immediate ACTIVE status, 20% commission rate)
+      // 3. Insert Representative record (Immediate ACTIVE status, default commission rate)
       await tx.execute(`
         INSERT INTO representatives (id, user_id, country_id, approval_status, commission_rate_bps, notes, approved_at, created_at, updated_at)
         VALUES (?, ?, ?, 'ACTIVE', 2000, 'Google OAuth self-onboarded', datetime('now'), datetime('now'), datetime('now'))
@@ -129,7 +132,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         role: 'REPRESENTATIVE',
         status: 'ACTIVE',
-        country: normalizedCountry,
+        country: normalizedCountryName,
         authMethod: 'google_oauth',
       },
       ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1',
