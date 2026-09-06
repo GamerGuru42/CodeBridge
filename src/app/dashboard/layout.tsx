@@ -18,7 +18,8 @@ import {
   AlertTriangle,
   Code,
   FolderGit2,
-  CheckSquare
+  CheckSquare,
+  ArrowLeft
 } from 'lucide-react';
 
 export default function DashboardLayout({
@@ -158,6 +159,26 @@ export default function DashboardLayout({
           </Link>
         </div>
 
+        {/* Quick Return to Website link */}
+        <div style={{ padding: '10px 20px', borderBottom: '1px solid var(--cb-border-subtle)', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+          <Link
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '12px',
+              color: '#38BDF8',
+              fontWeight: 600,
+              textDecoration: 'none',
+              transition: 'opacity 0.15s ease',
+            }}
+          >
+            <ArrowLeft size={13} />
+            <span>Return to Website</span>
+          </Link>
+        </div>
+
         {/* User Role Card */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--cb-border-subtle)', backgroundColor: 'rgba(255,255,255,0.02)' }}>
           <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
@@ -226,7 +247,27 @@ export default function DashboardLayout({
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Link
+              href="/"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '5px 12px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                border: '1px solid rgba(56, 189, 248, 0.25)',
+                color: '#38BDF8',
+                fontSize: '12px',
+                fontWeight: 600,
+                textDecoration: 'none',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <ArrowLeft size={13} />
+              Return to Website
+            </Link>
             <div style={{
               fontSize: '12px',
               padding: '4px 10px',

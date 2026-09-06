@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Briefcase, Users, Mail, Lock, Building, Phone, Globe } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Briefcase, Users, Mail, Lock, Building, Phone, Globe } from 'lucide-react';
 import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 
 export default function RegisterPage() {
@@ -71,9 +71,29 @@ export default function RegisterPage() {
         boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #E2E8F0',
         padding: '40px 36px',
       }}>
-        {/* Logo Header */}
-        <div style={{ marginBottom: '20px' }}>
+        {/* Logo & Return Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+          <Link
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              backgroundColor: '#F1F5F9',
+              border: '1px solid #E2E8F0',
+              color: '#0284C7',
+              fontSize: '12px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <ArrowLeft size={13} />
+            Return to Home
+          </Link>
         </div>
 
         <h1 style={{

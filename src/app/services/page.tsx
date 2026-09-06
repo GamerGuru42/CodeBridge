@@ -6,6 +6,7 @@ import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 import Link from 'next/link';
 import {
+  ArrowLeft,
   ArrowRight,
   Globe,
   ShoppingBag,
@@ -278,7 +279,32 @@ export default function ServicesPage() {
           padding: '64px 0 48px',
           borderBottom: '1px solid #E2E8F0',
         }}>
-          <div className="cb-container" style={{ textAlign: 'center', maxWidth: '860px', margin: '0 auto' }}>
+          <div className="cb-container" style={{ maxWidth: '860px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
+              <Link
+                href="/"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '9999px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #CBD5E1',
+                  color: '#0B1B3D',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <ArrowLeft size={14} />
+                Return to Home
+              </Link>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -355,6 +381,7 @@ export default function ServicesPage() {
                 <CheckCircle2 size={16} color="#0284C7" />
                 <span>Transparent Commercial Billing (NGN / KES)</span>
               </div>
+            </div>
             </div>
           </div>
         </section>

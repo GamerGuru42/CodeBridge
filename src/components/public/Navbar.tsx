@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Menu, X, User, ArrowRight } from 'lucide-react';
+import { Menu, X, User, ArrowRight, ArrowLeft } from 'lucide-react';
 import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 
 export default function Navbar() {
@@ -41,8 +41,33 @@ export default function Navbar() {
       boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
     }}>
       <div className="cb-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '74px' }}>
-        {/* Brand Lockup with Official Logo */}
-        <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+        {/* Brand Lockup with Official Logo & Return Button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+          {pathname !== '/' && (
+            <Link
+              href="/"
+              className="navbar-return-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                backgroundColor: '#F0F9FF',
+                border: '1px solid #BAE6FD',
+                color: '#0284C7',
+                fontSize: '12px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <ArrowLeft size={13} />
+              <span>Return to Home</span>
+            </Link>
+          )}
+        </div>
 
         {/* Desktop Navigation */}
         <nav style={{ display: 'none', alignItems: 'center', gap: '32px' }} className="desktop-nav">
@@ -140,6 +165,28 @@ export default function Navbar() {
               {link.name}
             </Link>
           ))}
+          {pathname !== '/' && (
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                backgroundColor: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                color: '#0284C7',
+                fontSize: '13px',
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              <ArrowLeft size={15} />
+              Return to Home
+            </Link>
+          )}
           <div style={{ height: '1px', backgroundColor: '#F1F5F9', margin: '4px 0' }} />
           {currentUser ? (
             <Link
@@ -173,6 +220,15 @@ export default function Navbar() {
       )}
 
       <style jsx>{`
+        .navbar-return-btn:hover {
+          background-color: #E0F2FE !important;
+          border-color: #7DD3FC !important;
+        }
+        @media (max-width: 480px) {
+          .navbar-return-btn span {
+            display: none;
+          }
+        }
         @media (min-width: 900px) {
           .desktop-nav {
             display: flex !important;

@@ -2,8 +2,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 
 export default function RepresentativeOnboardingPage() {
@@ -50,8 +51,29 @@ export default function RepresentativeOnboardingPage() {
     }}>
       {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-        <div style={{ marginBottom: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '14px', flexWrap: 'wrap' }}>
           <CodeBridgeLogo size="md" variant="dark-text" href="/" />
+          <Link
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #CBD5E1',
+              color: '#0284C7',
+              fontSize: '12px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <ArrowLeft size={13} />
+            Return to Home
+          </Link>
         </div>
         <div style={{
           display: 'inline-flex',
