@@ -119,6 +119,16 @@ export async function POST(req: NextRequest) {
 
     const invoiceTotalMinor = Number(invoice.amount_minor);
     const previousPaidMinor = Number(invoice.amount_paid_minor || 0);
+    const unpaidOutstandingMinor = invoiceTotalMinor - previousPaidMinor;
+
+    // Reject overpayments safely
+    if (verifiedAmountMinor > unpaidOutstandingMinor) {
+      console.error(`[Flutterwave Webhook] Overpayment rejected: Paid amount (${verifiedAmountMinor} minor) exceeds remaining balance (${unpaidOutstandingMinor} minor) for invoice ${invoice.id}.`);
+      return NextResponse.json({
+        error: `Overpayment violation: Paid amount exceeds outstanding balance. Expected at most ${unpaidOutstandingMinor / 100} ${invoice.currency}.`,
+      }, { status: 400 });
+    }
+
     const newTotalPaidMinor = previousPaidMinor + verifiedAmountMinor;
     const remainingAfterThisMinor = Math.max(0, invoiceTotalMinor - newTotalPaidMinor);
     const isFullyPaid = newTotalPaidMinor >= invoiceTotalMinor;

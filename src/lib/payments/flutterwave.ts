@@ -88,22 +88,34 @@ export function timingSafeEqual(a: string, b: string): boolean {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
+export function getFlutterwaveSecretKey(): string | undefined {
+  return process.env.FLUTTERWAVE_SECRET_KEY || process.env.FLW_SECRET_KEY;
+}
+
+export function getFlutterwavePublicKey(): string | undefined {
+  return process.env.FLUTTERWAVE_PUBLIC_KEY || process.env.FLW_PUBLIC_KEY;
+}
+
+export function getFlutterwaveSecretHash(): string | undefined {
+  return process.env.FLUTTERWAVE_SECRET_HASH || process.env.FLW_WEBHOOK_SECRET_HASH;
+}
+
 /**
  * Validates webhook authenticity using Flutterwave signature headers.
  * Supports:
- * 1. Standard `verif-hash` header comparison (against FLW_WEBHOOK_SECRET_HASH)
- * 2. Cryptographic `flutterwave-signature` header (HMAC-SHA256 of raw body against FLW_WEBHOOK_SECRET_HASH or FLW_SECRET_KEY)
+ * 1. Standard `verif-hash` header comparison (against FLUTTERWAVE_SECRET_HASH)
+ * 2. Cryptographic `flutterwave-signature` header (HMAC-SHA256 of raw body against FLUTTERWAVE_SECRET_HASH or FLUTTERWAVE_SECRET_KEY)
  * Both use constant-time comparison to protect against timing attacks.
  */
 export function verifyWebhookSignature(
   param1: WebhookSignatureHeaders | string | null,
   param2?: string | WebhookSignatureHeaders | null
 ): boolean {
-  const secretHash = process.env.FLW_WEBHOOK_SECRET_HASH;
-  const secretKey = process.env.FLW_SECRET_KEY;
+  const secretHash = getFlutterwaveSecretHash();
+  const secretKey = getFlutterwaveSecretKey();
 
   if (!secretHash && !secretKey) {
-    console.warn('[Flutterwave] Neither FLW_WEBHOOK_SECRET_HASH nor FLW_SECRET_KEY is configured. Webhook rejected.');
+    console.warn('[Flutterwave] Neither FLUTTERWAVE_SECRET_HASH nor FLUTTERWAVE_SECRET_KEY is configured. Webhook rejected.');
     return false;
   }
 
@@ -171,16 +183,29 @@ export function generateFlutterwaveReference(invoiceId: string): string {
 export async function initiateFlutterwaveCheckout(
   params: FlutterwaveInitiateParams
 ): Promise<FlutterwaveInitiateResult> {
-  const secretKey = process.env.FLW_SECRET_KEY;
+  const secretKey = getFlutterwaveSecretKey();
   const majorAmount = params.amountMinor / 100;
 
   // Enforce payment options based on currency
   // KES payments support Card and M-Pesa
   const paymentOptions = params.currency === 'KES' ? 'card,mpesa' : 'card,banktransfer,ussd';
 
-  // If secret key is not set or running in mock simulation mode
-  if (!secretKey || secretKey.startsWith('FLWSECK_TEST_MOCK')) {
-    console.log(`[Flutterwave Simulation] Initiating ${params.currency} ${majorAmount} checkout (tx_ref: ${params.txRef})`);
+  // If secret key is not set, reject in production
+  if (!secretKey) {
+    if (process.env.NODE_ENV === 'test') {
+      console.log(`[Flutterwave Test Simulation] Initiating ${params.currency} ${majorAmount} checkout (tx_ref: ${params.txRef})`);
+      return {
+        success: true,
+        checkoutUrl: `${params.redirectUrl}${params.redirectUrl.includes('?') ? '&' : '?'}status=successful&tx_ref=${params.txRef}&transaction_id=flw_sim_${Date.now()}`,
+        txRef: params.txRef,
+        isSimulated: true,
+      };
+    }
+    console.error('[Flutterwave] FLUTTERWAVE_SECRET_KEY is not configured on the server.');
+    throw new Error('Payment gateway configuration error: FLUTTERWAVE_SECRET_KEY is not configured.');
+  }
+
+  if (secretKey.startsWith('FLWSECK_TEST_MOCK') && process.env.NODE_ENV === 'test') {
     return {
       success: true,
       checkoutUrl: `${params.redirectUrl}${params.redirectUrl.includes('?') ? '&' : '?'}status=successful&tx_ref=${params.txRef}&transaction_id=flw_sim_${Date.now()}`,
@@ -211,8 +236,8 @@ export async function initiateFlutterwaveCheckout(
     const data = await response.json();
 
     if (!response.ok || data.status !== 'success') {
-      console.error('[Flutterwave] API Error on checkout initiation:', data);
-      throw new Error(data.message || 'Failed to initiate payment with Flutterwave.');
+      console.error('[Flutterwave] Checkout initialization failed:', data);
+      throw new Error(data.message || 'Failed to initiate Flutterwave checkout.');
     }
 
     return {
@@ -233,10 +258,18 @@ export async function initiateFlutterwaveCheckout(
 export async function verifyFlutterwaveTransaction(
   transactionId: string | number
 ): Promise<FlutterwaveVerifyResponse> {
-  const secretKey = process.env.FLW_SECRET_KEY;
+  const secretKey = getFlutterwaveSecretKey();
 
-  // In test simulation mode:
-  if (!secretKey || secretKey.startsWith('FLWSECK_TEST_MOCK')) {
+  if (!secretKey) {
+    console.error('[Flutterwave] FLUTTERWAVE_SECRET_KEY is not configured on the server.');
+    return {
+      status: 'error',
+      message: 'Payment gateway configuration error: FLUTTERWAVE_SECRET_KEY is missing.',
+    };
+  }
+
+  // Allow test mock only in test environments with explicit mock key
+  if (secretKey.startsWith('FLWSECK_TEST_MOCK') && process.env.NODE_ENV === 'test') {
     console.log(`[Flutterwave Simulation] Mock verification for transaction ${transactionId}`);
     return {
       status: 'success',
@@ -290,9 +323,17 @@ export async function verifyFlutterwaveTransaction(
 export async function verifyFlutterwaveByReference(
   txRef: string
 ): Promise<FlutterwaveVerifyResponse> {
-  const secretKey = process.env.FLW_SECRET_KEY;
+  const secretKey = getFlutterwaveSecretKey();
 
-  if (!secretKey || secretKey.startsWith('FLWSECK_TEST_MOCK')) {
+  if (!secretKey) {
+    console.error('[Flutterwave] FLUTTERWAVE_SECRET_KEY is not configured on the server.');
+    return {
+      status: 'error',
+      message: 'Payment gateway configuration error: FLUTTERWAVE_SECRET_KEY is missing.',
+    };
+  }
+
+  if (secretKey.startsWith('FLWSECK_TEST_MOCK') && process.env.NODE_ENV === 'test') {
     console.log(`[Flutterwave Simulation] Mock verification for tx_ref ${txRef}`);
     return {
       status: 'success',

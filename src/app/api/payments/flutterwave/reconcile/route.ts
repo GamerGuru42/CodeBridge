@@ -97,6 +97,13 @@ export async function POST(req: NextRequest) {
           const verifiedAmountMinor = Math.round(Number(vData.amount) * 100);
           const currentPaidMinor = Number(invoice.amount_paid_minor || 0);
           const invoiceTotalMinor = Number(invoice.amount_minor);
+          const unpaidRemaining = invoiceTotalMinor - currentPaidMinor;
+
+          if (verifiedAmountMinor > unpaidRemaining) {
+            results.details.push({ paymentId: payment.id, status: 'ERROR', note: 'Overpayment violation: amount exceeds unpaid balance' });
+            continue;
+          }
+
           const newTotalPaidMinor = currentPaidMinor + verifiedAmountMinor;
           const isFullyPaid = newTotalPaidMinor >= invoiceTotalMinor;
           const newInvoiceStatus = isFullyPaid ? 'PAID' : 'PARTIALLY_PAID';
