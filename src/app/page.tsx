@@ -80,7 +80,7 @@ export default function HomePage() {
                   textTransform: 'uppercase',
                   marginBottom: '24px',
                 }}>
-                  GLOBAL TECH TALENT &bull; WORLD CLASS ENGINEERING
+                  ENTERPRISE ENGINEERING &bull; CUSTOM DIGITAL PRODUCTS
                 </motion.div>
 
                 {/* Main Headline */}
@@ -142,8 +142,8 @@ export default function HomePage() {
                       <ShieldCheck size={20} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>Vetted Talent</div>
-                      <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Pre-screened professionals</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>Dedicated Engineering</div>
+                      <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Production-ready delivery</div>
                     </div>
                   </div>
 
@@ -247,7 +247,7 @@ export default function HomePage() {
                 }}>
                   <Image
                     src="/images/hero-talent.jpg"
-                    alt="African tech developers collaborating enthusiastically over laptop"
+                    alt="CodeBridge engineering team collaborating on software architecture"
                     fill
                     sizes="(max-width: 768px) 100vw, 560px"
                     priority
@@ -302,7 +302,7 @@ export default function HomePage() {
                   color: 'var(--cb-text-primary)',
                   marginBottom: '18px',
                 }}>
-                  Comprehensive Tech Talent &amp; Development Solutions
+                  End-to-End Software Engineering &amp; Digital Solutions
                 </motion.h2>
 
                 <motion.p variants={itemVariants} style={{
@@ -312,7 +312,7 @@ export default function HomePage() {
                   marginBottom: '32px',
                   maxWidth: '440px',
                 }}>
-                  From high-converting websites to complex enterprise platforms, we engineer tailored software for your business needs.
+                  From strategy and architecture to engineering, deployment, and handover &mdash; we build tailored digital products and robust business systems for your exact needs.
                 </motion.p>
 
                 <motion.div variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ display: 'inline-block' }}>
@@ -376,52 +376,124 @@ export default function HomePage() {
         </section>
 
         {/* ================================================================= */}
-        {/* 4. TRUSTED BY FORWARD-THINKING BUSINESSES BANNER                  */}
+        {/* 4. FINAL CONVERSION CTA SECTION                                   */}
         {/* ================================================================= */}
         <section style={{
-          background: 'linear-gradient(135deg, var(--cb-navy-950) 0%, var(--cb-navy-800) 100%)',
-          padding: '80px 0',
+          background: 'linear-gradient(135deg, var(--cb-navy-950) 0%, var(--cb-navy-900) 50%, var(--cb-navy-800) 100%)',
+          padding: '96px 0',
           textAlign: 'center',
           color: '#FFFFFF',
           position: 'relative',
+          overflow: 'hidden',
+          borderTop: '1px solid rgba(0, 180, 216, 0.15)',
         }}>
-          {/* Decorative glow */}
+          {/* Decorative glow and ambient aura */}
           <div style={{
-             position: 'absolute',
-             top: '50%',
-             left: '50%',
-             transform: 'translate(-50%, -50%)',
-             width: '60%',
-             height: '60%',
-             background: 'radial-gradient(ellipse at center, rgba(0, 180, 216, 0.15) 0%, transparent 70%)',
-             pointerEvents: 'none',
-          }}></div>
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80%',
+            maxWidth: '840px',
+            height: '80%',
+            background: 'radial-gradient(ellipse at center, rgba(0, 180, 216, 0.18) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
 
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="cb-container" style={{ position: 'relative', zIndex: 1 }}
+            className="cb-container"
+            style={{ position: 'relative', zIndex: 1, maxWidth: '780px', margin: '0 auto' }}
           >
-            <h2 style={{
-              fontSize: 'clamp(24px, 3.2vw, 34px)',
+            {/* Eyebrow */}
+            <div style={{
+              display: 'inline-block',
+              fontSize: '12px',
               fontWeight: 800,
-              letterSpacing: '-0.02em',
-              marginBottom: '16px',
+              letterSpacing: '0.1em',
+              color: 'var(--cb-cyan-400)',
+              backgroundColor: 'rgba(0, 180, 216, 0.12)',
+              border: '1px solid rgba(0, 180, 216, 0.25)',
+              padding: '6px 14px',
+              borderRadius: '100px',
+              textTransform: 'uppercase',
+              marginBottom: '20px',
+            }}>
+              READY TO BUILD?
+            </div>
+
+            {/* Main Headline */}
+            <h2 style={{
+              fontSize: 'clamp(28px, 4vw, 42px)',
+              fontWeight: 900,
+              letterSpacing: '-0.03em',
+              lineHeight: 1.2,
+              marginBottom: '18px',
               color: '#FFFFFF',
             }}>
-              Trusted by Forward-Thinking Businesses
+              Turn Your Business Idea Into a Working Digital Product.
             </h2>
+
+            {/* Supporting copy */}
             <p style={{
-              fontSize: '15px',
+              fontSize: 'clamp(15px, 1.8vw, 17px)',
               color: '#94A3B8',
               maxWidth: '620px',
-              margin: '0 auto',
-              lineHeight: 1.6,
+              margin: '0 auto 36px',
+              lineHeight: 1.65,
             }}>
-              From startups to established companies, we help organizations build, scale, and succeed with cutting-edge engineering.
+              Tell our engineering team what you need to build, improve, or automate. We&apos;ll review your requirements and help you map out the right technical solution.
             </p>
+
+            {/* Dual CTAs */}
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '16px',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link
+                  href="/request-project"
+                  className="cb-btn cb-btn-cyan"
+                  style={{
+                    padding: '14px 32px',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <span>Request a Project</span>
+                  <ArrowRight size={16} />
+                </Link>
+              </motion.div>
+
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link
+                  href="/contact"
+                  className="cb-btn cb-btn-outline-pill"
+                  style={{
+                    padding: '14px 28px',
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    color: '#FFFFFF',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <span>Contact Technical Desk</span>
+                </Link>
+              </motion.div>
+            </div>
           </motion.div>
         </section>
       </main>

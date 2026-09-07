@@ -120,9 +120,9 @@ export default function AboutPage() {
               color: 'var(--cb-text-primary)',
               marginBottom: '20px',
             }}>
-              Connecting Global Demand with Africa&apos;s{' '}
+              Engineering World-Class Digital Products &amp;{' '}
               <span className="cb-text-gradient">
-                Premier Tech Talent
+                Custom Business Software
               </span>
             </motion.h1>
 
@@ -130,10 +130,10 @@ export default function AboutPage() {
               fontSize: '17px',
               lineHeight: 1.65,
               color: 'var(--cb-text-secondary)',
-              maxWidth: '720px',
+              maxWidth: '740px',
               margin: '0 auto 24px',
             }}>
-              CodeBridge is a dedicated digital products and engineering platform operated by <strong>MarketBridge NG LTD</strong>. Built for business, designed for scale.
+              CodeBridge is a digital product and technology solutions firm operated by <strong>MarketBridge NG LTD</strong>, helping businesses design, build, deploy, and improve custom digital products and business software.
             </motion.p>
             </motion.div>
           </div>

@@ -88,7 +88,7 @@ export default function SuperAdminDashboard() {
           <div className="cb-badge cb-badge-rose" style={{ marginBottom: '8px' }}>
             <ShieldCheck size={13} /> Super Administrator
           </div>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--cb-text-primary)', letterSpacing: '-0.02em' }}>
             MarketBridge Executive Console
           </h1>
           <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
@@ -133,7 +133,7 @@ export default function SuperAdminDashboard() {
             <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Clients</span>
             <Briefcase size={16} color="var(--cb-blue-400)" />
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{ov?.totalClients || 0}</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{ov?.totalClients || 0}</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>Active Enterprise Accounts</div>
         </div>
 
@@ -142,7 +142,7 @@ export default function SuperAdminDashboard() {
             <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Representatives</span>
             <Users size={16} color="var(--cb-amber-500)" />
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
             {ov?.totalReps || 0}{' '}
             <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--cb-amber-500)' }}>
               ({ov?.pendingReps || 0} Pending)
@@ -158,7 +158,7 @@ export default function SuperAdminDashboard() {
             <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Active Projects</span>
             <Layers size={16} color="var(--cb-emerald-500)" />
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{ov?.activeProjects || 0}</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{ov?.activeProjects || 0}</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>In Engineering & Delivery</div>
         </div>
 
@@ -167,7 +167,7 @@ export default function SuperAdminDashboard() {
             <span style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Lead Pipeline</span>
             <TrendingUp size={16} color="var(--cb-blue-400)" />
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{ov?.totalLeads || 0}</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{ov?.totalLeads || 0}</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>Total Commercial Inquiries</div>
         </div>
       </div>
@@ -186,7 +186,7 @@ export default function SuperAdminDashboard() {
         gap: '16px'
       }}>
         <div>
-          <div style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <TrendingUp size={16} color="var(--cb-blue-400)" />
             Modeled Commission Accruals (Phase 1 Data Architecture — No Real Money Movement)
           </div>
@@ -198,13 +198,13 @@ export default function SuperAdminDashboard() {
         <div style={{ display: 'flex', gap: '20px' }}>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Kenya Accrued (KES)</div>
-            <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               {((ov?.commissionsModeled?.KES_minor || 0) / 100).toLocaleString()} KES
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Nigeria Accrued (NGN)</div>
-            <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF' }}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               {((ov?.commissionsModeled?.NGN_minor || 0) / 100).toLocaleString()} NGN
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function SuperAdminDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               Representative Management & Approvals
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -339,7 +339,7 @@ export default function SuperAdminDashboard() {
                 return (
                   <tr key={r.id}>
                     <td>
-                      <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{r.first_name} {r.last_name}</div>
+                      <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{r.first_name} {r.last_name}</div>
                       <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>{r.email}</div>
                     </td>
                     <td>
@@ -362,7 +362,7 @@ export default function SuperAdminDashboard() {
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 600, color: '#FFFFFF' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>
                         {((r.total_commission_minor || 0) / 100).toLocaleString()} {r.currency}
                       </span>
                     </td>
@@ -417,7 +417,7 @@ export default function SuperAdminDashboard() {
         {/* Leads */}
         <div className="cb-card" style={{ padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF' }}>Recent Commercial Leads</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>Recent Commercial Leads</h3>
             <span className="cb-badge cb-badge-neutral">{leads.length} Total</span>
           </div>
 
@@ -433,7 +433,7 @@ export default function SuperAdminDashboard() {
                 alignItems: 'center'
               }}>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#FFFFFF' }}>{l.business_name}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--cb-text-primary)' }}>{l.business_name}</div>
                   <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>
                     {l.country_name} &bull; Budget: {((l.estimated_budget_minor || 0) / 100).toLocaleString()} {l.currency}
                   </div>
@@ -447,7 +447,7 @@ export default function SuperAdminDashboard() {
         {/* Audit Log Stream */}
         <div className="cb-card" style={{ padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF' }}>System Audit Trail</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>System Audit Trail</h3>
             <Clock size={16} color="var(--cb-text-muted)" />
           </div>
 

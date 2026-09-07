@@ -148,7 +148,7 @@ export default function ClientDashboard() {
           <div className="cb-badge cb-badge-neutral" style={{ marginBottom: '8px' }}>
             <Briefcase size={13} /> Enterprise Client Portal
           </div>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--cb-text-primary)', letterSpacing: '-0.02em' }}>
             My Projects & Delivery Milestones
           </h1>
           <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
@@ -167,7 +167,7 @@ export default function ClientDashboard() {
               fontSize: '12px',
               color: 'var(--cb-text-secondary)'
             }}>
-              <span>Client Entity: <strong style={{ color: '#FFFFFF' }}>{currentUser.client.companyName}</strong></span>
+              <span>Client Entity: <strong style={{ color: 'var(--cb-text-primary)' }}>{currentUser.client.companyName}</strong></span>
               {currentUser.client.industry && <span>&bull; Industry: {currentUser.client.industry}</span>}
               {currentUser.country?.name && <span>&bull; Market: {currentUser.country.name} ({currentUser.country.currency})</span>}
             </div>
@@ -201,7 +201,7 @@ export default function ClientDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
               Commercial Proposals & Quotes
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -242,7 +242,7 @@ export default function ClientDashboard() {
                         {prop.status.replace('_', ' ')}
                       </span>
                     </div>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
                       {prop.title}
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', marginTop: '2px' }}>
@@ -253,7 +253,7 @@ export default function ClientDashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Fixed Scope Total</div>
-                      <div style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF' }}>
+                      <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
                         {amountFormatted} {prop.currency}
                       </div>
                     </div>
@@ -276,7 +276,7 @@ export default function ClientDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               Commercial Invoices & Billing Settlements
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -335,7 +335,7 @@ export default function ClientDashboard() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{inv.title}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{inv.title}</div>
                         {inv.project_code && (
                           <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>
                             Project: {inv.project_code}
@@ -343,7 +343,7 @@ export default function ClientDashboard() {
                         )}
                       </td>
                       <td>
-                        <span style={{ fontWeight: 700, color: '#FFFFFF' }}>
+                        <span style={{ fontWeight: 700, color: 'var(--cb-text-primary)' }}>
                           {((amountMinor) / 100).toLocaleString()} {inv.currency}
                         </span>
                       </td>
@@ -398,7 +398,7 @@ export default function ClientDashboard() {
                     {selectedProposal.status.replace('_', ' ')}
                   </span>
                 </div>
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginTop: '4px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)', marginTop: '4px' }}>
                   {selectedProposal.title}
                 </h3>
               </div>
@@ -444,7 +444,7 @@ export default function ClientDashboard() {
                 <div style={{ fontSize: '11px', color: 'var(--cb-blue-400)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
                   Commercial Payment Structure
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: '#FFFFFF' }}>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
                   {selectedProposal.payment_structure_type === 'FULL_UPFRONT'
                     ? 'Option A: 100% Full Payment Upfront (Standard)'
                     : selectedProposal.payment_structure_type === 'DEPOSIT_MILESTONES'
@@ -476,9 +476,9 @@ export default function ClientDashboard() {
                       <tbody>
                         {selectedProposal.paymentSchedule.map((s: any, idx: number) => (
                           <tr key={idx} style={{ borderTop: '1px solid var(--cb-border-subtle)' }}>
-                            <td style={{ padding: '8px 12px', color: '#FFFFFF', fontWeight: 600 }}>{s.title}</td>
+                            <td style={{ padding: '8px 12px', color: 'var(--cb-text-primary)', fontWeight: 600 }}>{s.title}</td>
                             <td style={{ padding: '8px 12px', color: 'var(--cb-blue-400)' }}>{(s.percentage_bps / 100).toFixed(0)}%</td>
-                            <td style={{ padding: '8px 12px', color: '#FFFFFF' }}>{((s.amount_minor || 0) / 100).toLocaleString()} {selectedProposal.currency}</td>
+                            <td style={{ padding: '8px 12px', color: 'var(--cb-text-primary)' }}>{((s.amount_minor || 0) / 100).toLocaleString()} {selectedProposal.currency}</td>
                             <td style={{ padding: '8px 12px' }}>
                               {s.is_required_to_start ? (
                                 <span className="cb-badge cb-badge-amber" style={{ fontSize: '10px' }}>Required for Kickoff</span>
@@ -497,7 +497,7 @@ export default function ClientDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', padding: '16px', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '8px', marginBottom: '20px' }}>
                 <div>
                   <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Commercial Value</div>
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#FFFFFF' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
                     {((selectedProposal.total_amount_minor || 0) / 100).toLocaleString()} {selectedProposal.currency}
                   </div>
                 </div>
@@ -593,7 +593,7 @@ export default function ClientDashboard() {
       {projects.length === 0 ? (
         <div className="cb-card" style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--cb-text-muted)' }}>
           <Briefcase size={36} style={{ margin: '0 auto 14px auto', opacity: 0.4 }} />
-          <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>
+          <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)', marginBottom: '6px' }}>
             No Active Engineering Projects Yet
           </h3>
           <p style={{ fontSize: '13px', maxWidth: '460px', margin: '0 auto 20px auto', color: 'var(--cb-text-secondary)', lineHeight: 1.5 }}>
@@ -624,7 +624,7 @@ export default function ClientDashboard() {
                       </span>
                       <span className="cb-badge cb-badge-neutral">{proj.country_name}</span>
                     </div>
-                    <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF' }}>
+                    <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
                       {proj.title}
                     </h2>
                     <div style={{ fontSize: '13px', color: 'var(--cb-text-muted)', marginTop: '4px' }}>
@@ -643,7 +643,7 @@ export default function ClientDashboard() {
                       <div style={{ color: 'var(--cb-text-muted)', textTransform: 'uppercase', fontSize: '11px', marginBottom: '2px' }}>
                         Assigned Representative
                       </div>
-                      <div style={{ fontWeight: 600, color: '#FFFFFF' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>
                         {proj.rep_first_name} {proj.rep_last_name}
                       </div>
                     </div>
@@ -706,7 +706,7 @@ export default function ClientDashboard() {
                 </div>
 
                 {/* Milestones Timeline */}
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--cb-text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px' }}>
                   Project Milestones
                 </h3>
 

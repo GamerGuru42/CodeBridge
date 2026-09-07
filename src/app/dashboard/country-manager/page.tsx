@@ -50,7 +50,7 @@ export default function CountryManagerDashboard() {
         <div className="cb-badge cb-badge-emerald" style={{ marginBottom: '8px' }}>
           <Globe2 size={13} /> Country Management: Kenya (KES)
         </div>
-        <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--cb-text-primary)', letterSpacing: '-0.02em' }}>
           Regional Operations & Field Oversight
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
@@ -64,7 +64,7 @@ export default function CountryManagerDashboard() {
           <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
             Regional Representatives
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{reps.length} Reps</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{reps.length} Reps</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
             {reps.filter(r => r.approval_status === 'ACTIVE').length} active in Kenya
           </div>
@@ -74,7 +74,7 @@ export default function CountryManagerDashboard() {
           <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
             Kenya Regional Leads
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{leads.length} Leads</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{leads.length} Leads</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
             Commercial pipeline in KES
           </div>
@@ -84,7 +84,7 @@ export default function CountryManagerDashboard() {
           <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
             Active Kenya Projects
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{projects.length} Projects</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{projects.length} Projects</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
             Client implementations
           </div>
@@ -93,7 +93,7 @@ export default function CountryManagerDashboard() {
 
       {/* Country Reps */}
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
-        <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF', marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)', marginBottom: '16px' }}>
           Field Representatives Roster (Kenya)
         </h3>
         <div className="cb-table-container">
@@ -111,7 +111,7 @@ export default function CountryManagerDashboard() {
               {reps.map((r) => (
                 <tr key={r.id}>
                   <td>
-                    <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{r.first_name} {r.last_name}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{r.first_name} {r.last_name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>{r.email} &bull; {r.phone}</div>
                   </td>
                   <td>
@@ -137,7 +137,7 @@ export default function CountryManagerDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               Commercial Proposals & Contracts (Kenya Hub)
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -179,18 +179,18 @@ export default function CountryManagerDashboard() {
                   return (
                     <tr key={p.id}>
                       <td>
-                        <div style={{ fontWeight: 700, color: '#FFFFFF', fontSize: '13px' }}>{p.proposal_number}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--cb-text-primary)', fontSize: '13px' }}>{p.proposal_number}</div>
                         <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>v{p.version}</div>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{p.company_name || p.lead_business_name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{p.company_name || p.lead_business_name}</div>
                       </td>
                       <td>
                         <div style={{ fontSize: '13px', color: 'var(--cb-text-secondary)' }}>{p.title}</div>
                         <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>{p.deliverables?.length || 0} Deliverables</div>
                       </td>
                       <td>
-                        <span style={{ fontWeight: 700, color: '#FFFFFF' }}>
+                        <span style={{ fontWeight: 700, color: 'var(--cb-text-primary)' }}>
                           {valFormatted} {p.currency}
                         </span>
                       </td>
@@ -210,7 +210,7 @@ export default function CountryManagerDashboard() {
 
       {/* Regional Leads Stream */}
       <div className="cb-card" style={{ padding: '24px' }}>
-        <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF', marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)', marginBottom: '16px' }}>
           Regional Pipeline (Kenya)
         </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -225,7 +225,7 @@ export default function CountryManagerDashboard() {
               alignItems: 'center'
             }}>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#FFFFFF' }}>{l.business_name}</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--cb-text-primary)' }}>{l.business_name}</div>
                 <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
                   Contact: {l.contact_person} &bull; Scope: {l.business_type} &bull; Budget: {((l.estimated_budget_minor || 0) / 100).toLocaleString()} {l.currency}
                 </div>

@@ -340,7 +340,7 @@ export default function AdminOpsDashboard() {
           <div className="cb-badge cb-badge-blue" style={{ marginBottom: '8px' }}>
             <LayoutDashboard size={13} /> Operations & Delivery Console
           </div>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--cb-text-primary)', letterSpacing: '-0.02em' }}>
             Platform Operations & Commercial Engine
           </h1>
           <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
@@ -381,7 +381,7 @@ export default function AdminOpsDashboard() {
           <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
             Pipeline Leads
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{leads.length} Leads</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{leads.length} Leads</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
             {leads.filter(l => l.status === 'NEW').length} requiring qualification
           </div>
@@ -401,7 +401,7 @@ export default function AdminOpsDashboard() {
           <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
             Active Engineering
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{projects.length} Projects</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{projects.length} Projects</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
             In development and quality review
           </div>
@@ -411,7 +411,7 @@ export default function AdminOpsDashboard() {
           <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
             Field Representatives
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{reps.length} Reps</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{reps.length} Reps</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
             {reps.filter(r => r.approval_status === 'ACTIVE').length} active in Kenya & Nigeria
           </div>
@@ -422,7 +422,7 @@ export default function AdminOpsDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               Commercial Proposals & Client Transmittals (Phase 2A)
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -494,7 +494,7 @@ export default function AdminOpsDashboard() {
                   return (
                     <tr key={p.id}>
                       <td>
-                        <div style={{ fontWeight: 700, color: '#FFFFFF', fontSize: '13px' }}>
+                        <div style={{ fontWeight: 700, color: 'var(--cb-text-primary)', fontSize: '13px' }}>
                           {p.proposal_number}
                         </div>
                         <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>
@@ -502,7 +502,7 @@ export default function AdminOpsDashboard() {
                         </div>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#FFFFFF' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>
                           {p.company_name || p.lead_business_name || 'Direct Business'}
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
@@ -518,7 +518,7 @@ export default function AdminOpsDashboard() {
                         </div>
                       </td>
                       <td>
-                        <span style={{ fontWeight: 700, color: '#FFFFFF' }}>
+                        <span style={{ fontWeight: 700, color: 'var(--cb-text-primary)' }}>
                           {amountFormatted} {p.currency}
                         </span>
                       </td>
@@ -595,7 +595,7 @@ export default function AdminOpsDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               Commercial Billing & Invoices Console
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -667,7 +667,7 @@ export default function AdminOpsDashboard() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{inv.company_name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{inv.company_name}</div>
                         <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>{inv.country_code}</div>
                       </td>
                       <td>
@@ -679,7 +679,7 @@ export default function AdminOpsDashboard() {
                         )}
                       </td>
                       <td>
-                        <span style={{ fontWeight: 700, color: '#FFFFFF' }}>
+                        <span style={{ fontWeight: 700, color: 'var(--cb-text-primary)' }}>
                           {amountFmt} {inv.currency}
                         </span>
                       </td>
@@ -755,7 +755,7 @@ export default function AdminOpsDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               Commercial Lead Lifecycle & Qualification
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -784,7 +784,7 @@ export default function AdminOpsDashboard() {
                 return (
                   <tr key={l.id}>
                     <td>
-                      <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{l.business_name}</div>
+                      <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{l.business_name}</div>
                       <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
                         {l.contact_person} &bull; {l.email}
                       </div>
@@ -799,7 +799,7 @@ export default function AdminOpsDashboard() {
                       </div>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 600, color: '#FFFFFF' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>
                         {budgetFormatted} {l.currency}
                       </span>
                     </td>
@@ -883,7 +883,7 @@ export default function AdminOpsDashboard() {
         <div className="cb-modal-overlay">
           <div className="cb-modal" style={{ maxWidth: '650px' }}>
             <div className="cb-modal-header">
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
                 Author Commercial Proposal (Phase 2A)
               </h3>
               <button
@@ -1042,7 +1042,7 @@ export default function AdminOpsDashboard() {
         <div className="cb-modal-overlay">
           <div className="cb-modal" style={{ maxWidth: '600px' }}>
             <div className="cb-modal-header">
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <CheckCircle2 size={20} color="#10B981" /> Verify Payment & Authorize Settlement
               </h3>
               <button
@@ -1070,11 +1070,11 @@ export default function AdminOpsDashboard() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <span style={{ color: 'var(--cb-text-muted)' }}>Client / Company:</span>
-                    <strong style={{ color: '#FFFFFF' }}>{selectedInvoiceForPayment.company_name}</strong>
+                    <strong style={{ color: 'var(--cb-text-primary)' }}>{selectedInvoiceForPayment.company_name}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <span style={{ color: 'var(--cb-text-muted)' }}>Total Invoiced:</span>
-                    <span style={{ fontWeight: 600, color: '#FFFFFF' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>
                       {((selectedInvoiceForPayment.amount_minor || 0) / 100).toLocaleString()} {selectedInvoiceForPayment.currency}
                     </span>
                   </div>

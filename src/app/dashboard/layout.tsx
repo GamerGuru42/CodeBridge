@@ -1,19 +1,15 @@
 // src/app/dashboard/layout.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import ThemeToggle from '@/components/common/ThemeToggle';
 import CodeBridgeLogo from '@/components/common/CodeBridgeLogo';
 import {
-  Layers,
   LayoutDashboard,
   Users,
   Briefcase,
-  FileText,
-  DollarSign,
   Settings,
   LogOut,
   ShieldCheck,
@@ -22,6 +18,8 @@ import {
   Code,
   FolderGit2,
   CheckSquare,
+  ChevronDown,
+  User,
 } from 'lucide-react';
 
 export default function DashboardLayout({
@@ -34,7 +32,8 @@ export default function DashboardLayout({
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -62,6 +61,24 @@ export default function DashboardLayout({
         router.push('/login');
       });
   }, [router]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
+
+  // Close dropdown on navigation
+  useEffect(() => {
+    setIsDropdownOpen(false);
+  }, [pathname]);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -143,150 +160,14 @@ export default function DashboardLayout({
 
   const initials = `${(user?.firstName || '').charAt(0)}${(user?.lastName || '').charAt(0)}`.toUpperCase() || 'CB';
 
+  const isSettingsActive = pathname === '/dashboard/settings';
+
   return (
     <div className="cb-dashboard-layout">
-      {/* Sidebar */}
+      {/* Sidebar — Clean: Logo + Nav + Settings */}
       <aside className="cb-sidebar">
         <div className="cb-sidebar-header" style={{ padding: '18px 20px' }}>
           <CodeBridgeLogo size="md" variant="light-text" href="/" showTagline={true} />
-        </div>
-
-        {/* User Profile Hub (Positioned UP at Top of Sidebar) */}
-        <div style={{
-          padding: '16px 14px',
-          borderBottom: '1px solid var(--cb-border-subtle)',
-          backgroundColor: 'rgba(255, 255, 255, 0.02)',
-        }}>
-          <div
-            onClick={() => setIsProfileModalOpen(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer',
-              padding: '6px 8px',
-              borderRadius: '10px',
-              transition: 'background-color 0.15s ease',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            title="Open Profile Settings"
-          >
-            {/* Avatar Circle with Online Dot */}
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <div style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #0284C7 0%, #00B4D8 100%)',
-                color: '#FFFFFF',
-                fontSize: '14px',
-                fontWeight: 800,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0, 180, 216, 0.3)',
-              }}>
-                {initials}
-              </div>
-              <div style={{
-                position: 'absolute',
-                bottom: '-2px',
-                right: '-2px',
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                backgroundColor: '#10B981',
-                border: '2px solid #070F26',
-              }} />
-            </div>
-
-            {/* Name, Email */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontSize: '13px',
-                fontWeight: 700,
-                color: '#FFFFFF',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}>
-                {user?.firstName} {user?.lastName}
-              </div>
-              <div style={{
-                fontSize: '11px',
-                color: 'var(--cb-text-muted)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}>
-                {user?.email}
-              </div>
-            </div>
-          </div>
-
-          {/* Access Tier & Country Badges */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', paddingLeft: '8px' }}>
-            <span className={`cb-badge ${getRoleBadgeClass()}`} style={{ fontSize: '10px', padding: '2px 7px' }}>
-              {role?.replace('_', ' ')}
-            </span>
-            {user?.country?.code && (
-              <span className="cb-badge cb-badge-neutral" style={{ fontSize: '10px', padding: '2px 7px' }}>
-                {user.country.code}
-              </span>
-            )}
-          </div>
-
-          {/* Quick Actions: Profile Settings & Sign Out */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
-            <button
-              type="button"
-              onClick={() => setIsProfileModalOpen(true)}
-              className="cb-btn cb-btn-secondary cb-btn-sm"
-              style={{
-                fontSize: '11px',
-                padding: '6px 8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '5px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              <Settings size={13} />
-              Settings
-            </button>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="cb-btn cb-btn-outline cb-btn-sm"
-              style={{
-                fontSize: '11px',
-                padding: '6px 8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '5px',
-                borderRadius: '6px',
-                color: '#F87171',
-                borderColor: 'rgba(239, 68, 68, 0.25)',
-                cursor: 'pointer',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.25)';
-              }}
-            >
-              <LogOut size={13} />
-              Sign Out
-            </button>
-          </div>
         </div>
 
         {/* Navigation Items */}
@@ -317,6 +198,22 @@ export default function DashboardLayout({
               </Link>
             );
           })}
+
+          {/* Divider */}
+          <div style={{
+            height: '1px',
+            backgroundColor: 'var(--cb-border-subtle)',
+            margin: '8px 12px',
+          }} />
+
+          {/* Settings & Profile Nav Link */}
+          <Link
+            href="/dashboard/settings"
+            className={`cb-nav-link ${isSettingsActive ? 'active' : ''}`}
+          >
+            <Settings size={18} />
+            <span style={{ flex: 1 }}>Settings & Profile</span>
+          </Link>
         </nav>
       </aside>
 
@@ -352,27 +249,231 @@ export default function DashboardLayout({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <ThemeToggle />
 
-            <button
-              type="button"
-              onClick={() => setIsProfileModalOpen(true)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                backgroundColor: 'var(--cb-bg-subtle)',
-                border: '1px solid var(--cb-border-subtle)',
-                color: 'var(--cb-text-primary)',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <Settings size={13} />
-              Profile Settings
-            </button>
+            {/* User Avatar Dropdown */}
+            <div ref={dropdownRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '4px 10px 4px 4px',
+                  borderRadius: '10px',
+                  backgroundColor: isDropdownOpen ? 'var(--cb-bg-subtle)' : 'transparent',
+                  border: '1px solid',
+                  borderColor: isDropdownOpen ? 'var(--cb-border-subtle)' : 'transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isDropdownOpen) {
+                    e.currentTarget.style.backgroundColor = 'var(--cb-bg-subtle)';
+                    e.currentTarget.style.borderColor = 'var(--cb-border-subtle)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isDropdownOpen) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }
+                }}
+              >
+                {/* Avatar Circle */}
+                <div style={{ position: 'relative' }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    background: 'linear-gradient(135deg, #0284C7 0%, #00B4D8 100%)',
+                    color: '#FFFFFF',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    {initials}
+                  </div>
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-1px',
+                    right: '-1px',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: '#10B981',
+                    border: '2px solid var(--cb-bg-card)',
+                  }} />
+                </div>
+                <ChevronDown
+                  size={14}
+                  style={{
+                    color: 'var(--cb-text-muted)',
+                    transition: 'transform 0.15s ease',
+                    transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  right: 0,
+                  width: '260px',
+                  backgroundColor: 'var(--cb-bg-card)',
+                  borderRadius: '12px',
+                  border: '1px solid var(--cb-border-subtle)',
+                  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1)',
+                  zIndex: 100,
+                  overflow: 'hidden',
+                  animation: 'fadeInDown 0.15s ease-out',
+                }}>
+                  {/* User Identity Header */}
+                  <div style={{
+                    padding: '14px 16px',
+                    borderBottom: '1px solid var(--cb-border-subtle)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '9px',
+                        background: 'linear-gradient(135deg, #0284C7 0%, #00B4D8 100%)',
+                        color: '#FFFFFF',
+                        fontSize: '13px',
+                        fontWeight: 800,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        {initials}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          color: 'var(--cb-text-primary)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}>
+                          {user?.firstName} {user?.lastName}
+                        </div>
+                        <div style={{
+                          fontSize: '11px',
+                          color: 'var(--cb-text-muted)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}>
+                          {user?.email}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: '8px' }}>
+                      <span className={`cb-badge ${getRoleBadgeClass()}`} style={{ fontSize: '10px', padding: '2px 7px' }}>
+                        {role?.replace(/_/g, ' ')}
+                      </span>
+                      {user?.country?.code && (
+                        <span className="cb-badge cb-badge-neutral" style={{ fontSize: '10px', padding: '2px 7px', marginLeft: '6px' }}>
+                          {user.country.code}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div style={{ padding: '6px' }}>
+                    <Link
+                      href="/dashboard/settings"
+                      onClick={() => setIsDropdownOpen(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: 'var(--cb-text-primary)',
+                        textDecoration: 'none',
+                        transition: 'background-color 0.1s ease',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--cb-bg-subtle)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <User size={16} style={{ color: 'var(--cb-text-secondary)' }} />
+                      Account Settings
+                    </Link>
+
+                    {role === 'REPRESENTATIVE' && (
+                      <Link
+                        href="/dashboard/settings"
+                        onClick={() => setIsDropdownOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '9px 12px',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          color: 'var(--cb-text-primary)',
+                          textDecoration: 'none',
+                          transition: 'background-color 0.1s ease',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--cb-bg-subtle)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Globe2 size={16} style={{ color: 'var(--cb-text-secondary)' }} />
+                        Referral Portal
+                      </Link>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ height: '1px', backgroundColor: 'var(--cb-border-subtle)', margin: '0 12px' }} />
+
+                  {/* Sign Out */}
+                  <div style={{ padding: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        handleLogout();
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        width: '100%',
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: '#EF4444',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.1s ease',
+                        textAlign: 'left',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.08)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -400,13 +501,6 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
-
-      <ProfileSettingsModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        user={user}
-        onProfileUpdated={(updated) => setUser(updated)}
-      />
     </div>
   );
 }

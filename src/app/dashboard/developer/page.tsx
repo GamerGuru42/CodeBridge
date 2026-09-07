@@ -29,7 +29,7 @@ export default function DeveloperDashboard() {
         <div className="cb-badge cb-badge-blue" style={{ marginBottom: '8px' }}>
           <Code size={13} /> Engineering & Development Hub
         </div>
-        <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--cb-text-primary)', letterSpacing: '-0.02em' }}>
           Assigned Projects & Sprint Milestones
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
@@ -43,7 +43,7 @@ export default function DeveloperDashboard() {
           <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
             Assigned Projects
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{projects.length} Active</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{projects.length} Active</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
             Across Kenya & Nigeria clients
           </div>
@@ -83,7 +83,7 @@ export default function DeveloperDashboard() {
                   <span className="cb-badge cb-badge-neutral">{proj.country_name}</span>
                   <span className="cb-badge cb-badge-blue">{proj.status}</span>
                 </div>
-                <h3 style={{ fontSize: '19px', fontWeight: 700, color: '#FFFFFF', marginTop: '6px' }}>
+                <h3 style={{ fontSize: '19px', fontWeight: 700, color: 'var(--cb-text-primary)', marginTop: '6px' }}>
                   {proj.title}
                 </h3>
                 <div style={{ fontSize: '13px', color: 'var(--cb-text-muted)', marginTop: '2px' }}>
@@ -93,7 +93,7 @@ export default function DeveloperDashboard() {
 
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>Project Budget</div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF' }}>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
                   {((proj.budget_minor || 0) / 100).toLocaleString()} {proj.currency}
                 </div>
               </div>
@@ -104,7 +104,7 @@ export default function DeveloperDashboard() {
             </p>
 
             {/* Milestones Checklist */}
-            <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px' }}>
+            <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--cb-text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px' }}>
               Sprint Milestones & Technical Tasks
             </h4>
 

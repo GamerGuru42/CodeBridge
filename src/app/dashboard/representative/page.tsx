@@ -177,7 +177,7 @@ export default function RepresentativeDashboard() {
           <div className="cb-badge cb-badge-amber" style={{ marginBottom: '8px' }}>
             <Users size={13} /> Sales Representative &bull; {commRatePct}% Commission
           </div>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--cb-text-primary)', letterSpacing: '-0.02em' }}>
             Sales Representative Commercial Workspace
           </h1>
           <p style={{ fontSize: '13px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
@@ -220,7 +220,7 @@ export default function RepresentativeDashboard() {
           <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
             My Active Leads
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>{leads.length} Leads</div>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>{leads.length} Leads</div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
             {wonLeads.length} closed won projects
           </div>
@@ -230,7 +230,7 @@ export default function RepresentativeDashboard() {
           <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
             Pipeline Commercial Value
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: '#FFFFFF' }}>
+          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
             {((totalPipelineBudgetMinor) / 100).toLocaleString()} {currency}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
@@ -267,7 +267,7 @@ export default function RepresentativeDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               Proposals Pipeline & Projected Commissions
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -313,11 +313,11 @@ export default function RepresentativeDashboard() {
                   return (
                     <tr key={p.id}>
                       <td>
-                        <div style={{ fontWeight: 700, color: '#FFFFFF', fontSize: '13px' }}>{p.proposal_number}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--cb-text-primary)', fontSize: '13px' }}>{p.proposal_number}</div>
                         <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>Version {p.version}</div>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{p.company_name || p.lead_business_name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{p.company_name || p.lead_business_name}</div>
                         <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>{p.country_name || 'Regional'}</div>
                       </td>
                       <td>
@@ -325,7 +325,7 @@ export default function RepresentativeDashboard() {
                         <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>{p.deliverables?.length || 0} Deliverables</div>
                       </td>
                       <td>
-                        <span style={{ fontWeight: 700, color: '#FFFFFF' }}>
+                        <span style={{ fontWeight: 700, color: 'var(--cb-text-primary)' }}>
                           {valFormatted} {p.currency}
                         </span>
                       </td>
@@ -355,7 +355,7 @@ export default function RepresentativeDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               Referred Client Invoices & Verified Settlements
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -394,13 +394,13 @@ export default function RepresentativeDashboard() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{inv.company_name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{inv.company_name}</div>
                       </td>
                       <td>
                         <div style={{ fontWeight: 500, color: 'var(--cb-text-primary)' }}>{inv.title}</div>
                       </td>
                       <td>
-                        <span style={{ fontWeight: 600, color: '#FFFFFF' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>
                           {((inv.amount_minor || 0) / 100).toLocaleString()} {inv.currency}
                         </span>
                       </td>
@@ -441,7 +441,7 @@ export default function RepresentativeDashboard() {
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
               My Leads & Commercial Pipeline
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
@@ -477,7 +477,7 @@ export default function RepresentativeDashboard() {
                   return (
                     <tr key={l.id}>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#FFFFFF' }}>{l.business_name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{l.business_name}</div>
                         <div style={{ fontSize: '12px', color: 'var(--cb-text-muted)' }}>
                           {l.contact_person} &bull; {l.phone || l.email}
                         </div>
@@ -486,7 +486,7 @@ export default function RepresentativeDashboard() {
                         <div style={{ fontSize: '13px', color: 'var(--cb-text-secondary)' }}>{l.business_type}</div>
                       </td>
                       <td>
-                        <span style={{ fontWeight: 600, color: '#FFFFFF' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>
                           {budgetFormatted} {l.currency}
                         </span>
                       </td>
@@ -577,7 +577,7 @@ export default function RepresentativeDashboard() {
         <div className="cb-modal-overlay">
           <div className="cb-modal">
             <div className="cb-modal-header">
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
                 Register New Business Lead
               </h3>
               <button
