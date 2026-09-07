@@ -40,9 +40,9 @@ async function testPhase1() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        businessName: '[DEMO TEST] Westlands Hotel & Suites',
+        businessName: `[DEMO TEST] Westlands Hotel & Suites ${Date.now()}`,
         contactPerson: 'Dennis Kiprop',
-        email: 'dennis@westlandshotel.ke',
+        email: `dennis_${Date.now()}@westlandshotel.ke`,
         phone: '+254700112233',
         countryCode: 'KE',
         businessType: 'Restaurant & Hospitality',

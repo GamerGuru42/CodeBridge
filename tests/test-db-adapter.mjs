@@ -21,7 +21,13 @@ class TestDbAdapter {
   constructor() {
     if (dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsWith('postgresql://'))) {
       this.isPg = true;
-      this.sql = postgres(dbUrl, { ssl: 'require', prepare: false });
+      this.sql = postgres(dbUrl, {
+        ssl: 'require',
+        prepare: false,
+        max: 10,
+        idle_timeout: 30,
+        connect_timeout: 20,
+      });
     } else {
       this.isPg = false;
       const dbPath = path.resolve(process.cwd(), './data/codebridge.db');
@@ -29,10 +35,17 @@ class TestDbAdapter {
     }
   }
 
+  formatQuery(query) {
+    let pIdx = 1;
+    return query
+      .replace(/\?/g, () => `$${pIdx++}`)
+      .replace(/datetime\('now'\)/gi, 'NOW()')
+      .replace(/date\('now'\)/gi, 'CURRENT_DATE');
+  }
+
   async get(query, params = []) {
     if (this.isPg) {
-      let pIdx = 1;
-      const text = query.replace(/\?/g, () => `$${pIdx++}`);
+      const text = this.formatQuery(query);
       const rows = await this.sql.unsafe(text, params);
       return rows[0] || null;
     } else {
@@ -42,8 +55,7 @@ class TestDbAdapter {
 
   async all(query, params = []) {
     if (this.isPg) {
-      let pIdx = 1;
-      const text = query.replace(/\?/g, () => `$${pIdx++}`);
+      const text = this.formatQuery(query);
       const rows = await this.sql.unsafe(text, params);
       return rows;
     } else {
@@ -53,8 +65,7 @@ class TestDbAdapter {
 
   async run(query, params = []) {
     if (this.isPg) {
-      let pIdx = 1;
-      const text = query.replace(/\?/g, () => `$${pIdx++}`);
+      const text = this.formatQuery(query);
       return await this.sql.unsafe(text, params);
     } else {
       return this.sqlite.prepare(query).run(...params);

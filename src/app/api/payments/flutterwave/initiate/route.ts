@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       WHERE c.id = ?
     `, [invoice.client_id]);
 
-    const customerEmail = clientRecord?.email || 'billing@codebridge.tech';
+    const customerEmail = clientRecord?.email || process.env.BILLING_EMAIL || 'billing@code-bridge-rosy.vercel.app';
     const customerName = clientRecord
       ? `${clientRecord.first_name || ''} ${clientRecord.last_name || ''}`.trim() || clientRecord.company_name
       : 'CodeBridge Client';
@@ -72,9 +72,11 @@ export async function POST(req: NextRequest) {
     const txRef = generateFlutterwaveReference(invoice.id);
 
     // 6. Base URL resolution for redirect
-    const host = req.headers.get('host') || 'code-bridge-rosy.vercel.app';
-    const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-    const appBaseUrl = `${proto}://${host}`;
+    const envAppUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '');
+    const host = req.headers.get('host');
+    const proto = req.headers.get('x-forwarded-proto') || (host && host.includes('localhost') ? 'http' : 'https');
+    const hostBaseUrl = host ? `${proto}://${host}` : 'https://code-bridge-rosy.vercel.app';
+    const appBaseUrl = envAppUrl || (hostBaseUrl.includes('localhost') ? hostBaseUrl : 'https://code-bridge-rosy.vercel.app');
     const redirectUrl = `${appBaseUrl}/dashboard/client/payment/verify?invoice_id=${encodeURIComponent(invoice.id)}&tx_ref=${encodeURIComponent(txRef)}`;
 
     // 7. Call Flutterwave Standard Checkout API

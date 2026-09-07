@@ -349,6 +349,133 @@ export interface CommissionLedger {
   created_at: string;
 }
 
+export type DoubleEntryAccount =
+  | 'BUSINESS_CASH'
+  | 'CLIENT_RECEIVABLE'
+  | 'COMMISSION_EXPENSE'
+  | 'COMMISSION_PAYABLE'
+  | 'REFUND_EXPENSE'
+  | 'RECOVERY_RECEIVABLE';
+
+export type LedgerEntryType =
+  | 'PAYMENT'
+  | 'COMMISSION'
+  | 'PAYOUT'
+  | 'REFUND'
+  | 'REVERSAL'
+  | 'DISPUTE'
+  | 'RECOVERY'
+  | 'RECOVERY_OFFSET'
+  | 'ADJUSTMENT';
+
+export interface LedgerEntry {
+  id: string;
+  entry_type: LedgerEntryType;
+  account_debited: DoubleEntryAccount | string;
+  account_credited: DoubleEntryAccount | string;
+  currency: CurrencyCode | string;
+  amount_minor: number;
+  invoice_id?: string | null;
+  payment_id?: string | null;
+  sales_rep_id?: string | null;
+  project_id?: string | null;
+  client_id?: string | null;
+  reference: string;
+  notes?: string | null;
+  metadata_json?: string | null;
+  created_at: string;
+}
+
+export interface Territory {
+  id: string;
+  country_name: string;
+  currency: string;
+  default_payout_method: 'BANK' | 'MPESA' | 'MOBILE_MONEY';
+  default_commission_rate_bps: number;
+  is_active: number;
+  created_at: string;
+}
+
+export type CommissionPayoutStatus = 'QUEUED' | 'PROCESSING' | 'PAID' | 'FAILED' | 'ACTION_REQUIRED' | 'CANCELLED';
+
+export interface CommissionPayout {
+  id: string;
+  sales_rep_id: string;
+  commission_id?: string | null;
+  currency: string;
+  amount_minor: number;
+  payout_method: 'MPESA' | 'BANK';
+  payout_destination: string;
+  status: CommissionPayoutStatus;
+  idempotency_key: string;
+  provider: string;
+  provider_transfer_id?: string | null;
+  provider_reference?: string | null;
+  failure_reason?: string | null;
+  retry_count: number;
+  last_attempt_at?: string | null;
+  paid_at?: string | null;
+  metadata_json?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type RefundStatus = 'REQUESTED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+
+export interface Refund {
+  id: string;
+  payment_id: string;
+  invoice_id: string;
+  project_id?: string | null;
+  client_id?: string | null;
+  sales_rep_id?: string | null;
+  currency: string;
+  amount_minor: number;
+  completed_amount_minor: number;
+  commission_reversal_minor: number;
+  status: RefundStatus;
+  refund_reference: string;
+  provider_refund_id?: string | null;
+  provider_reference?: string | null;
+  reason?: string | null;
+  failure_reason?: string | null;
+  created_at: string;
+  completed_at?: string | null;
+  updated_at: string;
+}
+
+export type CommissionAdjustmentType = 'REFUND_REVERSAL' | 'DISPUTE_REVERSAL' | 'RECOVERY_OFFSET' | 'MANUAL_CORRECTION';
+export type RecoveryStatus = 'NONE' | 'RECOVERY_PENDING' | 'RECOVERED';
+
+export interface CommissionAdjustment {
+  id: string;
+  sales_rep_id: string;
+  commission_id: string;
+  refund_id?: string | null;
+  adjustment_type: CommissionAdjustmentType;
+  currency: string;
+  amount_minor: number;
+  recovery_status: RecoveryStatus;
+  notes?: string | null;
+  metadata_json?: string | null;
+  created_at: string;
+}
+
+export type DisputeStatus = 'DISPUTE_OPEN' | 'DISPUTE_WON' | 'DISPUTE_LOST';
+
+export interface Dispute {
+  id: string;
+  payment_id: string;
+  invoice_id: string;
+  amount_minor: number;
+  currency: string;
+  status: DisputeStatus;
+  provider_dispute_id?: string | null;
+  reason?: string | null;
+  created_at: string;
+  resolved_at?: string | null;
+}
+
 export interface AuditLog {
   id: string;
   user_id?: string;

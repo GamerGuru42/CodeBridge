@@ -7,8 +7,13 @@ import { CurrencyCode, ReferralSource } from '@/lib/db/types';
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || session.role !== 'CLIENT') {
-      return NextResponse.json({ error: 'Unauthorized. You must be signed in as a client to submit a project request.' }, { status: 401 });
+    let clientId: string | null = null;
+
+    if (session && session.role === 'CLIENT') {
+      const client = await queryOne('SELECT id FROM clients WHERE user_id = ?', [session.userId]);
+      if (client) {
+        clientId = client.id;
+      }
     }
 
     const body = await req.json();
@@ -33,29 +38,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Lookup client_id based on session.userId
-    const client = await queryOne('SELECT id FROM clients WHERE user_id = ?', [session.userId]);
-    if (!client) {
-      return NextResponse.json({ error: 'Client record not found for this user.' }, { status: 403 });
-    }
-    const clientId = client.id;
-
     // Deduplication check
-    const duplicate = await queryOne(
-      "SELECT id FROM leads WHERE client_id = ? AND business_name = ? AND status NOT IN ('WON', 'LOST')",
-      [clientId, businessName.trim()]
-    );
-    if (duplicate) {
-      // Audit log the duplicate rejection
-      await recordAuditLog({
-        userId: session.userId,
-        action: 'DUPLICATE_LEAD_REJECTED',
-        entity: 'leads',
-        entityId: duplicate.id,
-        metadata: { businessName },
-        ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1'
-      });
-      return NextResponse.json({ error: 'You already have an active request for this business.' }, { status: 409 });
+    if (clientId) {
+      const duplicate = await queryOne(
+        "SELECT id FROM leads WHERE client_id = ? AND business_name = ? AND status NOT IN ('WON', 'LOST')",
+        [clientId, businessName.trim()]
+      );
+      if (duplicate) {
+        if (session) {
+          await recordAuditLog({
+            userId: session.userId,
+            action: 'DUPLICATE_LEAD_REJECTED',
+            entity: 'leads',
+            entityId: duplicate.id,
+            metadata: { businessName },
+            ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1'
+          });
+        }
+        return NextResponse.json({ error: 'You already have an active request for this business.' }, { status: 409 });
+      }
+    } else {
+      const duplicate = await queryOne(
+        "SELECT id FROM leads WHERE email = ? AND business_name = ? AND status NOT IN ('WON', 'LOST')",
+        [email.trim().toLowerCase(), businessName.trim()]
+      );
+      if (duplicate) {
+        return NextResponse.json({ error: 'An active scoping inquiry already exists for this business.' }, { status: 409 });
+      }
     }
 
     const targetCode = (countryCode || 'KE').toUpperCase();
@@ -88,7 +97,7 @@ export async function POST(req: NextRequest) {
         systemNotes += `\n[ATTRIBUTION REVIEW REQUIRED] Failed to resolve or validate active referral code: ${cbRef}`;
         
         await recordAuditLog({
-          userId: session.userId,
+          userId: session?.userId || null,
           action: 'REFERRAL_ATTRIBUTION_FAILED',
           entity: 'leads',
           entityId: leadId,
@@ -130,18 +139,20 @@ export async function POST(req: NextRequest) {
         systemNotes
       ]);
 
-      // System message for lead conversation
-      const messageId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-      await tx.execute(`
-        INSERT INTO messages (id, lead_id, sender_id, content, message_type, created_at)
-        VALUES (?, ?, ?, ?, 'SYSTEM', datetime('now'))
-      `, [messageId, leadId, session.userId, `Project request submitted by ${contactPerson.trim()}.`]);
+      // System message for lead conversation if user session exists
+      if (session?.userId) {
+        const messageId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        await tx.execute(`
+          INSERT INTO messages (id, lead_id, sender_id, content, message_type, created_at)
+          VALUES (?, ?, ?, ?, 'SYSTEM', datetime('now'))
+        `, [messageId, leadId, session.userId, `Project request submitted by ${contactPerson.trim()}.`]);
+      }
     });
 
     const auditAction = representativeId ? 'REFERRAL_ATTRIBUTED' : (cbRef && !representativeId ? 'REFERRAL_ATTRIBUTION_FAILED' : 'PUBLIC_LEAD_SUBMISSION');
 
     await recordAuditLog({
-      userId: session.userId,
+      userId: session?.userId || null,
       action: auditAction,
       entity: 'leads',
       entityId: leadId,

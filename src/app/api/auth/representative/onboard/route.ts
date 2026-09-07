@@ -33,20 +33,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify or create country in database
-    let country = await queryOne('SELECT id, currency FROM countries WHERE LOWER(name) = ? OR code = ?', [normalizedCountryName.toLowerCase(), normalizedCountryName.toUpperCase()]);
-    let countryId;
-    let timezone = 'UTC';
+    // Verify country is active in database and supported
+    const country = await queryOne<{ id: string; code: string; currency: string; timezone: string }>(
+      'SELECT id, code, currency, timezone FROM countries WHERE (LOWER(name) = ? OR UPPER(code) = ?) AND is_active = 1',
+      [normalizedCountryName.toLowerCase(), normalizedCountryName.toUpperCase()]
+    );
 
     if (!country) {
-      countryId = `c_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-      await execute(`
-        INSERT INTO countries (id, code, name, currency, phone_code, timezone, is_active)
-        VALUES (?, ?, ?, 'USD', '', 'UTC', 1)
-      `, [countryId, normalizedCountryName.substring(0, 2).toUpperCase(), normalizedCountryName]);
-    } else {
-      countryId = country.id;
+      return NextResponse.json(
+        { error: 'Operating country is not currently supported for sales representatives. Currently supported: Nigeria (NG), Kenya (KE).' },
+        { status: 400 }
+      );
     }
+
+    const countryId = country.id;
+    const timezone = country.timezone || (country.code === 'KE' ? 'Africa/Nairobi' : 'Africa/Lagos');
 
     // Check if an account with this google_id or email already exists
     const existing = await queryOne(`

@@ -29,7 +29,11 @@ import {
   Building2,
   ExternalLink,
   Info,
-  Trash2
+  Trash2,
+  RotateCcw,
+  Scale,
+  Globe2,
+  ShieldAlert
 } from 'lucide-react';
 
 import ChatDrawer from '@/components/dashboard/ChatDrawer';
@@ -50,6 +54,24 @@ export default function AdminOpsDashboard() {
   const [catalogServices, setCatalogServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState('');
+
+  // Reconciliation & Ledger State
+  const [reconciliation, setReconciliation] = useState<any>(null);
+  const [reconcilingAudit, setReconcilingAudit] = useState(false);
+
+  // Territory Management State
+  const [territories, setTerritories] = useState<any[]>([]);
+  const [editingTerritory, setEditingTerritory] = useState<any>(null);
+
+  // Refund Modal State
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [selectedPaymentForRefund, setSelectedPaymentForRefund] = useState<any>(null);
+  const [refundForm, setRefundForm] = useState({
+    amount: '',
+    reason: 'Client requested project scope adjustment',
+    isFullRefund: true,
+  });
+  const [refundSubmitting, setRefundSubmitting] = useState(false);
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
   const [selectedLeadForProposal, setSelectedLeadForProposal] = useState<any>(null);
 
@@ -140,7 +162,7 @@ export default function AdminOpsDashboard() {
 
   const loadData = async () => {
     try {
-      const [resMe, resLeads, resReps, resProjects, resProposals, resInvoices, resPayments, resServices] = await Promise.all([
+      const [resMe, resLeads, resReps, resProjects, resProposals, resInvoices, resPayments, resServices, resReconciliation, resTerritories] = await Promise.all([
         fetch('/api/me'),
         fetch('/api/leads'),
         fetch('/api/admin/representatives'),
@@ -149,6 +171,8 @@ export default function AdminOpsDashboard() {
         fetch('/api/invoices'),
         fetch('/api/payments'),
         fetch('/api/services'),
+        fetch('/api/admin/reconciliation'),
+        fetch('/api/territories'),
       ]);
 
       if (resMe.ok) {
@@ -186,6 +210,14 @@ export default function AdminOpsDashboard() {
         const d = await resServices.json();
         setCatalogServices(d.data || []);
       }
+      if (resReconciliation && resReconciliation.ok) {
+        const d = await resReconciliation.json();
+        setReconciliation(d);
+      }
+      if (resTerritories && resTerritories.ok) {
+        const d = await resTerritories.json();
+        setTerritories(d.territories || []);
+      }
     } catch (err) {
       console.error('Failed to load operations data:', err);
     } finally {
@@ -196,6 +228,101 @@ export default function AdminOpsDashboard() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const runReconciliationAudit = async () => {
+    setReconcilingAudit(true);
+    try {
+      const res = await fetch('/api/admin/reconciliation');
+      const d = await res.json();
+      if (res.ok) {
+        setReconciliation(d);
+        setFeedback(`Reconciliation Audit Complete: Status ${d.reconciliationStatus} (${d.discrepancyCount} discrepancies).`);
+        setTimeout(() => setFeedback(''), 4000);
+      } else {
+        alert(d.error || 'Failed to run reconciliation audit.');
+      }
+    } catch {
+      alert('Network error running reconciliation audit.');
+    } finally {
+      setReconcilingAudit(false);
+    }
+  };
+
+  const openRefundModal = (payment: any) => {
+    setSelectedPaymentForRefund(payment);
+    const gross = (payment.amount_minor || payment.gross_amount_minor || 0) / 100;
+    setRefundForm({
+      amount: gross.toString(),
+      reason: 'Client requested project scope adjustment',
+      isFullRefund: true,
+    });
+    setRefundModalOpen(true);
+  };
+
+  const handleExecuteRefund = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPaymentForRefund) return;
+    setRefundSubmitting(true);
+    try {
+      const amtNumber = parseFloat(refundForm.amount);
+      if (isNaN(amtNumber) || amtNumber <= 0) {
+        alert('Please enter a valid positive refund amount.');
+        setRefundSubmitting(false);
+        return;
+      }
+      const amountMinor = Math.round(amtNumber * 100);
+      const res = await fetch('/api/payments/flutterwave/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentId: selectedPaymentForRefund.id,
+          amountMinor,
+          reason: refundForm.reason,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFeedback(`Refund executed successfully! Reversal: ${((data.commissionReversalMinor || 0) / 100).toLocaleString()} ${selectedPaymentForRefund.currency}`);
+        setTimeout(() => setFeedback(''), 6000);
+        setRefundModalOpen(false);
+        await Promise.all([loadData(), runReconciliationAudit()]);
+      } else {
+        alert(data.error || 'Failed to execute refund.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Network error processing refund.');
+    } finally {
+      setRefundSubmitting(false);
+    }
+  };
+
+  const handleSaveTerritory = async (t: any) => {
+    try {
+      const res = await fetch('/api/territories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: t.id,
+          countryName: t.country_name,
+          currency: t.currency,
+          defaultPayoutMethod: t.default_payout_method,
+          defaultCommissionRateBps: t.default_commission_rate_bps,
+          isActive: t.is_active === 1 || t.is_active === true,
+        }),
+      });
+      if (res.ok) {
+        setFeedback(`Territory ${t.id} configuration updated.`);
+        setTimeout(() => setFeedback(''), 4000);
+        setEditingTerritory(null);
+        loadData();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to update territory');
+      }
+    } catch {
+      alert('Error updating territory');
+    }
+  };
 
   const handleReconcileGateway = async (invId?: string) => {
     try {
@@ -549,7 +676,7 @@ export default function AdminOpsDashboard() {
 
   return (
     <div>
-      <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+      <div className="cb-header-flex">
         <div>
           <div className="cb-badge cb-badge-blue" style={{ marginBottom: '8px' }}>
             <LayoutDashboard size={13} /> Operations & Delivery Console
@@ -723,6 +850,113 @@ export default function AdminOpsDashboard() {
           </div>
         </div>
 
+        {/* Live Automated Reconciliation Audit Panel */}
+        <div style={{
+          padding: '18px 20px',
+          borderRadius: '10px',
+          backgroundColor: 'rgba(15, 23, 42, 0.85)',
+          border: reconciliation?.reconciliationStatus === 'OK'
+            ? '1px solid rgba(16, 185, 129, 0.4)'
+            : '1px solid rgba(239, 68, 68, 0.4)',
+          marginBottom: '24px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Scale size={18} color="#10B981" />
+                <h4 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--cb-text-primary)', margin: 0 }}>
+                  Immutable Double-Entry Ledger Reconciliation
+                </h4>
+                <span className={`cb-badge ${reconciliation?.reconciliationStatus === 'OK' ? 'cb-badge-emerald' : 'cb-badge-rose'}`} style={{ fontWeight: 700 }}>
+                  {reconciliation?.reconciliationStatus === 'OK' ? 'STATUS: OK (AUDITED)' : 'DISCREPANCY DETECTED'}
+                </span>
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--cb-text-secondary)', margin: '4px 0 0 0' }}>
+                Continuous integrity audit reconciling operational payments, commissions, payouts, and refunds against immutable ledger.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={runReconciliationAudit}
+                disabled={reconcilingAudit}
+                className="cb-btn cb-btn-outline cb-btn-sm"
+                style={{ gap: '4px', fontSize: '11px' }}
+              >
+                <RefreshCw size={12} className={reconcilingAudit ? 'spin' : ''} />
+                {reconcilingAudit ? 'Auditing...' : 'Run Audit Now'}
+              </button>
+              <span className="cb-badge cb-badge-neutral" style={{ fontSize: '10px' }}>
+                Checked: {reconciliation?.totalChecked || 0} &bull; Discrepancies: {reconciliation?.discrepancyCount || 0}
+              </span>
+            </div>
+          </div>
+
+          {/* Metrics Comparison Grid */}
+          <div className="cb-grid-4" style={{ gap: '10px' }}>
+            <div style={{ padding: '10px 12px', borderRadius: '6px', backgroundColor: 'var(--cb-bg)', border: '1px solid var(--cb-border-subtle)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
+                Payments Audit
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)', marginTop: '2px' }}>
+                Ops: {((reconciliation?.metrics?.totalOperationalPaymentsMinor || 0) / 100).toLocaleString()}
+              </div>
+              <div style={{ fontSize: '11px', color: '#34D399' }}>
+                Ledger: {((reconciliation?.metrics?.totalLedgerPaymentsMinor || 0) / 100).toLocaleString()}
+              </div>
+            </div>
+
+            <div style={{ padding: '10px 12px', borderRadius: '6px', backgroundColor: 'var(--cb-bg)', border: '1px solid var(--cb-border-subtle)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
+                Commissions Audit
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)', marginTop: '2px' }}>
+                Ops: {((reconciliation?.metrics?.totalOperationalCommissionsMinor || 0) / 100).toLocaleString()}
+              </div>
+              <div style={{ fontSize: '11px', color: '#60A5FA' }}>
+                Ledger: {((reconciliation?.metrics?.totalLedgerCommissionsMinor || 0) / 100).toLocaleString()}
+              </div>
+            </div>
+
+            <div style={{ padding: '10px 12px', borderRadius: '6px', backgroundColor: 'var(--cb-bg)', border: '1px solid var(--cb-border-subtle)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
+                Payouts Audit
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)', marginTop: '2px' }}>
+                Ops: {((reconciliation?.metrics?.totalOperationalPayoutsMinor || 0) / 100).toLocaleString()}
+              </div>
+              <div style={{ fontSize: '11px', color: '#FBBF24' }}>
+                Ledger: {((reconciliation?.metrics?.totalLedgerPayoutsMinor || 0) / 100).toLocaleString()}
+              </div>
+            </div>
+
+            <div style={{ padding: '10px 12px', borderRadius: '6px', backgroundColor: 'var(--cb-bg)', border: '1px solid var(--cb-border-subtle)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
+                Refunds Audit
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--cb-text-primary)', marginTop: '2px' }}>
+                Ops: {((reconciliation?.metrics?.totalOperationalRefundsMinor || 0) / 100).toLocaleString()}
+              </div>
+              <div style={{ fontSize: '11px', color: '#F87171' }}>
+                Ledger: {((reconciliation?.metrics?.totalLedgerRefundsMinor || 0) / 100).toLocaleString()}
+              </div>
+            </div>
+          </div>
+
+          {reconciliation?.discrepancies && reconciliation.discrepancies.length > 0 && (
+            <div style={{ marginTop: '12px', padding: '10px 12px', borderRadius: '6px', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#F87171', marginBottom: '4px' }}>
+                Audit Discrepancies ({reconciliation.discrepancies.length}):
+              </div>
+              {reconciliation.discrepancies.map((d: any, idx: number) => (
+                <div key={idx} style={{ fontSize: '11px', color: '#FCA5A5', marginBottom: '2px' }}>
+                  &bull; [{d.severity}] {d.description}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Transactions & Settlement Details Table */}
         {payments.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '32px', color: 'var(--cb-text-muted)', fontSize: '13px' }}>
@@ -739,6 +973,7 @@ export default function AdminOpsDashboard() {
                   <th>Financial Split</th>
                   <th>Settlement (Merchant)</th>
                   <th>Status</th>
+                  <th>Billing Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -823,12 +1058,33 @@ export default function AdminOpsDashboard() {
                         <span className={`cb-badge ${
                           ['CONFIRMED', 'SUCCESSFUL'].includes(p.status)
                             ? 'cb-badge-emerald'
+                            : p.status === 'REFUNDED'
+                            ? 'cb-badge-rose'
                             : p.status === 'FAILED'
                             ? 'cb-badge-rose'
                             : 'cb-badge-amber'
                         }`}>
                           {p.status}
                         </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {['CONFIRMED', 'SUCCESSFUL'].includes(p.status) && (
+                            <button
+                              onClick={() => openRefundModal(p)}
+                              className="cb-btn cb-btn-outline cb-btn-sm"
+                              style={{ gap: '3px', fontSize: '10px', padding: '3px 8px', color: '#F87171', borderColor: 'rgba(239,68,68,0.3)' }}
+                              title="Execute refund with proportional commission clawback"
+                            >
+                              <RotateCcw size={11} /> Refund
+                            </button>
+                          )}
+                          {p.status === 'REFUNDED' && (
+                            <span style={{ fontSize: '10px', color: '#F87171', fontWeight: 600 }}>
+                              Reversed
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1353,6 +1609,93 @@ export default function AdminOpsDashboard() {
         </div>
       </div>
 
+      {/* Territory Attribution & Commission Governance Console */}
+      <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <div className="cb-badge cb-badge-emerald" style={{ marginBottom: '6px' }}>
+              <Globe2 size={12} /> Multi-Country Commercial Governance
+            </div>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
+              Territory Attribution & Commission Governance
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
+              Controls commercial routing: Direct Admin (NG) with 0% rep commission leakage vs Field Rep Managed (KE) with 20% automated commission & M-Pesa payouts.
+            </p>
+          </div>
+          <span className="cb-badge cb-badge-neutral">{territories.length} Configured Territories</span>
+        </div>
+
+        <div className="cb-table-container">
+          <table className="cb-table">
+            <thead>
+              <tr>
+                <th>Territory Code</th>
+                <th>Country</th>
+                <th>Currency</th>
+                <th>Commercial Model</th>
+                <th>Default Payout Method</th>
+                <th>Commission Rate</th>
+                <th>Status</th>
+                <th>Governance Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {territories.map((t) => {
+                const isDirect = Boolean(t.direct_admin);
+                const ratePct = ((t.default_commission_rate_bps || 2000) / 100).toFixed(1);
+                return (
+                  <tr key={t.id}>
+                    <td>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '14px', color: isDirect ? '#60A5FA' : '#10B981' }}>
+                        {t.id}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)' }}>{t.country_name}</div>
+                    </td>
+                    <td>
+                      <span className="cb-badge cb-badge-neutral" style={{ fontWeight: 700 }}>
+                        {t.currency}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`cb-badge ${isDirect ? 'cb-badge-blue' : 'cb-badge-emerald'}`} style={{ fontWeight: 700 }}>
+                        {isDirect ? 'Direct Admin (0% Leakage)' : 'Field Rep Managed (20%)'}
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{ fontSize: '12px', color: 'var(--cb-text-secondary)' }}>
+                        {t.default_payout_method || 'BANK'}
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{ fontWeight: 700, color: isDirect ? 'var(--cb-text-muted)' : '#34D399' }}>
+                        {isDirect ? '0.0% (Admin)' : `${ratePct}%`}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`cb-badge ${t.is_active ? 'cb-badge-emerald' : 'cb-badge-rose'}`}>
+                        {t.is_active ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => setEditingTerritory(t)}
+                        className="cb-btn cb-btn-outline cb-btn-sm"
+                        style={{ fontSize: '11px', padding: '3px 8px' }}
+                      >
+                        Configure
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Author Proposal & Quote Builder Modal (Phase 2A + Mobile Pricing Rules) */}
       {proposalModalOpen && (
         <div className="cb-modal-overlay">
@@ -1867,6 +2210,195 @@ export default function AdminOpsDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Execute Client Refund Modal */}
+      {refundModalOpen && selectedPaymentForRefund && (
+        <div className="cb-modal-overlay">
+          <div className="cb-modal" style={{ maxWidth: '600px' }}>
+            <div className="cb-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <RotateCcw size={20} color="#F87171" />
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)', margin: 0 }}>
+                  Execute Client Refund & Ledger Reversal
+                </h3>
+              </div>
+              <button
+                onClick={() => setRefundModalOpen(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--cb-text-muted)', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleExecuteRefund}>
+              <div className="cb-modal-body">
+                <div style={{
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  marginBottom: '16px',
+                  fontSize: '12px',
+                  color: '#FCA5A5',
+                  lineHeight: '1.5',
+                }}>
+                  <ShieldAlert size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: '-3px' }} />
+                  <strong>Double-Entry Ledger Governance:</strong> Executing a refund issues Flutterwave refund instructions, posts debit/credit reversal entries to the authoritative financial ledger, and calculates proportional commission clawbacks. If the sales rep was already paid, a recovery receivable obligation is created automatically.
+                </div>
+
+                <div style={{
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--cb-surface-card)',
+                  border: '1px solid var(--cb-border-subtle)',
+                  marginBottom: '18px',
+                  fontSize: '13px',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--cb-text-muted)' }}>Payment ID:</span>
+                    <span style={{ fontFamily: 'monospace', color: 'var(--cb-accent)', fontWeight: 600 }}>{selectedPaymentForRefund.id}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--cb-text-muted)' }}>Original Amount:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--cb-text-primary)' }}>
+                      {((selectedPaymentForRefund.amount_minor || selectedPaymentForRefund.gross_amount_minor || 0) / 100).toLocaleString()} {selectedPaymentForRefund.currency}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--cb-text-muted)' }}>Gateway Reference:</span>
+                    <span style={{ fontFamily: 'monospace', fontSize: '11px', color: 'var(--cb-text-secondary)' }}>
+                      {selectedPaymentForRefund.gateway_reference || selectedPaymentForRefund.reference}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="cb-form-group">
+                  <label className="cb-label">Refund Amount ({selectedPaymentForRefund.currency}) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={refundForm.amount}
+                    onChange={(e) => setRefundForm({ ...refundForm, amount: e.target.value })}
+                    className="cb-input"
+                    max={((selectedPaymentForRefund.amount_minor || selectedPaymentForRefund.gross_amount_minor || 0) / 100).toString()}
+                  />
+                  <span style={{ fontSize: '11px', color: 'var(--cb-text-muted)', display: 'block', marginTop: '4px' }}>
+                    Enter full amount for 100% cancellation or lesser amount for partial proration.
+                  </span>
+                </div>
+
+                <div className="cb-form-group">
+                  <label className="cb-label">Reason for Refund *</label>
+                  <textarea
+                    required
+                    rows={2}
+                    value={refundForm.reason}
+                    onChange={(e) => setRefundForm({ ...refundForm, reason: e.target.value })}
+                    className="cb-textarea"
+                    placeholder="e.g. Client requested project scope cancellation prior to kickoff..."
+                  />
+                </div>
+              </div>
+
+              <div className="cb-modal-footer">
+                <button
+                  type="button"
+                  onClick={() => setRefundModalOpen(false)}
+                  className="cb-btn cb-btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={refundSubmitting}
+                  className="cb-btn cb-btn-primary"
+                  style={{ gap: '6px', background: 'linear-gradient(135deg, #DC2626 0%, #EF4444 100%)' }}
+                >
+                  <RotateCcw size={14} className={refundSubmitting ? 'spin' : ''} />
+                  {refundSubmitting ? 'Processing Ledger Reversal...' : 'Authorize Refund & Reverse Commission'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Configure Territory Modal */}
+      {editingTerritory && (
+        <div className="cb-modal-overlay">
+          <div className="cb-modal" style={{ maxWidth: '500px' }}>
+            <div className="cb-modal-header">
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
+                Configure Territory: {editingTerritory.country_name} ({editingTerritory.id})
+              </h3>
+              <button
+                onClick={() => setEditingTerritory(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--cb-text-muted)', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="cb-modal-body">
+              <div className="cb-form-group">
+                <label className="cb-label">Default Payout Method</label>
+                <select
+                  value={editingTerritory.default_payout_method}
+                  onChange={(e) => setEditingTerritory({ ...editingTerritory, default_payout_method: e.target.value })}
+                  className="cb-select"
+                >
+                  <option value="BANK">BANK (Direct Wire / Flutterwave Transfer)</option>
+                  <option value="MPESA">MPESA (Kenya Mobile Money Direct)</option>
+                  <option value="MOBILE_MONEY">MOBILE_MONEY (Ghana / Uganda MoMo)</option>
+                </select>
+              </div>
+
+              <div className="cb-form-group">
+                <label className="cb-label">Default Commission Rate (Basis Points: 2000 = 20%)</label>
+                <input
+                  type="number"
+                  value={editingTerritory.default_commission_rate_bps}
+                  onChange={(e) => setEditingTerritory({ ...editingTerritory, default_commission_rate_bps: parseInt(e.target.value) || 2000 })}
+                  className="cb-input"
+                />
+                <span style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>
+                  {(editingTerritory.default_commission_rate_bps / 100).toFixed(2)}% commission rate
+                </span>
+              </div>
+
+              <div className="cb-form-group">
+                <label className="cb-label">Territory Status</label>
+                <select
+                  value={editingTerritory.is_active ? '1' : '0'}
+                  onChange={(e) => setEditingTerritory({ ...editingTerritory, is_active: e.target.value === '1' ? 1 : 0 })}
+                  className="cb-select"
+                >
+                  <option value="1">ACTIVE</option>
+                  <option value="0">INACTIVE</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="cb-modal-footer">
+              <button
+                type="button"
+                onClick={() => setEditingTerritory(null)}
+                className="cb-btn cb-btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveTerritory(editingTerritory)}
+                className="cb-btn cb-btn-primary"
+              >
+                Save Configuration
+              </button>
+            </div>
           </div>
         </div>
       )}

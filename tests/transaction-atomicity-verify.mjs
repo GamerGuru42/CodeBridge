@@ -1,7 +1,27 @@
 // tests/transaction-atomicity-verify.mjs
 import postgres from 'postgres';
 import { DatabaseSync } from 'node:sqlite';
+import fs from 'node:fs';
 import path from 'node:path';
+
+function loadEnv() {
+  const envPath = path.resolve(process.cwd(), '.env.local');
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, 'utf-8').split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+        const [k, ...v] = trimmed.split('=');
+        const key = k.trim();
+        const val = v.join('=').trim().replace(/^["']|["']$/g, '');
+        if (!process.env[key]) {
+          process.env[key] = val;
+        }
+      }
+    }
+  }
+}
+loadEnv();
 
 const BASE_URL = 'http://127.0.0.1:3000';
 const isPg = Boolean(

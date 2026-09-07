@@ -446,10 +446,42 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE TABLE IF NOT EXISTS messages (
   id VARCHAR(64) PRIMARY KEY,
   project_id VARCHAR(64) REFERENCES projects(id) ON DELETE CASCADE,
+  lead_id VARCHAR(64) REFERENCES leads(id) ON DELETE CASCADE,
   sender_id VARCHAR(64) NOT NULL REFERENCES users(id),
   recipient_id VARCHAR(64) REFERENCES users(id),
   content TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS lead_id VARCHAR(64) REFERENCES leads(id) ON DELETE CASCADE;
+
+-- Message Read Cursors
+CREATE TABLE IF NOT EXISTS message_read_cursors (
+  id VARCHAR(64) PRIMARY KEY,
+  user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  lead_id VARCHAR(64) REFERENCES leads(id) ON DELETE CASCADE,
+  project_id VARCHAR(64) REFERENCES projects(id) ON DELETE CASCADE,
+  last_read_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Change Requests
+CREATE TABLE IF NOT EXISTS change_requests (
+  id VARCHAR(64) PRIMARY KEY,
+  project_id VARCHAR(64) NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  proposal_id VARCHAR(64) REFERENCES proposals(id),
+  requested_by VARCHAR(64) NOT NULL REFERENCES users(id),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  impact_summary TEXT,
+  additional_amount_minor BIGINT NOT NULL DEFAULT 0,
+  currency VARCHAR(8) NOT NULL DEFAULT 'KES',
+  status VARCHAR(32) NOT NULL DEFAULT 'SUBMITTED' CHECK (status IN ('SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'IMPLEMENTED')),
+  reviewed_by VARCHAR(64) REFERENCES users(id),
+  reviewed_at TIMESTAMPTZ,
+  review_notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Documents
@@ -475,6 +507,13 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   ip_address TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_read_cursor_user_lead
+  ON message_read_cursors(user_id, lead_id) WHERE lead_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_read_cursor_user_project
+  ON message_read_cursors(user_id, project_id) WHERE project_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_change_requests_project ON change_requests(project_id);
+CREATE INDEX IF NOT EXISTS idx_change_requests_status ON change_requests(status);
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);

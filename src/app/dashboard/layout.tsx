@@ -162,6 +162,11 @@ export default function DashboardLayout({
 
   const isSettingsActive = pathname === '/dashboard/settings';
 
+  // For Sales Representative CRM, render the complete edge-to-edge overhaul layout directly
+  if (pathname.startsWith('/dashboard/representative')) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="cb-dashboard-layout">
       {/* Sidebar — Clean: Logo + Nav + Settings */}

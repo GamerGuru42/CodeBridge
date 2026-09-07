@@ -1,9 +1,11 @@
 // src/app/api/payments/flutterwave/webhook/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { queryOne, transaction } from '@/lib/db/connection';
+import { queryOne, transaction, execute } from '@/lib/db/connection';
 import { recordAuditLog } from '@/lib/auth/session';
 import { verifyWebhookSignature, verifyFlutterwaveTransaction } from '@/lib/payments/flutterwave';
 import { sendPaymentConfirmationNotification } from '@/lib/notifications/email';
+import { recordPaymentLedgerEntry, recordPayoutSuccessLedgerEntry } from '@/lib/payments/ledger';
+import { recordCommissionAndQueuePayout, executeQueuedPayoutAsync } from '@/lib/payments/commission';
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,6 +37,115 @@ export async function POST(req: NextRequest) {
     const { event, data } = payload;
     console.log(`[Flutterwave Webhook] Authenticated event: '${event}', tx_ref: '${data?.tx_ref}', id: ${data?.id}`);
 
+    // =========================================================================
+    // BRANCH 1: TRANSFER COMPLETED (Commission Payout Webhook)
+    // =========================================================================
+    if (event === 'transfer.completed') {
+      const trfRef = data?.reference;
+      const trfId = data?.id;
+      const transferStatus = (data?.status || '').toUpperCase();
+      console.log(`[Flutterwave Webhook] Transfer status '${transferStatus}' for reference: ${trfRef}, id: ${trfId}`);
+
+      if (!trfRef && !trfId) {
+        return NextResponse.json({ error: 'Missing transfer reference or id.' }, { status: 400 });
+      }
+
+      const payout = await queryOne<any>(
+        'SELECT * FROM commission_payouts WHERE idempotency_key = ? OR provider_transfer_id = ?',
+        [trfRef || '', String(trfId || '')]
+      );
+
+      if (!payout) {
+        console.warn(`[Flutterwave Webhook] Transfer event received for unknown payout reference: ${trfRef}`);
+        return NextResponse.json({ message: 'Payout record not found.' }, { status: 200 });
+      }
+
+      // Idempotency: If already finalized as PAID, return 200 immediately
+      if (payout.status === 'PAID') {
+        return NextResponse.json({ status: 'already_processed', message: 'Payout already marked PAID.' }, { status: 200 });
+      }
+
+      if (transferStatus === 'SUCCESSFUL') {
+        await transaction(async (tx) => {
+          await tx.execute(`
+            UPDATE commission_payouts
+            SET status = 'PAID',
+                provider_transfer_id = COALESCE(provider_transfer_id, ?),
+                paid_at = datetime('now'),
+                updated_at = datetime('now')
+            WHERE id = ?
+          `, [String(trfId), payout.id]);
+
+          if (payout.commission_id) {
+            await tx.execute("UPDATE commissions SET status = 'PAID', updated_at = datetime('now') WHERE id = ?", [payout.commission_id]);
+          }
+
+          // Double-Entry Ledger: Debit COMMISSION_PAYABLE, Credit BUSINESS_CASH
+          await recordPayoutSuccessLedgerEntry(tx, {
+            payoutId: payout.id,
+            salesRepId: payout.sales_rep_id,
+            currency: payout.currency,
+            amountMinor: Number(payout.amount_minor),
+            reference: trfRef || payout.idempotency_key,
+            providerTransferId: String(trfId),
+          });
+        });
+
+        await recordAuditLog({
+          userId: 'system_flutterwave',
+          action: 'PAYOUT_COMPLETED',
+          entity: 'commission_payouts',
+          entityId: payout.id,
+          metadata: {
+            salesRepId: payout.sales_rep_id,
+            amountMinor: payout.amount_minor,
+            currency: payout.currency,
+            reference: trfRef,
+            providerTransferId: trfId,
+          },
+          ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1',
+        });
+
+        return NextResponse.json({ status: 'success', message: 'Payout marked PAID and ledger updated.' }, { status: 200 });
+      } else if (transferStatus === 'FAILED') {
+        await execute(`
+          UPDATE commission_payouts
+          SET status = 'FAILED',
+              failure_reason = ?,
+              updated_at = datetime('now')
+          WHERE id = ?
+        `, [data?.complete_message || 'Transfer failed at provider', payout.id]);
+
+        return NextResponse.json({ status: 'failed', message: 'Payout marked FAILED.' }, { status: 200 });
+      }
+
+      return NextResponse.json({ message: `Transfer event acknowledged with status ${transferStatus}.` }, { status: 200 });
+    }
+
+    // =========================================================================
+    // BRANCH 2: REFUND COMPLETED (Client Refund Confirmation Webhook)
+    // =========================================================================
+    if (event === 'refund.completed') {
+      const refundId = data?.id;
+      const txId = data?.tx_id;
+      const refundStatus = (data?.status || '').toUpperCase();
+      console.log(`[Flutterwave Webhook] Refund status '${refundStatus}' for refund id: ${refundId}, tx_id: ${txId}`);
+
+      const refund = await queryOne<any>(
+        'SELECT * FROM refunds WHERE provider_refund_id = ? OR payment_id IN (SELECT id FROM payments WHERE gateway_transaction_id = ?)',
+        [String(refundId || ''), String(txId || '')]
+      );
+
+      if (refund && refundStatus === 'COMPLETED' && refund.status !== 'COMPLETED') {
+        await execute("UPDATE refunds SET status = 'COMPLETED', completed_at = datetime('now'), updated_at = datetime('now') WHERE id = ?", [refund.id]);
+      }
+
+      return NextResponse.json({ message: 'Refund webhook acknowledged.' }, { status: 200 });
+    }
+
+    // =========================================================================
+    // BRANCH 3: CHARGE COMPLETED (Client Collection Webhook)
+    // =========================================================================
     // If event is not charge completed, acknowledge without state change
     if (event !== 'charge.completed' && data?.status !== 'successful') {
       return NextResponse.json({ message: 'Event acknowledged (non-charge event).' }, { status: 200 });
@@ -167,6 +278,7 @@ export async function POST(req: NextRequest) {
 
     const paymentId = existingPayment?.id || `pay_flw_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const now = new Date().toISOString();
+    let queuedPayoutResult: any = null;
 
     // 6. Atomic Database State Transition
     await transaction(async (tx) => {
@@ -294,50 +406,39 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // (d) Partner Commission Calculation (Strictly on CodeBridge Service Revenue, Excluding Third-Party Fees!)
+      // (d) Record Immutable Double-Entry Ledger Entry: Debit BUSINESS_CASH, Credit CLIENT_RECEIVABLE
+      await recordPaymentLedgerEntry(tx, {
+        paymentId,
+        invoiceId: invoice.id,
+        projectId: invoice.project_id,
+        clientId: invoice.client_id,
+        salesRepId: invoice.representative_id || null,
+        currency: invoice.currency,
+        amountMinor: verifiedAmountMinor,
+        reference: txRef,
+      });
+
+      // (e) Partner Commission Calculation & Payout Queueing (Strictly on Service Revenue, Math.floor)
       const project = await tx.queryOne<any>('SELECT representative_id FROM projects WHERE id = ?', [invoice.project_id]);
       const repId = project?.representative_id || invoice.representative_id;
 
       if (repId) {
-        const rep = await tx.queryOne<any>('SELECT commission_rate_bps FROM representatives WHERE id = ?', [repId]);
-        const commissionRateBps = Number(rep?.commission_rate_bps || 2000); // 20.00% default
-
-        // Commission is calculated strictly from CodeBridge Service Revenue, not third-party reimbursements
-        const codebridgeRevenueMinor = Number(invoice.codebridge_service_total_minor || invoice.amount_minor);
-        // Prorate commission if partial payment
-        const paymentRatio = verifiedAmountMinor / invoiceTotalMinor;
-        const eligibleMinorForThisPayment = Math.round(codebridgeRevenueMinor * Math.min(1, paymentRatio));
-        const calculatedCommissionMinor = Math.floor((eligibleMinorForThisPayment * commissionRateBps) / 10000);
-
-        const idempotencyKey = `COMMISSION_FLW_${transactionId}`;
-        const existingCommissionEvent = await tx.queryOne<any>('SELECT id FROM commission_events WHERE idempotency_key = ?', [idempotencyKey]);
-
-        if (!existingCommissionEvent && calculatedCommissionMinor > 0) {
-          const commissionEventId = `cev_flw_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-          await tx.execute(`
-            INSERT INTO commission_events (
-              id, payment_id, invoice_id, project_id, proposal_id, representative_id,
-              currency, verified_amount_minor, commission_rate_bps_at_time_of_payment,
-              calculated_commission_amount_minor, verified_at, idempotency_key, status, created_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'RECORDED', datetime('now'))
-          `, [
-            commissionEventId,
-            paymentId,
-            invoice.id,
-            invoice.project_id,
-            invoice.proposal_id || null,
-            repId,
-            invoice.currency,
-            eligibleMinorForThisPayment,
-            commissionRateBps,
-            calculatedCommissionMinor,
-            now,
-            idempotencyKey,
-          ]);
-        }
+        queuedPayoutResult = await recordCommissionAndQueuePayout(tx, {
+          invoice,
+          paymentId,
+          verifiedPaymentAmountMinor: verifiedAmountMinor,
+          salesRepId: repId,
+          gatewayTransactionId: transactionId,
+        });
       }
     });
+
+    // 6b. Asynchronously Process Queued Payout (Completely Outside the DB Transaction!)
+    if (queuedPayoutResult?.payoutId) {
+      executeQueuedPayoutAsync(queuedPayoutResult.payoutId).catch((payoutErr) => {
+        console.error('[Flutterwave Webhook] Asynchronous payout execution error:', payoutErr);
+      });
+    }
 
     // 7. Audit Logging
     await recordAuditLog({

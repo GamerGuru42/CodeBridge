@@ -53,7 +53,7 @@ export async function sendPaymentConfirmationNotification(
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'CodeBridge Billing <billing@codebridge.tech>',
+            from: process.env.EMAIL_FROM || 'CodeBridge Billing <billing@code-bridge-rosy.vercel.app>',
             to: params.recipientEmail,
             subject: `Payment Confirmed: Invoice ${params.invoiceNumber} (${params.currency} ${majorAmount})`,
             html: `

@@ -111,10 +111,13 @@ export function verifyWebhookSignature(
   param1: WebhookSignatureHeaders | string | null,
   param2?: string | WebhookSignatureHeaders | null
 ): boolean {
-  const secretHash = getFlutterwaveSecretHash();
+  const secretHashes = [
+    process.env.FLW_WEBHOOK_SECRET_HASH,
+    process.env.FLUTTERWAVE_SECRET_HASH,
+  ].filter(Boolean) as string[];
   const secretKey = getFlutterwaveSecretKey();
 
-  if (!secretHash && !secretKey) {
+  if (secretHashes.length === 0 && !secretKey) {
     console.warn('[Flutterwave] Neither FLUTTERWAVE_SECRET_HASH nor FLUTTERWAVE_SECRET_KEY is configured. Webhook rejected.');
     return false;
   }
@@ -145,15 +148,17 @@ export function verifyWebhookSignature(
   }
 
   // 1. Validate verif-hash (Primary Flutterwave Dashboard Secret Hash header)
-  if (verifHash && secretHash) {
-    if (timingSafeEqual(verifHash, secretHash)) {
-      return true;
+  if (verifHash && secretHashes.length > 0) {
+    for (const hash of secretHashes) {
+      if (timingSafeEqual(verifHash, hash)) {
+        return true;
+      }
     }
   }
 
   // 2. Validate flutterwave-signature (HMAC-SHA256 signature of raw request body)
   if (flwSignature && rawBody) {
-    const candidateKeys = [secretHash, secretKey].filter(Boolean) as string[];
+    const candidateKeys = [...secretHashes, secretKey, process.env.FLW_SECRET_KEY].filter(Boolean) as string[];
     for (const key of candidateKeys) {
       const computedSignature = crypto.createHmac('sha256', key).update(rawBody).digest('hex');
       if (timingSafeEqual(flwSignature.toLowerCase(), computedSignature.toLowerCase())) {
@@ -382,4 +387,268 @@ export async function verifyFlutterwaveByReference(
   const data: FlutterwaveVerifyResponse = await response.json();
   return data;
 }
+
+export interface FlutterwaveTransferParams {
+  accountBank: string; // 'MPS' for Kenya M-Pesa, 3-digit bank code for Nigeria
+  accountNumber: string; // M-Pesa phone number e.g. 254712345678 or 10-digit NUBAN
+  amount: number; // major currency units (e.g. 2000.00 KES)
+  narration: string;
+  currency: string;
+  reference: string; // deterministic payout reference
+  callbackUrl?: string;
+  debitCurrency?: string;
+}
+
+export interface FlutterwaveTransferResult {
+  success: boolean;
+  status: 'SUCCESSFUL' | 'PROCESSING' | 'FAILED' | 'ACTION_REQUIRED';
+  transferId?: string | number;
+  reference: string;
+  fee?: number;
+  message?: string;
+  raw?: any;
+}
+
+/**
+ * Initiates an authoritative commission payout transfer via Flutterwave.
+ * POST https://api.flutterwave.com/v3/transfers
+ */
+export async function initiateFlutterwaveTransfer(
+  params: FlutterwaveTransferParams
+): Promise<FlutterwaveTransferResult> {
+  const secretKey = getFlutterwaveSecretKey();
+
+  if (!secretKey) {
+    if (process.env.NODE_ENV === 'test') {
+      return {
+        success: true,
+        status: 'PROCESSING',
+        transferId: `sim_trf_${Date.now()}`,
+        reference: params.reference,
+        message: 'Simulated transfer in test environment',
+      };
+    }
+    return {
+      success: false,
+      status: 'ACTION_REQUIRED',
+      reference: params.reference,
+      message: 'FLUTTERWAVE_SECRET_KEY is missing on server.',
+    };
+  }
+
+  if (secretKey.startsWith('FLWSECK_TEST_MOCK') && process.env.NODE_ENV === 'test') {
+    return {
+      success: true,
+      status: 'PROCESSING',
+      transferId: `sim_trf_${Date.now()}`,
+      reference: params.reference,
+      message: 'Simulated transfer in mock test environment',
+    };
+  }
+
+  try {
+    const callbackUrl = params.callbackUrl || 'https://code-bridge-rosy.vercel.app/api/payments/flutterwave/webhook';
+    const response = await fetch('https://api.flutterwave.com/v3/transfers', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        account_bank: params.accountBank,
+        account_number: params.accountNumber.replace(/[^0-9]/g, ''),
+        amount: params.amount,
+        narration: params.narration,
+        currency: params.currency,
+        reference: params.reference,
+        callback_url: callbackUrl,
+        debit_currency: params.debitCurrency || params.currency,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.status !== 'success') {
+      const msg = data.message || 'Transfer initiation failed';
+      // Detect balance or capability limitations
+      const isCapabilityOrBalance =
+        msg.toLowerCase().includes('balance') ||
+        msg.toLowerCase().includes('not enabled') ||
+        msg.toLowerCase().includes('insufficient') ||
+        msg.toLowerCase().includes('permission');
+
+      return {
+        success: false,
+        status: isCapabilityOrBalance ? 'ACTION_REQUIRED' : 'FAILED',
+        reference: params.reference,
+        message: msg,
+        raw: data,
+      };
+    }
+
+    const trfData = data.data;
+    const transferStatus =
+      trfData.status?.toUpperCase() === 'SUCCESSFUL'
+        ? 'SUCCESSFUL'
+        : trfData.status?.toUpperCase() === 'FAILED'
+        ? 'FAILED'
+        : 'PROCESSING';
+
+    return {
+      success: true,
+      status: transferStatus,
+      transferId: trfData.id,
+      reference: trfData.reference || params.reference,
+      fee: trfData.fee,
+      message: data.message,
+      raw: data,
+    };
+  } catch (err: any) {
+    console.error('[Flutterwave Transfer API Error]', err);
+    return {
+      success: false,
+      status: 'FAILED',
+      reference: params.reference,
+      message: err.message || 'Network error initiating transfer.',
+    };
+  }
+}
+
+/**
+ * Authoritatively verifies a transfer status from Flutterwave API.
+ * GET https://api.flutterwave.com/v3/transfers/{id}
+ */
+export async function verifyFlutterwaveTransfer(
+  transferId: string | number
+): Promise<{ status: string; data?: any; message?: string }> {
+  const secretKey = getFlutterwaveSecretKey();
+  if (!secretKey) {
+    return { status: 'error', message: 'FLUTTERWAVE_SECRET_KEY is missing.' };
+  }
+
+  if (String(transferId).startsWith('sim_trf_') && process.env.NODE_ENV === 'test') {
+    return { status: 'success', data: { id: transferId, status: 'SUCCESSFUL' } };
+  }
+
+  try {
+    const response = await fetch(`https://api.flutterwave.com/v3/transfers/${transferId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const data = await response.json();
+    return data;
+  } catch (err: any) {
+    return { status: 'error', message: err.message };
+  }
+}
+
+export interface FlutterwaveRefundParams {
+  transactionId: string | number;
+  amount?: number; // in major units (e.g. 500 KES)
+  comments?: string;
+}
+
+export interface FlutterwaveRefundResult {
+  success: boolean;
+  status: 'COMPLETED' | 'PROCESSING' | 'FAILED';
+  refundId?: string | number;
+  amountRefunded?: number;
+  message?: string;
+  raw?: any;
+}
+
+/**
+ * Initiates an authoritative refund via Flutterwave.
+ * POST https://api.flutterwave.com/v3/transactions/{id}/refund
+ */
+export async function initiateFlutterwaveRefund(
+  params: FlutterwaveRefundParams
+): Promise<FlutterwaveRefundResult> {
+  const secretKey = getFlutterwaveSecretKey();
+
+  if (!secretKey) {
+    if (process.env.NODE_ENV === 'test') {
+      return {
+        success: true,
+        status: 'COMPLETED',
+        refundId: `sim_ref_${Date.now()}`,
+        amountRefunded: params.amount,
+        message: 'Simulated refund in test environment',
+      };
+    }
+    return {
+      success: false,
+      status: 'FAILED',
+      message: 'FLUTTERWAVE_SECRET_KEY is missing on server.',
+    };
+  }
+
+  if (String(params.transactionId).startsWith('sim_') && process.env.NODE_ENV === 'test') {
+    return {
+      success: true,
+      status: 'COMPLETED',
+      refundId: `sim_ref_${Date.now()}`,
+      amountRefunded: params.amount,
+      message: 'Simulated refund for mock test',
+    };
+  }
+
+  try {
+    const bodyObj: any = {};
+    if (params.amount !== undefined && params.amount > 0) {
+      bodyObj.amount = params.amount;
+    }
+    if (params.comments) {
+      bodyObj.comments = params.comments;
+    }
+
+    const response = await fetch(`https://api.flutterwave.com/v3/transactions/${params.transactionId}/refund`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bodyObj),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.status !== 'success') {
+      return {
+        success: false,
+        status: 'FAILED',
+        message: data.message || 'Refund initiation failed',
+        raw: data,
+      };
+    }
+
+    const rfData = data.data;
+    const refStatus =
+      rfData.status?.toLowerCase() === 'completed'
+        ? 'COMPLETED'
+        : rfData.status?.toLowerCase() === 'failed'
+        ? 'FAILED'
+        : 'PROCESSING';
+
+    return {
+      success: true,
+      status: refStatus,
+      refundId: rfData.id,
+      amountRefunded: rfData.amount_refunded,
+      message: data.message,
+      raw: data,
+    };
+  } catch (err: any) {
+    console.error('[Flutterwave Refund API Error]', err);
+    return {
+      success: false,
+      status: 'FAILED',
+      message: err.message || 'Network error initiating refund.',
+    };
+  }
+}
+
 
