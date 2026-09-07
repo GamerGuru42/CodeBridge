@@ -197,6 +197,27 @@ export default function AdminOpsDashboard() {
     loadData();
   }, []);
 
+  const handleReconcileGateway = async (invId?: string) => {
+    try {
+      setFeedback('Contacting Flutterwave API for authoritative transaction status...');
+      const res = await fetch('/api/payments/flutterwave/reconcile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(invId ? { invoiceId: invId } : {}),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setFeedback(`Gateway reconciliation complete: ${data.results.confirmed} confirmed, ${data.results.stillPending} pending.`);
+        setTimeout(() => setFeedback(''), 6000);
+        loadData();
+      } else {
+        alert(data.error || 'Reconciliation failed.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Network error reconciling with Flutterwave.');
+    }
+  };
+
   const openPaymentModal = (invoice: any) => {
     setSelectedInvoiceForPayment(invoice);
     const unpaidMinor = invoice.amount_minor - invoice.amount_paid_minor;
@@ -205,7 +226,7 @@ export default function AdminOpsDashboard() {
       paymentMethod: 'BANK_TRANSFER',
       verificationSource: 'MANUAL_VERIFICATION',
       reference: `WIRE-${invoice.currency}-${Date.now().toString().slice(-6)}`,
-      verificationNotes: `Direct wire confirmed via bank statement by operations admin.`,
+      verificationNotes: `Exceptional manual accounting adjustment approved by operations admin.`,
     });
     setPaymentModalOpen(true);
   };
@@ -230,15 +251,15 @@ export default function AdminOpsDashboard() {
 
       const d = await res.json();
       if (!res.ok) {
-        setFeedback(d.error || 'Payment verification failed');
+        setFeedback(d.error || 'Payment adjustment failed');
         return;
       }
 
-      setFeedback(`✅ ${d.message}`);
+      setFeedback(`✅ Exceptional accounting adjustment recorded: ${d.message}`);
       setPaymentModalOpen(false);
       loadData();
     } catch (err: any) {
-      setFeedback('Failed to verify payment');
+      setFeedback('Failed to record payment adjustment');
     }
   };
 
@@ -1011,10 +1032,37 @@ export default function AdminOpsDashboard() {
               Commercial Billing & Invoices Console
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '2px' }}>
-              Verify client settlements to officially kick off projects and log factual commission events for Phase 2D.
+              Automated Gateway: Invoices transition to PAID automatically via Flutterwave Webhook & Server-Side Verification.
             </p>
           </div>
-          <span className="cb-badge cb-badge-neutral">{filteredInvoices.length} of {invoices.length} Invoices</span>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onClick={() => handleReconcileGateway()}
+              className="cb-btn cb-btn-outline cb-btn-sm"
+              style={{ gap: '5px', fontSize: '11px' }}
+              title="Query Flutterwave API to check all pending transactions"
+            >
+              <RefreshCw size={12} /> Reconcile Gateway Status
+            </button>
+            <span className="cb-badge cb-badge-neutral">{filteredInvoices.length} of {invoices.length} Invoices</span>
+          </div>
+        </div>
+
+        {/* Automated Architecture Banner */}
+        <div style={{
+          padding: '10px 14px',
+          borderRadius: '6px',
+          backgroundColor: 'rgba(59, 130, 246, 0.08)',
+          border: '1px solid rgba(59, 130, 246, 0.2)',
+          marginBottom: '16px',
+          fontSize: '11px',
+          color: '#93C5FD',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <ShieldCheck size={14} style={{ flexShrink: 0 }} />
+          <span><strong>Automatic Payment Confirmation:</strong> Clients pay via Flutterwave (M-Pesa, Card, Bank). When confirmed by the network, CodeBridge automatically records payment, marks invoices PAID, and activates project milestones without manual admin verification.</span>
         </div>
 
         {/* Invoice Filter & Search Controls */}
@@ -1124,16 +1172,31 @@ export default function AdminOpsDashboard() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && (
-                            <button
-                              onClick={() => openPaymentModal(inv)}
-                              className="cb-btn cb-btn-primary cb-btn-sm"
-                              style={{ gap: '4px', background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
-                            >
-                              <CheckCircle2 size={13} /> Verify Payment
-                            </button>
-                          )}
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                          {inv.status === 'PAID' ? (
+                            <span className="cb-badge cb-badge-emerald" style={{ fontSize: '10px', gap: '3px' }}>
+                              ✓ Flutterwave Confirmed
+                            </span>
+                          ) : inv.status !== 'CANCELLED' ? (
+                            <>
+                              <button
+                                onClick={() => handleReconcileGateway(inv.id)}
+                                className="cb-btn cb-btn-outline cb-btn-sm"
+                                style={{ gap: '3px', fontSize: '10px', padding: '3px 8px' }}
+                                title="Query Flutterwave API directly for this invoice"
+                              >
+                                <RefreshCw size={11} /> Check Gateway
+                              </button>
+                              <button
+                                onClick={() => openPaymentModal(inv)}
+                                className="cb-btn cb-btn-secondary cb-btn-sm"
+                                style={{ fontSize: '10px', color: 'var(--cb-text-muted)', padding: '3px 6px' }}
+                                title="Exceptional accounting adjustment (e.g. manual wire correction)"
+                              >
+                                Wire Adj.
+                              </button>
+                            </>
+                          ) : null}
                           {inv.status === 'ISSUED' && (
                             <button
                               onClick={async () => {
@@ -1147,7 +1210,7 @@ export default function AdminOpsDashboard() {
                                 }
                               }}
                               className="cb-btn cb-btn-secondary cb-btn-sm"
-                              style={{ color: '#F87171' }}
+                              style={{ color: '#F87171', fontSize: '10px', padding: '3px 6px' }}
                             >
                               Cancel
                             </button>
@@ -1647,7 +1710,7 @@ export default function AdminOpsDashboard() {
           <div className="cb-modal" style={{ maxWidth: '600px' }}>
             <div className="cb-modal-header">
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle2 size={20} color="#10B981" /> Verify Payment & Authorize Settlement
+                <AlertTriangle size={20} color="#F59E0B" /> Exceptional Accounting Adjustment (Audited)
               </h3>
               <button
                 onClick={() => setPaymentModalOpen(false)}
@@ -1659,12 +1722,26 @@ export default function AdminOpsDashboard() {
 
             <form onSubmit={handleVerifyPayment}>
               <div className="cb-modal-body">
+                {/* Notice Banner */}
+                <div style={{
+                  padding: '10px 14px',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                  border: '1px solid rgba(245, 158, 11, 0.25)',
+                  marginBottom: '16px',
+                  fontSize: '11px',
+                  color: '#FCD34D',
+                  lineHeight: '1.4',
+                }}>
+                  <strong>Operational Notice:</strong> Standard client payments via Flutterwave (M-Pesa & Card in Kenya, Card & Bank in Nigeria) confirm automatically via server webhooks. Use this form <em>strictly for offline corporate bank wire exceptions</em>. Every adjustment is logged to the permanent audit trail.
+                </div>
+
                 {/* Summary banner */}
                 <div style={{
                   padding: '12px 16px',
                   borderRadius: '8px',
-                  backgroundColor: 'rgba(16, 185, 129, 0.08)',
-                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  backgroundColor: 'rgba(30, 41, 59, 0.6)',
+                  border: '1px solid var(--cb-border-subtle)',
                   marginBottom: '18px',
                   fontSize: '13px',
                 }}>
@@ -1786,7 +1863,7 @@ export default function AdminOpsDashboard() {
                   className="cb-btn cb-btn-primary"
                   style={{ gap: '6px', background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
                 >
-                  <CheckCircle2 size={15} /> Confirm & Verify Payment
+                  <ShieldCheck size={15} /> Record Audited Accounting Adjustment
                 </button>
               </div>
             </form>

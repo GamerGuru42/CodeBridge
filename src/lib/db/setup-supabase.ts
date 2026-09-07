@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS projects (
   lead_id VARCHAR(64) REFERENCES leads(id),
   service_id VARCHAR(64) REFERENCES services(id),
   status VARCHAR(32) NOT NULL DEFAULT 'PLANNING' CHECK (status IN (
-    'DRAFT', 'AWAITING_PAYMENT', 'PLANNING', 'DEVELOPMENT', 'INTERNAL_REVIEW',
+    'DRAFT', 'AWAITING_PAYMENT', 'PLANNING', 'IN_PROGRESS', 'DEVELOPMENT', 'INTERNAL_REVIEW',
     'CLIENT_REVIEW', 'REVISION', 'APPROVED', 'DEPLOYMENT',
     'COMPLETED', 'MAINTENANCE'
   )),
@@ -380,6 +380,8 @@ ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_status_check;
 ALTER TABLE payments ADD CONSTRAINT payments_status_check CHECK (status IN ('PENDING', 'CONFIRMED', 'SUCCESSFUL', 'FAILED', 'CANCELLED', 'REFUNDED'));
 
 CREATE INDEX IF NOT EXISTS idx_payments_gateway_tx ON payments(gateway_transaction_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_unique_flw_ref ON payments(gateway_reference) WHERE gateway_reference IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_unique_flw_tx_id ON payments(gateway_transaction_id) WHERE gateway_transaction_id IS NOT NULL;
 
 -- Commission Events (Immutable Financial Facts)
 CREATE TABLE IF NOT EXISTS commission_events (

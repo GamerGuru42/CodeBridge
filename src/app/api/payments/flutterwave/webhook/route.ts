@@ -3,16 +3,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { queryOne, transaction } from '@/lib/db/connection';
 import { recordAuditLog } from '@/lib/auth/session';
 import { verifyWebhookSignature, verifyFlutterwaveTransaction } from '@/lib/payments/flutterwave';
+import { sendPaymentConfirmationNotification } from '@/lib/notifications/email';
 
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
     const verifHash = req.headers.get('verif-hash');
+    const flutterwaveSignature = req.headers.get('flutterwave-signature');
 
-    // 1. Authenticate / Validate Webhook Signature
-    const isSignatureValid = verifyWebhookSignature(verifHash);
+    // 1. Authenticate / Validate Webhook Signature (Dual Mechanism: verif-hash OR flutterwave-signature HMAC)
+    const isSignatureValid = verifyWebhookSignature(
+      { verifHash, flutterwaveSignature },
+      rawBody
+    );
+
     if (!isSignatureValid) {
-      console.warn('[Flutterwave Webhook] Unauthorized request: Invalid verif-hash signature header.');
+      console.warn('[Flutterwave Webhook] Unauthorized request: Neither verif-hash nor flutterwave-signature matched.');
       return NextResponse.json(
         { error: 'Webhook signature validation failed.' },
         { status: 401 }
@@ -27,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { event, data } = payload;
-    console.log(`[Flutterwave Webhook] Received event: '${event}', tx_ref: '${data?.tx_ref}', id: ${data?.id}`);
+    console.log(`[Flutterwave Webhook] Authenticated event: '${event}', tx_ref: '${data?.tx_ref}', id: ${data?.id}`);
 
     // If event is not charge completed, acknowledge without state change
     if (event !== 'charge.completed' && data?.status !== 'successful') {
@@ -56,7 +62,6 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Locate Associated Payment / Invoice by tx_ref
-    // First check existing pending payment
     const existingPayment = await queryOne<any>(
       'SELECT * FROM payments WHERE reference = ? OR gateway_reference = ? OR gateway_transaction_id = ?',
       [txRef, txRef, String(transactionId)]
@@ -64,13 +69,11 @@ export async function POST(req: NextRequest) {
 
     let invoiceId = existingPayment?.invoice_id;
     if (!invoiceId && verifyData.flw_ref) {
-      // Try meta or txRef extraction
       const metaInvoiceId = payload.data?.meta?.invoice_id || payload.meta?.invoice_id;
       if (metaInvoiceId) invoiceId = metaInvoiceId;
     }
 
     if (!invoiceId) {
-      // Try parsing from CB-{invoiceId}-{timestamp}-{rand}
       const parts = txRef.split('-');
       if (parts.length >= 2) {
         const potentialInvoiceId = `inv_${parts[1]}`;
@@ -101,7 +104,6 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Verification Integrity Checks: Currency & Amount Matching
-    // Currency matching
     if (verifyData.currency.toUpperCase() !== invoice.currency.toUpperCase()) {
       console.error(`[Flutterwave Webhook] Currency mismatch: Invoice expects ${invoice.currency}, Flutterwave transaction was ${verifyData.currency}`);
       return NextResponse.json({
@@ -109,18 +111,18 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Amount matching in integer minor units
+    // Amount validation in integer minor units
     const verifiedAmountMinor = Math.round(Number(verifyData.amount) * 100);
-    const invoiceAmountMinor = Number(invoice.amount_minor);
-    const invoiceAmountPaidMinor = Number(invoice.amount_paid_minor || 0);
-    const remainingUnpaidMinor = invoiceAmountMinor - invoiceAmountPaidMinor;
-
-    if (verifiedAmountMinor < remainingUnpaidMinor) {
-      console.error(`[Flutterwave Webhook] Amount mismatch: Expected ${remainingUnpaidMinor} minor units, received ${verifiedAmountMinor}`);
-      return NextResponse.json({
-        error: `Amount mismatch: Payment of ${verifiedAmountMinor} minor units is insufficient for balance of ${remainingUnpaidMinor}.`,
-      }, { status: 400 });
+    if (verifiedAmountMinor <= 0) {
+      return NextResponse.json({ error: 'Invalid transaction amount.' }, { status: 400 });
     }
+
+    const invoiceTotalMinor = Number(invoice.amount_minor);
+    const previousPaidMinor = Number(invoice.amount_paid_minor || 0);
+    const newTotalPaidMinor = previousPaidMinor + verifiedAmountMinor;
+    const remainingAfterThisMinor = Math.max(0, invoiceTotalMinor - newTotalPaidMinor);
+    const isFullyPaid = newTotalPaidMinor >= invoiceTotalMinor;
+    const newInvoiceStatus = isFullyPaid ? 'PAID' : 'PARTIALLY_PAID';
 
     // Gateway Fee and Settlement calculations (From Authoritative Flutterwave Response)
     const gatewayFeeMinor = Math.round(Number(verifyData.app_fee || 0) * 100);
@@ -129,9 +131,29 @@ export async function POST(req: NextRequest) {
       : Math.max(0, verifiedAmountMinor - gatewayFeeMinor);
 
     const settlementStatus = verifyData.amount_settled ? 'SETTLED' : 'PENDING';
-    const settlementCurrency = verifyData.currency; // Authoritative currency returned by gateway!
+    const settlementCurrency = verifyData.currency;
     const settlementAmountMinor = verifyData.amount_settled ? Math.round(Number(verifyData.amount_settled) * 100) : null;
-    const paymentMethod = (verifyData.payment_type || (invoice.currency === 'KES' ? 'MPESA' : 'CARD')).toUpperCase();
+
+    // Authoritative Payment Method mapping
+    let paymentMethod = 'FLUTTERWAVE';
+    if (verifyData.payment_type) {
+      const pt = verifyData.payment_type.toLowerCase();
+      if (pt.includes('mpesa') || pt.includes('mobilemoney')) {
+        paymentMethod = 'MPESA';
+      } else if (pt.includes('card')) {
+        paymentMethod = 'CARD';
+      } else if (pt.includes('bank') || pt.includes('transfer')) {
+        paymentMethod = 'BANK_TRANSFER';
+      } else if (pt.includes('ussd')) {
+        paymentMethod = 'USSD';
+      } else {
+        paymentMethod = verifyData.payment_type.toUpperCase();
+      }
+    } else if (invoice.currency === 'KES') {
+      paymentMethod = 'MPESA';
+    } else {
+      paymentMethod = 'CARD';
+    }
 
     const paymentId = existingPayment?.id || `pay_flw_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const now = new Date().toISOString();
@@ -208,41 +230,57 @@ export async function POST(req: NextRequest) {
         ]);
       }
 
-      // (b) Mark Invoice as PAID
-      const updatedAmountPaidMinor = invoiceAmountPaidMinor + verifiedAmountMinor;
+      // (b) Update Invoice Balance and Status (PAID or PARTIALLY_PAID)
       await tx.execute(`
         UPDATE invoices
         SET amount_paid_minor = ?,
-            status = 'PAID',
+            status = ?,
             paid_at = ?,
             updated_at = datetime('now')
         WHERE id = ?
-      `, [updatedAmountPaidMinor, now, invoice.id]);
+      `, [
+        newTotalPaidMinor,
+        newInvoiceStatus,
+        isFullyPaid ? now : invoice.paid_at,
+        invoice.id,
+      ]);
 
-      // (c) Update Payment Schedule
+      // (c) Update Payment Schedule & Project Automation
       if (invoice.payment_schedule_id) {
         await tx.execute(`
           UPDATE payment_schedules
-          SET status = 'PAID',
+          SET status = ?,
               paid_at = ?,
               updated_at = datetime('now')
           WHERE id = ?
-        `, [now, invoice.payment_schedule_id]);
+        `, [isFullyPaid ? 'PAID' : 'PARTIALLY_PAID', now, invoice.payment_schedule_id]);
 
-        // Check if this schedule triggers project kickoff
         const schedule = await tx.queryOne<any>('SELECT is_required_to_start FROM payment_schedules WHERE id = ?', [invoice.payment_schedule_id]);
         if (schedule?.is_required_to_start === 1) {
           const project = await tx.queryOne<any>('SELECT status FROM projects WHERE id = ?', [invoice.project_id]);
           if (project?.status === 'AWAITING_PAYMENT') {
             await tx.execute(`
               UPDATE projects
-              SET status = 'PLANNING',
-                  payment_status = 'PAID',
-                  started_at = ?,
+              SET status = 'IN_PROGRESS',
+                  payment_status = ?,
+                  started_at = COALESCE(started_at, ?),
                   updated_at = datetime('now')
               WHERE id = ?
-            `, [now, invoice.project_id]);
+            `, [isFullyPaid ? 'PAID' : 'PARTIALLY_PAID', now, invoice.project_id]);
           }
+        }
+      } else if (isFullyPaid) {
+        // Direct project advance if project was awaiting payment
+        const project = await tx.queryOne<any>('SELECT status FROM projects WHERE id = ?', [invoice.project_id]);
+        if (project?.status === 'AWAITING_PAYMENT') {
+          await tx.execute(`
+            UPDATE projects
+            SET status = 'IN_PROGRESS',
+                payment_status = 'PAID',
+                started_at = COALESCE(started_at, ?),
+                updated_at = datetime('now')
+            WHERE id = ?
+          `, [now, invoice.project_id]);
         }
       }
 
@@ -255,8 +293,11 @@ export async function POST(req: NextRequest) {
         const commissionRateBps = Number(rep?.commission_rate_bps || 2000); // 20.00% default
 
         // Commission is calculated strictly from CodeBridge Service Revenue, not third-party reimbursements
-        const codebridgeRevenueMinor = Number(invoice.codebridge_amount_minor || verifiedAmountMinor);
-        const calculatedCommissionMinor = Math.floor((codebridgeRevenueMinor * commissionRateBps) / 10000);
+        const codebridgeRevenueMinor = Number(invoice.codebridge_service_total_minor || invoice.amount_minor);
+        // Prorate commission if partial payment
+        const paymentRatio = verifiedAmountMinor / invoiceTotalMinor;
+        const eligibleMinorForThisPayment = Math.round(codebridgeRevenueMinor * Math.min(1, paymentRatio));
+        const calculatedCommissionMinor = Math.floor((eligibleMinorForThisPayment * commissionRateBps) / 10000);
 
         const idempotencyKey = `COMMISSION_FLW_${transactionId}`;
         const existingCommissionEvent = await tx.queryOne<any>('SELECT id FROM commission_events WHERE idempotency_key = ?', [idempotencyKey]);
@@ -278,7 +319,7 @@ export async function POST(req: NextRequest) {
             invoice.proposal_id || null,
             repId,
             invoice.currency,
-            codebridgeRevenueMinor,
+            eligibleMinorForThisPayment,
             commissionRateBps,
             calculatedCommissionMinor,
             now,
@@ -303,27 +344,68 @@ export async function POST(req: NextRequest) {
         currency: invoice.currency,
         settlementStatus,
         paymentMethod,
+        isFullyPaid,
         source: 'FLUTTERWAVE_WEBHOOK',
       },
       ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1',
     });
 
-    await recordAuditLog({
-      userId: 'system_flutterwave',
-      action: 'INVOICE_MARKED_PAID',
-      entity: 'invoices',
-      entityId: invoice.id,
-      metadata: {
-        invoiceNumber: invoice.invoice_number,
-        paymentId,
-        amountPaidMinor: verifiedAmountMinor,
-        currency: invoice.currency,
-      },
-      ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1',
-    });
+    if (isFullyPaid) {
+      await recordAuditLog({
+        userId: 'system_flutterwave',
+        action: 'INVOICE_MARKED_PAID',
+        entity: 'invoices',
+        entityId: invoice.id,
+        metadata: {
+          invoiceNumber: invoice.invoice_number,
+          paymentId,
+          amountPaidMinor: newTotalPaidMinor,
+          currency: invoice.currency,
+        },
+        ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1',
+      });
+    }
 
-    console.log(`[Flutterwave Webhook] Successfully processed payment for invoice ${invoice.invoice_number} (${invoice.currency} ${verifiedAmountMinor / 100}).`);
-    return NextResponse.json({ status: 'success', message: 'Payment verified and invoice marked PAID.' }, { status: 200 });
+    // 8. Automated Non-blocking Email and In-App Notification Dispatch
+    try {
+      const client = await queryOne<any>(`
+        SELECT c.id, c.company_name, u.id as user_id, u.email, up.first_name, up.last_name
+        FROM clients c
+        JOIN users u ON c.user_id = u.id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        WHERE c.id = ?
+      `, [invoice.client_id]);
+
+      if (client?.email) {
+        const clientName = `${client.first_name || ''} ${client.last_name || ''}`.trim() || client.company_name;
+        await sendPaymentConfirmationNotification({
+          recipientEmail: client.email,
+          recipientName: clientName,
+          recipientUserId: client.user_id,
+          invoiceNumber: invoice.invoice_number,
+          invoiceTitle: invoice.title,
+          amountMinor: verifiedAmountMinor,
+          currency: invoice.currency,
+          paymentMethod,
+          transactionReference: txRef,
+          paidAt: now,
+          isFullPayment: isFullyPaid,
+          remainingMinor: remainingAfterThisMinor,
+        });
+      }
+    } catch (notifErr: any) {
+      // Notification errors are logged but MUST NOT disrupt confirmed payment
+      console.error('[Flutterwave Webhook] Notification dispatch error (non-fatal):', notifErr.message);
+    }
+
+    console.log(`[Flutterwave Webhook] Successfully processed payment for invoice ${invoice.invoice_number}: ${invoice.currency} ${verifiedAmountMinor / 100} (${newInvoiceStatus}).`);
+    return NextResponse.json({
+      status: 'success',
+      message: `Payment verified. Invoice status is now ${newInvoiceStatus}.`,
+      invoiceStatus: newInvoiceStatus,
+      amountPaidMinor: newTotalPaidMinor,
+      remainingMinor: remainingAfterThisMinor,
+    }, { status: 200 });
   } catch (err: any) {
     console.error('[Flutterwave Webhook] Fatal processing error:', err);
     return NextResponse.json({ error: 'Webhook processing error.' }, { status: 500 });

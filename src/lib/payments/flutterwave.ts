@@ -5,6 +5,8 @@
  * All secret keys remain strictly server-side.
  */
 
+import crypto from 'crypto';
+
 export interface FlutterwaveInitiateParams {
   txRef: string;
   amountMinor: number;
@@ -70,17 +72,85 @@ export interface FlutterwaveVerifyResponse {
   };
 }
 
+export interface WebhookSignatureHeaders {
+  verifHash?: string | null;
+  flutterwaveSignature?: string | null;
+}
+
 /**
- * Validates webhook security signature against FLW_WEBHOOK_SECRET_HASH.
+ * Timing-safe string comparison to mitigate side-channel timing attacks.
  */
-export function verifyWebhookSignature(headerHash: string | null): boolean {
+export function timingSafeEqual(a: string, b: string): boolean {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const bufA = Buffer.from(a, 'utf-8');
+  const bufB = Buffer.from(b, 'utf-8');
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+/**
+ * Validates webhook authenticity using Flutterwave signature headers.
+ * Supports:
+ * 1. Standard `verif-hash` header comparison (against FLW_WEBHOOK_SECRET_HASH)
+ * 2. Cryptographic `flutterwave-signature` header (HMAC-SHA256 of raw body against FLW_WEBHOOK_SECRET_HASH or FLW_SECRET_KEY)
+ * Both use constant-time comparison to protect against timing attacks.
+ */
+export function verifyWebhookSignature(
+  param1: WebhookSignatureHeaders | string | null,
+  param2?: string | WebhookSignatureHeaders | null
+): boolean {
   const secretHash = process.env.FLW_WEBHOOK_SECRET_HASH;
-  if (!secretHash) {
-    console.warn('[Flutterwave] FLW_WEBHOOK_SECRET_HASH is not set. Webhook verification rejected.');
+  const secretKey = process.env.FLW_SECRET_KEY;
+
+  if (!secretHash && !secretKey) {
+    console.warn('[Flutterwave] Neither FLW_WEBHOOK_SECRET_HASH nor FLW_SECRET_KEY is configured. Webhook rejected.');
     return false;
   }
-  if (!headerHash) return false;
-  return headerHash === secretHash;
+
+  let verifHash: string | null = null;
+  let flwSignature: string | null = null;
+  let rawBody: string | undefined;
+
+  // Detect if param1 is raw JSON body or headers
+  if (typeof param1 === 'string' && (param1.trim().startsWith('{') || param1.trim().startsWith('['))) {
+    rawBody = param1;
+    if (typeof param2 === 'string') {
+      verifHash = param2;
+      flwSignature = param2;
+    } else if (param2) {
+      verifHash = param2.verifHash || null;
+      flwSignature = param2.flutterwaveSignature || null;
+    }
+  } else {
+    rawBody = typeof param2 === 'string' ? param2 : undefined;
+    if (typeof param1 === 'string') {
+      verifHash = param1;
+      flwSignature = param1;
+    } else if (param1) {
+      verifHash = param1.verifHash || null;
+      flwSignature = param1.flutterwaveSignature || null;
+    }
+  }
+
+  // 1. Validate verif-hash (Primary Flutterwave Dashboard Secret Hash header)
+  if (verifHash && secretHash) {
+    if (timingSafeEqual(verifHash, secretHash)) {
+      return true;
+    }
+  }
+
+  // 2. Validate flutterwave-signature (HMAC-SHA256 signature of raw request body)
+  if (flwSignature && rawBody) {
+    const candidateKeys = [secretHash, secretKey].filter(Boolean) as string[];
+    for (const key of candidateKeys) {
+      const computedSignature = crypto.createHmac('sha256', key).update(rawBody).digest('hex');
+      if (timingSafeEqual(flwSignature.toLowerCase(), computedSignature.toLowerCase())) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -212,3 +282,63 @@ export async function verifyFlutterwaveTransaction(
   const data: FlutterwaveVerifyResponse = await response.json();
   return data;
 }
+
+/**
+ * Verifies a transaction using its merchant transaction reference (tx_ref).
+ * GET https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref={tx_ref}
+ */
+export async function verifyFlutterwaveByReference(
+  txRef: string
+): Promise<FlutterwaveVerifyResponse> {
+  const secretKey = process.env.FLW_SECRET_KEY;
+
+  if (!secretKey || secretKey.startsWith('FLWSECK_TEST_MOCK')) {
+    console.log(`[Flutterwave Simulation] Mock verification for tx_ref ${txRef}`);
+    return {
+      status: 'success',
+      message: 'Transaction verified by reference (simulated)',
+      data: {
+        id: 12345678,
+        tx_ref: txRef,
+        flw_ref: `FLW-SIM-${Date.now()}`,
+        amount: 100000,
+        currency: 'KES',
+        charged_amount: 100000,
+        app_fee: 1500,
+        merchant_fee: 0,
+        processor_response: 'Approved',
+        auth_model: 'AUTH',
+        ip: '127.0.0.1',
+        narration: 'CodeBridge Simulated Payment',
+        status: 'successful',
+        payment_type: 'mpesa',
+        created_at: new Date().toISOString(),
+        account_id: 99999,
+        amount_settled: 98500,
+        customer: {
+          id: 111,
+          name: 'Demo Client',
+          phone_number: '+254700000000',
+          email: 'client@abcrestaurants.com',
+          created_at: new Date().toISOString(),
+        },
+      },
+    };
+  }
+
+  const response = await fetch(
+    `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(txRef)}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    }
+  );
+
+  const data: FlutterwaveVerifyResponse = await response.json();
+  return data;
+}
+

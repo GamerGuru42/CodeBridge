@@ -92,7 +92,13 @@ export async function GET(req: NextRequest) {
             const verifiedAmountMinor = Math.round(Number(vData.amount) * 100);
             const unpaidRemaining = Number(invoice.amount_minor) - Number(invoice.amount_paid_minor || 0);
 
-            if (verifiedAmountMinor >= unpaidRemaining) {
+            if (verifiedAmountMinor > 0) {
+              const currentPaidMinor = Number(invoice.amount_paid_minor || 0);
+              const invoiceTotalMinor = Number(invoice.amount_minor);
+              const newTotalPaidMinor = currentPaidMinor + verifiedAmountMinor;
+              const isFullyPaid = newTotalPaidMinor >= invoiceTotalMinor;
+              const newInvoiceStatus = isFullyPaid ? 'PAID' : 'PARTIALLY_PAID';
+
               const gatewayFeeMinor = Math.round(Number(vData.app_fee || 0) * 100);
               const netAmountMinor = vData.amount_settled
                 ? Math.round(Number(vData.amount_settled) * 100)
@@ -174,32 +180,43 @@ export async function GET(req: NextRequest) {
                   ]);
                 }
 
-                // Mark invoice paid
+                // Update invoice status and paid amount
                 await tx.execute(`
                   UPDATE invoices
-                  SET amount_paid_minor = amount_paid_minor + ?,
-                      status = 'PAID',
+                  SET amount_paid_minor = ?,
+                      status = ?,
                       paid_at = ?,
                       updated_at = datetime('now')
                   WHERE id = ?
-                `, [verifiedAmountMinor, now, invoice.id]);
+                `, [
+                  newTotalPaidMinor,
+                  newInvoiceStatus,
+                  isFullyPaid ? now : invoice.paid_at,
+                  invoice.id,
+                ]);
 
                 // Payment schedule & project status
                 if (invoice.payment_schedule_id) {
                   await tx.execute(`
                     UPDATE payment_schedules
-                    SET status = 'PAID', paid_at = ?, updated_at = datetime('now')
+                    SET status = ?, paid_at = ?, updated_at = datetime('now')
                     WHERE id = ?
-                  `, [now, invoice.payment_schedule_id]);
+                  `, [isFullyPaid ? 'PAID' : 'PARTIALLY_PAID', now, invoice.payment_schedule_id]);
 
                   const schedule = await tx.queryOne<any>('SELECT is_required_to_start FROM payment_schedules WHERE id = ?', [invoice.payment_schedule_id]);
                   if (schedule?.is_required_to_start === 1) {
                     await tx.execute(`
                       UPDATE projects
-                      SET status = 'PLANNING', payment_status = 'PAID', started_at = ?, updated_at = datetime('now')
+                      SET status = 'IN_PROGRESS', payment_status = ?, started_at = COALESCE(started_at, ?), updated_at = datetime('now')
                       WHERE id = ? AND status = 'AWAITING_PAYMENT'
-                    `, [now, invoice.project_id]);
+                    `, [isFullyPaid ? 'PAID' : 'PARTIALLY_PAID', now, invoice.project_id]);
                   }
+                } else if (isFullyPaid) {
+                  await tx.execute(`
+                    UPDATE projects
+                    SET status = 'IN_PROGRESS', payment_status = 'PAID', started_at = COALESCE(started_at, ?), updated_at = datetime('now')
+                    WHERE id = ? AND status = 'AWAITING_PAYMENT'
+                  `, [now, invoice.project_id]);
                 }
               });
 

@@ -179,6 +179,7 @@ export function getSqliteClient(): DatabaseSync {
         ALTER TABLE payments ADD COLUMN settlement_destination TEXT;
         ALTER TABLE payments ADD COLUMN metadata_json TEXT;
         ALTER TABLE payments ADD COLUMN paid_at TEXT;
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_unique_flw_ref ON payments(gateway_reference);
       `);
     }
   } catch (err) {
@@ -251,6 +252,8 @@ async function ensurePostgresSchema(pg: postgres.Sql): Promise<void> {
           ALTER TABLE payments ADD CONSTRAINT payments_status_check CHECK (status IN ('PENDING', 'CONFIRMED', 'SUCCESSFUL', 'FAILED', 'CANCELLED', 'REFUNDED'));
 
           CREATE INDEX IF NOT EXISTS idx_payments_gateway_tx ON payments(gateway_transaction_id);
+          CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_unique_flw_ref ON payments(gateway_reference) WHERE gateway_reference IS NOT NULL;
+          CREATE UNIQUE INDEX IF NOT EXISTS idx_payments_unique_flw_tx_id ON payments(gateway_transaction_id) WHERE gateway_transaction_id IS NOT NULL;
         `);
       } catch (err: any) {
         console.error('Error ensuring PostgreSQL schema:', err.message);
