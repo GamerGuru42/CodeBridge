@@ -482,9 +482,10 @@ export async function PATCH(
                 INSERT INTO invoices (
                   id, invoice_number, proposal_id, project_id, client_id, representative_id,
                   payment_schedule_id, title, description, amount_minor, amount_paid_minor,
+                  codebridge_amount_minor, third_party_reimbursement_minor, line_items_json,
                   currency, status, due_date, issued_at, created_at, updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 'ISSUED', ?, datetime('now'), datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 'ISSUED', ?, datetime('now'), datetime('now'), datetime('now'))
               `, [
                 initialInvoiceId,
                 invNumber,
@@ -496,6 +497,9 @@ export async function PATCH(
                 `${proposal.title} - ${item.name}`,
                 `Initial invoice for ${item.name}. Project kickoff begins immediately after payment is verified.`,
                 item.amountMinor,
+                proposal.codebridge_total_minor ?? item.amountMinor,
+                proposal.third_party_total_minor ?? 0,
+                proposal.line_items_json || '[]',
                 proposal.currency,
                 dueDate,
               ]);

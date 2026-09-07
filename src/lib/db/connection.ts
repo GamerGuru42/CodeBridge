@@ -132,6 +132,55 @@ export function getSqliteClient(): DatabaseSync {
         ALTER TABLE messages ADD COLUMN message_type TEXT NOT NULL DEFAULT 'CHAT';
       `);
     }
+
+    // Flutterwave & Mobile Pricing migrations for SQLite
+    const srvCols = sqliteClient.prepare('PRAGMA table_info(services);').all() as any[];
+    if (!srvCols.some((c: any) => c.name === 'item_type')) {
+      sqliteClient.exec(`
+        ALTER TABLE services ADD COLUMN item_type TEXT NOT NULL DEFAULT 'CODEBRIDGE_SERVICE';
+        ALTER TABLE services ADD COLUMN platform TEXT NOT NULL DEFAULT 'ALL';
+        ALTER TABLE services ADD COLUMN billing_type TEXT NOT NULL DEFAULT 'PROJECT';
+        ALTER TABLE services ADD COLUMN is_price_configured INTEGER NOT NULL DEFAULT 1;
+      `);
+    }
+
+    const propCols = sqliteClient.prepare('PRAGMA table_info(proposals);').all() as any[];
+    if (!propCols.some((c: any) => c.name === 'codebridge_total_minor')) {
+      sqliteClient.exec(`
+        ALTER TABLE proposals ADD COLUMN line_items_json TEXT NOT NULL DEFAULT '[]';
+        ALTER TABLE proposals ADD COLUMN codebridge_total_minor INTEGER NOT NULL DEFAULT 0;
+        ALTER TABLE proposals ADD COLUMN third_party_total_minor INTEGER NOT NULL DEFAULT 0;
+        ALTER TABLE proposals ADD COLUMN app_store_ownership TEXT DEFAULT 'CLIENT_OWNED';
+        ALTER TABLE proposals ADD COLUMN store_approval_disclaimer TEXT;
+      `);
+    }
+
+    const invCols = sqliteClient.prepare('PRAGMA table_info(invoices);').all() as any[];
+    if (!invCols.some((c: any) => c.name === 'codebridge_amount_minor')) {
+      sqliteClient.exec(`
+        ALTER TABLE invoices ADD COLUMN codebridge_amount_minor INTEGER NOT NULL DEFAULT 0;
+        ALTER TABLE invoices ADD COLUMN third_party_reimbursement_minor INTEGER NOT NULL DEFAULT 0;
+        ALTER TABLE invoices ADD COLUMN line_items_json TEXT;
+      `);
+    }
+
+    const payCols = sqliteClient.prepare('PRAGMA table_info(payments);').all() as any[];
+    if (!payCols.some((c: any) => c.name === 'gateway')) {
+      sqliteClient.exec(`
+        ALTER TABLE payments ADD COLUMN gateway TEXT NOT NULL DEFAULT 'flutterwave';
+        ALTER TABLE payments ADD COLUMN gateway_transaction_id TEXT;
+        ALTER TABLE payments ADD COLUMN gateway_reference TEXT;
+        ALTER TABLE payments ADD COLUMN gross_amount_minor INTEGER;
+        ALTER TABLE payments ADD COLUMN gateway_fee_minor INTEGER DEFAULT 0;
+        ALTER TABLE payments ADD COLUMN net_amount_minor INTEGER;
+        ALTER TABLE payments ADD COLUMN settlement_status TEXT DEFAULT 'PENDING';
+        ALTER TABLE payments ADD COLUMN settlement_currency TEXT;
+        ALTER TABLE payments ADD COLUMN settlement_amount_minor INTEGER;
+        ALTER TABLE payments ADD COLUMN settlement_destination TEXT;
+        ALTER TABLE payments ADD COLUMN metadata_json TEXT;
+        ALTER TABLE payments ADD COLUMN paid_at TEXT;
+      `);
+    }
   } catch (err) {
     console.error('Error applying SQLite migrations:', err);
   }
@@ -162,6 +211,46 @@ async function ensurePostgresSchema(pg: postgres.Sql): Promise<void> {
           
           ALTER TABLE messages ADD COLUMN IF NOT EXISTS lead_id TEXT REFERENCES leads(id) ON DELETE CASCADE;
           ALTER TABLE messages ADD COLUMN IF NOT EXISTS message_type TEXT NOT NULL DEFAULT 'CHAT';
+
+          -- Flutterwave & Mobile Pricing Migrations
+          ALTER TABLE services ADD COLUMN IF NOT EXISTS item_type VARCHAR(32) DEFAULT 'CODEBRIDGE_SERVICE';
+          ALTER TABLE services ADD COLUMN IF NOT EXISTS platform VARCHAR(32) DEFAULT 'ALL';
+          ALTER TABLE services ADD COLUMN IF NOT EXISTS billing_type VARCHAR(32) DEFAULT 'PROJECT';
+          ALTER TABLE services ADD COLUMN IF NOT EXISTS is_price_configured INTEGER DEFAULT 1;
+
+          ALTER TABLE proposals ADD COLUMN IF NOT EXISTS line_items_json TEXT DEFAULT '[]';
+          ALTER TABLE proposals ADD COLUMN IF NOT EXISTS codebridge_total_minor BIGINT DEFAULT 0;
+          ALTER TABLE proposals ADD COLUMN IF NOT EXISTS third_party_total_minor BIGINT DEFAULT 0;
+          ALTER TABLE proposals ADD COLUMN IF NOT EXISTS app_store_ownership VARCHAR(32) DEFAULT 'CLIENT_OWNED';
+          ALTER TABLE proposals ADD COLUMN IF NOT EXISTS store_approval_disclaimer TEXT;
+
+          ALTER TABLE invoices ADD COLUMN IF NOT EXISTS codebridge_amount_minor BIGINT DEFAULT 0;
+          ALTER TABLE invoices ADD COLUMN IF NOT EXISTS third_party_reimbursement_minor BIGINT DEFAULT 0;
+          ALTER TABLE invoices ADD COLUMN IF NOT EXISTS line_items_json TEXT;
+
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS gateway VARCHAR(32) DEFAULT 'flutterwave';
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS gateway_transaction_id VARCHAR(128);
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS gateway_reference VARCHAR(128);
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS gross_amount_minor BIGINT;
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS gateway_fee_minor BIGINT DEFAULT 0;
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS net_amount_minor BIGINT;
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS settlement_status VARCHAR(32) DEFAULT 'PENDING';
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS settlement_currency VARCHAR(8);
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS settlement_amount_minor BIGINT;
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS settlement_destination TEXT;
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS metadata_json TEXT;
+          ALTER TABLE payments ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ;
+
+          ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_payment_method_check;
+          ALTER TABLE payments ADD CONSTRAINT payments_payment_method_check CHECK (payment_method IN ('BANK_TRANSFER', 'CASH', 'OTHER_MANUAL', 'GATEWAY_SIMULATION', 'MPESA', 'CARD', 'FLUTTERWAVE'));
+
+          ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_verification_source_check;
+          ALTER TABLE payments ADD CONSTRAINT payments_verification_source_check CHECK (verification_source IN ('MANUAL_VERIFICATION', 'BANK_TRANSFER_CONFIRMATION', 'GATEWAY_SIMULATION', 'FLUTTERWAVE_WEBHOOK', 'M_PESA_CALLBACK'));
+
+          ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_status_check;
+          ALTER TABLE payments ADD CONSTRAINT payments_status_check CHECK (status IN ('PENDING', 'CONFIRMED', 'SUCCESSFUL', 'FAILED', 'CANCELLED', 'REFUNDED'));
+
+          CREATE INDEX IF NOT EXISTS idx_payments_gateway_tx ON payments(gateway_transaction_id);
         `);
       } catch (err: any) {
         console.error('Error ensuring PostgreSQL schema:', err.message);

@@ -92,10 +92,18 @@ export async function GET(req: NextRequest) {
         paymentSchedule = [];
       }
 
+      let lineItems: any[] = [];
+      try {
+        lineItems = JSON.parse(p.line_items_json || '[]');
+      } catch {
+        lineItems = [];
+      }
+
       return {
         ...p,
         deliverables,
         paymentSchedule,
+        lineItems,
       };
     });
 
@@ -129,6 +137,9 @@ export async function POST(req: NextRequest) {
       title,
       scopeOfWork,
       deliverables, // array of strings
+      lineItems, // array of line items with item_type
+      appStoreOwnership = 'CLIENT_OWNED',
+      storeApprovalDisclaimer,
       paymentStructureType = 'FULL_UPFRONT',
       paymentSchedule, // array of schedule items
       totalAmountMinor, // integer minor units
@@ -307,11 +318,31 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
+    // Calculate CodeBridge Revenue vs Third-Party Fees
+    let codebridgeTotalMinor = 0;
+    let thirdPartyTotalMinor = 0;
+    if (Array.isArray(lineItems) && lineItems.length > 0) {
+      for (const item of lineItems) {
+        const itemAmt = Number(item.amount_minor ?? item.amountMinor ?? 0);
+        if (item.item_type === 'THIRD_PARTY_FEE' || item.item_type === 'REIMBURSABLE_EXPENSE') {
+          thirdPartyTotalMinor += itemAmt;
+        } else {
+          codebridgeTotalMinor += itemAmt;
+        }
+      }
+    } else {
+      codebridgeTotalMinor = cleanAmountMinor;
+    }
+
+    const standardDisclaimer = 'CodeBridge builds, prepares, and submits mobile applications in full accordance with Apple App Store and Google Play Store guidelines. Final submission approval and publication timelines are controlled strictly by Apple and Google.';
+    const validOwnership = ['CLIENT_OWNED', 'CODEBRIDGE_MANAGED'].includes(appStoreOwnership) ? appStoreOwnership : 'CLIENT_OWNED';
+
     // Generate standard proposal number
     const proposalNumber = `PROP-${targetCurrency}-${Date.now().toString().slice(-4)}${Math.floor(10 + Math.random() * 90)}`;
     const proposalId = `prop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const deliverablesJson = JSON.stringify(Array.isArray(deliverables) ? deliverables : []);
     const paymentScheduleJson = JSON.stringify(scheduleItems);
+    const lineItemsJson = JSON.stringify(Array.isArray(lineItems) ? lineItems : []);
 
     const finalStatus: ProposalStatus = initialStatus === 'SENT' ? 'SENT' : 'DRAFT';
     const sentAt = finalStatus === 'SENT' ? new Date().toISOString() : null;
@@ -320,11 +351,13 @@ export async function POST(req: NextRequest) {
       INSERT INTO proposals (
         id, proposal_number, version, is_current, lead_id, client_id,
         project_id, representative_id, title, scope_of_work, deliverables_json,
+        line_items_json, codebridge_total_minor, third_party_total_minor,
+        app_store_ownership, store_approval_disclaimer,
         payment_structure_type, payment_schedule_json,
         total_amount_minor, currency, status, valid_until, terms_notes,
         created_by, sent_at, created_at, updated_at
       )
-      VALUES (?, ?, 1, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+      VALUES (?, ?, 1, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
     `, [
       proposalId,
       proposalNumber,
@@ -335,6 +368,11 @@ export async function POST(req: NextRequest) {
       title.trim(),
       scopeOfWork.trim(),
       deliverablesJson,
+      lineItemsJson,
+      codebridgeTotalMinor,
+      thirdPartyTotalMinor,
+      validOwnership,
+      storeApprovalDisclaimer || standardDisclaimer,
       finalStructureType,
       paymentScheduleJson,
       cleanAmountMinor,
@@ -357,6 +395,9 @@ export async function POST(req: NextRequest) {
         status: finalStatus,
         paymentStructureType: finalStructureType,
         totalAmountMinor: cleanAmountMinor,
+        codebridgeTotalMinor,
+        thirdPartyTotalMinor,
+        appStoreOwnership: validOwnership,
         currency: targetCurrency,
       },
       ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1',

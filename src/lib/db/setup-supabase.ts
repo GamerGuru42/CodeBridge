@@ -1,22 +1,48 @@
 // src/lib/db/setup-supabase.ts
+import fs from 'node:fs';
+import path from 'node:path';
 import bcrypt from 'bcryptjs';
 import postgres from 'postgres';
 
-export const FOUNDATIONAL_SERVICES: [string, string, string, string, string, number, string, number][] = [
-  ['srv_biz_web', 'BIZ-WEB', 'Business Websites', 'Modern, high-converting corporate and brand websites engineered for market credibility and lead generation.', 'Websites', 45000000, 'NGN', 1],
-  ['srv_ecom', 'E-COMM', 'E-commerce Websites', 'Scalable online storefronts with cart management, inventory tracking, and seamless checkout flows.', 'E-commerce', 85000000, 'NGN', 1],
-  ['srv_rest', 'REST-ORDER', 'Restaurant Websites & Ordering Systems', 'Custom restaurant digital hubs with real-time digital menus, table reservation, and direct order workflows.', 'Hospitality', 65000000, 'NGN', 1],
-  ['srv_prop', 'PROP-AIRBNB', 'Property & Airbnb Websites', 'Direct booking and showcase platforms for real estate developers, short-let operators, and property managers.', 'Real Estate', 75000000, 'NGN', 1],
-  ['srv_book', 'BOOK-SYS', 'Booking Systems', 'Automated reservation, appointment scheduling, calendar integration, and client notification engines.', 'Applications', 55000000, 'NGN', 1],
-  ['srv_land', 'LAND-PAGES', 'Landing Pages', 'Precision-crafted single-page experiences optimized for paid ad campaigns and maximum conversion velocity.', 'Marketing', 25000000, 'NGN', 1],
-  ['srv_webapp', 'WEB-APP', 'Custom Web Applications', 'Purpose-built software applications engineered to streamline core business operations and customer self-service.', 'Applications', 120000000, 'NGN', 1],
-  ['srv_port', 'CUST-PORTAL', 'Customer Portals', 'Secure client-facing dashboards for document exchange, service requests, invoicing, and account management.', 'Applications', 90000000, 'NGN', 1],
-  ['srv_dash', 'ADMIN-DASH', 'Admin Dashboards', 'Comprehensive control panels with operational metrics, analytics, permissions, and business management tools.', 'Dashboards', 80000000, 'NGN', 1],
-  ['srv_soft', 'CUSTOM-SW', 'Custom Business Software', 'Tailor-made software solutions built around proprietary business workflows and operational bottlenecks.', 'Enterprise', 150000000, 'NGN', 1],
-  ['srv_mgmt', 'BIZ-MGMT', 'Business Management Systems', 'End-to-end digital operating systems integrating CRM, resource planning, and internal communications.', 'Enterprise', 180000000, 'NGN', 1],
-  ['srv_redesign', 'SITE-REDESIGN', 'Website Redesigns', 'Complete architectural overhaul, performance upgrade, and visual modernization of legacy corporate sites.', 'Websites', 40000000, 'NGN', 1],
-  ['srv_maint', 'TECH-SUPPORT', 'Maintenance & Technical Support', 'Ongoing code upkeep, security patches, uptime monitoring, and SLA-backed engineering support.', 'Support', 20000000, 'NGN', 1],
-  ['srv_host', 'HOST-INFRA', 'Hosting & Domain Assistance', 'High-availability cloud deployment, DNS configuration, SSL provisioning, and cloud infrastructure setup.', 'Infrastructure', 15000000, 'NGN', 1],
+function getFallbackDbUrl() {
+  if (process.env.DIRECT_URL) return process.env.DIRECT_URL;
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  const envPath = path.resolve(process.cwd(), '.env.local');
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, 'utf-8');
+    const match = content.match(/^DATABASE_URL=(.*)$/m);
+    if (match) return match[1].trim().replace(/^["']|["']$/g, '');
+  }
+  return null;
+}
+
+export const FOUNDATIONAL_SERVICES: [string, string, string, string, string, number, string, string, string, string, number, number][] = [
+  // id, code, name, description, category, base_price_minor, currency, item_type, platform, billing_type, is_price_configured, is_active
+  ['srv_biz_web', 'BIZ-WEB', 'Business Websites', 'Modern, high-converting corporate and brand websites engineered for market credibility and lead generation.', 'Websites', 45000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_ecom', 'E-COMM', 'E-commerce Websites', 'Scalable online storefronts with cart management, inventory tracking, and seamless checkout flows.', 'E-commerce', 85000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_rest', 'REST-ORDER', 'Restaurant Websites & Ordering Systems', 'Custom restaurant digital hubs with real-time digital menus, table reservation, and direct order workflows.', 'Hospitality', 65000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_prop', 'PROP-AIRBNB', 'Property & Airbnb Websites', 'Direct booking and showcase platforms for real estate developers, short-let operators, and property managers.', 'Real Estate', 75000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_book', 'BOOK-SYS', 'Booking Systems', 'Automated reservation, appointment scheduling, calendar integration, and client notification engines.', 'Applications', 55000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_land', 'LAND-PAGES', 'Landing Pages', 'Precision-crafted single-page experiences optimized for paid ad campaigns and maximum conversion velocity.', 'Marketing', 25000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_webapp', 'WEB-APP', 'Custom Web Applications', 'Purpose-built software applications engineered to streamline core business operations and customer self-service.', 'Applications', 120000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_port', 'CUST-PORTAL', 'Customer Portals', 'Secure client-facing dashboards for document exchange, service requests, invoicing, and account management.', 'Applications', 90000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_dash', 'ADMIN-DASH', 'Admin Dashboards', 'Comprehensive control panels with operational metrics, analytics, permissions, and business management tools.', 'Dashboards', 80000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_soft', 'CUSTOM-SW', 'Custom Business Software', 'Tailor-made software solutions built around proprietary business workflows and operational bottlenecks.', 'Enterprise', 150000000, 'NGN', 'CODEBRIDGE_SERVICE', 'ALL', 'PROJECT', 1, 1],
+  ['srv_mgmt', 'BIZ-MGMT', 'Business Management Systems', 'End-to-end digital operating systems integrating CRM, resource planning, and internal communications.', 'Enterprise', 180000000, 'NGN', 'CODEBRIDGE_SERVICE', 'ALL', 'PROJECT', 1, 1],
+  ['srv_redesign', 'SITE-REDESIGN', 'Website Redesigns', 'Complete architectural overhaul, performance upgrade, and visual modernization of legacy corporate sites.', 'Websites', 40000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_maint', 'TECH-SUPPORT', 'Maintenance & Technical Support', 'Ongoing code upkeep, security patches, uptime monitoring, and SLA-backed engineering support.', 'Support', 20000000, 'NGN', 'CODEBRIDGE_SERVICE', 'ALL', 'MONTHLY', 1, 1],
+  ['srv_host', 'HOST-INFRA', 'Hosting & Domain Assistance', 'High-availability cloud deployment, DNS configuration, SSL provisioning, and cloud infrastructure setup.', 'Infrastructure', 15000000, 'NGN', 'CODEBRIDGE_SERVICE', 'CLOUD', 'ONE_OFF', 1, 1],
+  // Mobile App Services (CodeBridge Services - Price Unconfigured until business owner sets price)
+  ['srv_mob_android', 'MOB-ANDROID', 'Mobile App Development (Android)', 'Native or optimized Android mobile application development engineered for high performance, material design, and offline capability.', 'Mobile Apps', 0, 'KES', 'CODEBRIDGE_SERVICE', 'ANDROID', 'PROJECT', 0, 1],
+  ['srv_mob_ios', 'MOB-IOS', 'Mobile App Development (iOS)', 'Premium iOS mobile application development engineered according to Apple Human Interface Guidelines and Swift/modern standards.', 'Mobile Apps', 0, 'KES', 'CODEBRIDGE_SERVICE', 'IOS', 'PROJECT', 0, 1],
+  ['srv_mob_cross', 'MOB-CROSS', 'Cross-Platform Mobile App Development (Android + iOS)', 'Unified React Native / Flutter cross-platform mobile application engineering serving both Google Play Store and Apple App Store.', 'Mobile Apps', 0, 'KES', 'CODEBRIDGE_SERVICE', 'CROSS_PLATFORM', 'PROJECT', 0, 1],
+  ['srv_pub_play', 'PUB-PLAY', 'Google Play Store Publishing Assistance', 'Release preparation, APK/AAB generation, Google Play Console listing configuration, privacy policy checklist, and submission assistance. Note: Final approval is strictly controlled by Google.', 'Store Publishing', 0, 'KES', 'CODEBRIDGE_SERVICE', 'ANDROID', 'ONE_OFF', 0, 1],
+  ['srv_pub_apple', 'PUB-APPLE', 'Apple App Store Publishing Assistance', 'iOS production build signing, App Store Connect metadata & screenshots setup, TestFlight configuration, and App Store review submission assistance. Note: Final approval is strictly controlled by Apple.', 'Store Publishing', 0, 'KES', 'CODEBRIDGE_SERVICE', 'IOS', 'ONE_OFF', 0, 1],
+  ['srv_mob_maint', 'MOB-MAINT', 'Mobile App Maintenance & SLA Support', 'Continuous OS compatibility updates (new Android/iOS releases), library dependency maintenance, bug fixes, and store compliance monitoring.', 'Mobile Maintenance', 0, 'KES', 'CODEBRIDGE_SERVICE', 'MOBILE', 'MONTHLY', 0, 1],
+  // Third-Party Fees (Paid directly by client or reimbursable; NEVER CodeBridge revenue)
+  ['fee_play_dev', 'FEE-PLAY-DEV', 'Google Play Developer Account Fee', 'One-time registration fee ($25 USD reference) paid directly by the client to Google for their Google Play Console developer account.', 'Third-Party Accounts', 0, 'USD', 'THIRD_PARTY_FEE', 'ANDROID', 'ONE_OFF', 1, 1],
+  ['fee_apple_dev', 'FEE-APPLE-DEV', 'Apple Developer Program Annual Membership', 'Annual membership fee ($99 USD/yr reference) paid directly by the client to Apple to maintain their App Store Developer organization account.', 'Third-Party Accounts', 0, 'USD', 'THIRD_PARTY_FEE', 'IOS', 'YEARLY', 1, 1],
+  ['fee_cloud_infra', 'FEE-CLOUD-INFRA', 'Cloud Infrastructure & Hosting Services', 'Third-party cloud infrastructure (Vercel, Supabase, AWS, GCP, domain registrar) fees paid directly according to usage and selected tier.', 'Infrastructure', 0, 'USD', 'THIRD_PARTY_FEE', 'CLOUD', 'MONTHLY', 1, 1],
 ];
 
 export const POSTGRES_SCHEMA_SQL = `
@@ -124,6 +150,10 @@ CREATE TABLE IF NOT EXISTS services (
   category TEXT NOT NULL,
   base_price_minor BIGINT NOT NULL DEFAULT 0,
   currency VARCHAR(8) NOT NULL DEFAULT 'NGN',
+  item_type VARCHAR(32) NOT NULL DEFAULT 'CODEBRIDGE_SERVICE' CHECK (item_type IN ('CODEBRIDGE_SERVICE', 'THIRD_PARTY_FEE', 'REIMBURSABLE_EXPENSE')),
+  platform VARCHAR(32) NOT NULL DEFAULT 'ALL' CHECK (platform IN ('ALL', 'WEB', 'MOBILE', 'ANDROID', 'IOS', 'CROSS_PLATFORM', 'CLOUD')),
+  billing_type VARCHAR(32) NOT NULL DEFAULT 'PROJECT' CHECK (billing_type IN ('PROJECT', 'MILESTONE', 'MONTHLY', 'YEARLY', 'ONE_OFF')),
+  is_price_configured INTEGER NOT NULL DEFAULT 1,
   is_active INTEGER NOT NULL DEFAULT 1
 );
 
@@ -189,6 +219,11 @@ CREATE TABLE IF NOT EXISTS proposals (
   title TEXT NOT NULL,
   scope_of_work TEXT NOT NULL,
   deliverables_json TEXT NOT NULL DEFAULT '[]',
+  line_items_json TEXT NOT NULL DEFAULT '[]',
+  codebridge_total_minor BIGINT NOT NULL DEFAULT 0,
+  third_party_total_minor BIGINT NOT NULL DEFAULT 0,
+  app_store_ownership VARCHAR(32) DEFAULT 'CLIENT_OWNED' CHECK (app_store_ownership IN ('CLIENT_OWNED', 'CODEBRIDGE_MANAGED')),
+  store_approval_disclaimer TEXT,
   payment_structure_type VARCHAR(32) NOT NULL DEFAULT 'FULL_UPFRONT' CHECK (payment_structure_type IN ('FULL_UPFRONT', 'DEPOSIT_MILESTONES', 'CUSTOM')),
   payment_schedule_json TEXT NOT NULL DEFAULT '[]',
   total_amount_minor BIGINT NOT NULL DEFAULT 0,
@@ -225,8 +260,8 @@ CREATE TABLE IF NOT EXISTS payment_schedules (
   amount_minor BIGINT NOT NULL,
   currency VARCHAR(8) NOT NULL CHECK (currency IN ('KES', 'NGN')),
   is_required_to_start INTEGER NOT NULL DEFAULT 0,
-  billing_trigger VARCHAR(32) NOT NULL CHECK (billing_trigger IN ('UPFRONT_APPROVAL', 'MILESTONE_STARTED', 'MILESTONE_COMPLETED', 'MANUAL_RELEASE')),
-  status VARCHAR(32) NOT NULL DEFAULT 'SCHEDULED' CHECK (status IN ('SCHEDULED', 'INVOICEABLE', 'INVOICED', 'PAID', 'OVERDUE', 'CANCELLED')),
+  billing_trigger VARCHAR(32) NOT NULL CHECK (billing_trigger IN ('IMMEDIATE', 'MILESTONE_COMPLETION', 'MANUAL_RELEASE')),
+  status VARCHAR(32) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'DUE', 'PAID', 'CANCELLED')),
   invoice_id VARCHAR(64),
   milestone_id VARCHAR(64) REFERENCES project_milestones(id),
   due_date DATE,
@@ -252,6 +287,9 @@ CREATE TABLE IF NOT EXISTS invoices (
   description TEXT,
   amount_minor BIGINT NOT NULL DEFAULT 0,
   amount_paid_minor BIGINT NOT NULL DEFAULT 0,
+  codebridge_amount_minor BIGINT NOT NULL DEFAULT 0,
+  third_party_reimbursement_minor BIGINT NOT NULL DEFAULT 0,
+  line_items_json TEXT,
   currency VARCHAR(8) NOT NULL CHECK (currency IN ('KES', 'NGN')),
   status VARCHAR(32) NOT NULL DEFAULT 'ISSUED' CHECK (status IN ('DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'OVERDUE', 'CANCELLED')),
   due_date DATE NOT NULL,
@@ -275,13 +313,25 @@ CREATE TABLE IF NOT EXISTS payments (
   project_id VARCHAR(64) NOT NULL REFERENCES projects(id),
   amount_minor BIGINT NOT NULL,
   currency VARCHAR(8) NOT NULL CHECK (currency IN ('KES', 'NGN')),
-  payment_method VARCHAR(32) NOT NULL CHECK (payment_method IN ('BANK_TRANSFER', 'CASH', 'OTHER_MANUAL', 'GATEWAY_SIMULATION')),
+  payment_method VARCHAR(32) NOT NULL CHECK (payment_method IN ('BANK_TRANSFER', 'CASH', 'OTHER_MANUAL', 'GATEWAY_SIMULATION', 'MPESA', 'CARD', 'FLUTTERWAVE')),
   verification_source VARCHAR(32) NOT NULL CHECK (verification_source IN (
     'MANUAL_VERIFICATION', 'BANK_TRANSFER_CONFIRMATION', 'GATEWAY_SIMULATION',
-    'PAYSTACK_WEBHOOK', 'FLUTTERWAVE_WEBHOOK', 'M_PESA_CALLBACK'
+    'FLUTTERWAVE_WEBHOOK', 'M_PESA_CALLBACK'
   )),
-  status VARCHAR(32) NOT NULL DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'FAILED')),
+  status VARCHAR(32) NOT NULL DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'SUCCESSFUL', 'FAILED', 'CANCELLED', 'REFUNDED')),
   reference VARCHAR(255) UNIQUE NOT NULL,
+  gateway VARCHAR(32) NOT NULL DEFAULT 'flutterwave',
+  gateway_transaction_id VARCHAR(128),
+  gateway_reference VARCHAR(128),
+  gross_amount_minor BIGINT,
+  gateway_fee_minor BIGINT DEFAULT 0,
+  net_amount_minor BIGINT,
+  settlement_status VARCHAR(32) DEFAULT 'PENDING' CHECK (settlement_status IN ('PENDING', 'SETTLED', 'NOT_APPLICABLE')),
+  settlement_currency VARCHAR(8),
+  settlement_amount_minor BIGINT,
+  settlement_destination TEXT,
+  metadata_json TEXT,
+  paid_at TIMESTAMPTZ,
   verified_at TIMESTAMPTZ NOT NULL,
   verified_by VARCHAR(64) NOT NULL REFERENCES users(id),
   verification_notes TEXT,
@@ -290,6 +340,46 @@ CREATE TABLE IF NOT EXISTS payments (
 
 CREATE INDEX IF NOT EXISTS idx_payments_invoice ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payments_reference ON payments(reference);
+
+-- Idempotent schema upgrades for existing deployments
+ALTER TABLE services ADD COLUMN IF NOT EXISTS item_type VARCHAR(32) DEFAULT 'CODEBRIDGE_SERVICE';
+ALTER TABLE services ADD COLUMN IF NOT EXISTS platform VARCHAR(32) DEFAULT 'ALL';
+ALTER TABLE services ADD COLUMN IF NOT EXISTS billing_type VARCHAR(32) DEFAULT 'PROJECT';
+ALTER TABLE services ADD COLUMN IF NOT EXISTS is_price_configured INTEGER DEFAULT 1;
+
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS line_items_json TEXT DEFAULT '[]';
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS codebridge_total_minor BIGINT DEFAULT 0;
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS third_party_total_minor BIGINT DEFAULT 0;
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS app_store_ownership VARCHAR(32) DEFAULT 'CLIENT_OWNED';
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS store_approval_disclaimer TEXT;
+
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS codebridge_amount_minor BIGINT DEFAULT 0;
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS third_party_reimbursement_minor BIGINT DEFAULT 0;
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS line_items_json TEXT;
+
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS gateway VARCHAR(32) DEFAULT 'flutterwave';
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS gateway_transaction_id VARCHAR(128);
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS gateway_reference VARCHAR(128);
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS gross_amount_minor BIGINT;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS gateway_fee_minor BIGINT DEFAULT 0;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS net_amount_minor BIGINT;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS settlement_status VARCHAR(32) DEFAULT 'PENDING';
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS settlement_currency VARCHAR(8);
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS settlement_amount_minor BIGINT;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS settlement_destination TEXT;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS metadata_json TEXT;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ;
+
+ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_payment_method_check;
+ALTER TABLE payments ADD CONSTRAINT payments_payment_method_check CHECK (payment_method IN ('BANK_TRANSFER', 'CASH', 'OTHER_MANUAL', 'GATEWAY_SIMULATION', 'MPESA', 'CARD', 'FLUTTERWAVE'));
+
+ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_verification_source_check;
+ALTER TABLE payments ADD CONSTRAINT payments_verification_source_check CHECK (verification_source IN ('MANUAL_VERIFICATION', 'BANK_TRANSFER_CONFIRMATION', 'GATEWAY_SIMULATION', 'FLUTTERWAVE_WEBHOOK', 'M_PESA_CALLBACK'));
+
+ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_status_check;
+ALTER TABLE payments ADD CONSTRAINT payments_status_check CHECK (status IN ('PENDING', 'CONFIRMED', 'SUCCESSFUL', 'FAILED', 'CANCELLED', 'REFUNDED'));
+
+CREATE INDEX IF NOT EXISTS idx_payments_gateway_tx ON payments(gateway_transaction_id);
 
 -- Commission Events (Immutable Financial Facts)
 CREATE TABLE IF NOT EXISTS commission_events (
@@ -405,7 +495,7 @@ GRANT ALL ON ALL ROUTINES IN SCHEMA public TO postgres, anon, authenticated, ser
 `;
 
 export async function setupSupabaseDatabase() {
-  const dbUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+  const dbUrl = getFallbackDbUrl();
   if (!dbUrl || (!dbUrl.startsWith('postgres://') && !dbUrl.startsWith('postgresql://'))) {
     console.error('❌ Error: DIRECT_URL or DATABASE_URL must be configured with a PostgreSQL connection string.');
     console.error('   Example: postgresql://postgres.zmlaqqgjlqpzigrnxdsx:[PASSWORD]@aws-0-[region].pooler.supabase.com:6543/postgres');
@@ -441,12 +531,12 @@ export async function setupSupabaseDatabase() {
     `;
     console.log('   ✅ Seeded Nigeria (NGN) and Kenya (KES).');
 
-    // 3. Seed 14 Services Catalog Entries
-    console.log('-> Seeding foundational 14 service catalog items...');
+    // 3. Seed Services Catalog Entries (Foundational + Mobile Services + Third-Party Fees)
+    console.log('-> Seeding service catalog items (CodeBridge Services & Third-Party Accounts)...');
     for (const service of FOUNDATIONAL_SERVICES) {
       await sql`
-        INSERT INTO services (id, code, name, description, category, base_price_minor, currency, is_active)
-        VALUES (${service[0]}, ${service[1]}, ${service[2]}, ${service[3]}, ${service[4]}, ${service[5]}, ${service[6]}, ${service[7]})
+        INSERT INTO services (id, code, name, description, category, base_price_minor, currency, item_type, platform, billing_type, is_price_configured, is_active)
+        VALUES (${service[0]}, ${service[1]}, ${service[2]}, ${service[3]}, ${service[4]}, ${service[5]}, ${service[6]}, ${service[7]}, ${service[8]}, ${service[9]}, ${service[10]}, ${service[11]})
         ON CONFLICT (id) DO UPDATE SET
           code = EXCLUDED.code,
           name = EXCLUDED.name,
@@ -454,10 +544,14 @@ export async function setupSupabaseDatabase() {
           category = EXCLUDED.category,
           base_price_minor = EXCLUDED.base_price_minor,
           currency = EXCLUDED.currency,
+          item_type = EXCLUDED.item_type,
+          platform = EXCLUDED.platform,
+          billing_type = EXCLUDED.billing_type,
+          is_price_configured = EXCLUDED.is_price_configured,
           is_active = EXCLUDED.is_active;
       `;
     }
-    console.log('   ✅ Seeded 14 service catalog entries.');
+    console.log(`   ✅ Seeded ${FOUNDATIONAL_SERVICES.length} service catalog entries.`);
 
     // 4. Seed Initial Super Admin (Credentials MUST come from environment variables)
     const adminEmail = process.env.ADMIN_INITIAL_EMAIL?.trim().toLowerCase();

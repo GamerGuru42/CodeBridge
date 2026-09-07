@@ -42,28 +42,39 @@ const insertCountry = db.prepare(`
 insertCountry.run('c_ng', 'NG', 'Nigeria', 'NGN', '+234', 'Africa/Lagos', 1);
 insertCountry.run('c_ke', 'KE', 'Kenya', 'KES', '+254', 'Africa/Nairobi', 1);
 
-// 2. Seed Services Catalog (14 Business Technology Services)
-console.log('-> Seeding 14 CodeBridge Services...');
+// 2. Seed Services Catalog (Foundational Services + Mobile App Services + Third-Party Fees)
+console.log('-> Seeding CodeBridge Services & Third-Party Fee Items...');
 const insertService = db.prepare(`
-  INSERT OR REPLACE INTO services (id, code, name, description, category, base_price_minor, currency, is_active)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  INSERT OR REPLACE INTO services (id, code, name, description, category, base_price_minor, currency, item_type, platform, billing_type, is_price_configured, is_active)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
-const services: [string, string, string, string, string, number, string, number][] = [
-  ['srv_biz_web', 'BIZ-WEB', 'Business Websites', 'Modern, high-converting corporate and brand websites engineered for market credibility and lead generation.', 'Websites', 45000000, 'NGN', 1],
-  ['srv_ecom', 'E-COMM', 'E-commerce Websites', 'Scalable online storefronts with cart management, inventory tracking, and seamless checkout flows.', 'E-commerce', 85000000, 'NGN', 1],
-  ['srv_rest', 'REST-ORDER', 'Restaurant Websites & Ordering Systems', 'Custom restaurant digital hubs with real-time digital menus, table reservation, and direct order workflows.', 'Hospitality', 65000000, 'NGN', 1],
-  ['srv_prop', 'PROP-AIRBNB', 'Property & Airbnb Websites', 'Direct booking and showcase platforms for real estate developers, short-let operators, and property managers.', 'Real Estate', 75000000, 'NGN', 1],
-  ['srv_book', 'BOOK-SYS', 'Booking Systems', 'Automated reservation, appointment scheduling, calendar integration, and client notification engines.', 'Applications', 55000000, 'NGN', 1],
-  ['srv_land', 'LAND-PAGES', 'Landing Pages', 'Precision-crafted single-page experiences optimized for paid ad campaigns and maximum conversion velocity.', 'Marketing', 25000000, 'NGN', 1],
-  ['srv_webapp', 'WEB-APP', 'Custom Web Applications', 'Purpose-built software applications engineered to streamline core business operations and customer self-service.', 'Applications', 120000000, 'NGN', 1],
-  ['srv_port', 'CUST-PORTAL', 'Customer Portals', 'Secure client-facing dashboards for document exchange, service requests, invoicing, and account management.', 'Applications', 90000000, 'NGN', 1],
-  ['srv_dash', 'ADMIN-DASH', 'Admin Dashboards', 'Comprehensive control panels with operational metrics, analytics, permissions, and business management tools.', 'Dashboards', 80000000, 'NGN', 1],
-  ['srv_soft', 'CUSTOM-SW', 'Custom Business Software', 'Tailor-made software solutions built around proprietary business workflows and operational bottlenecks.', 'Enterprise', 150000000, 'NGN', 1],
-  ['srv_mgmt', 'BIZ-MGMT', 'Business Management Systems', 'End-to-end digital operating systems integrating CRM, resource planning, and internal communications.', 'Enterprise', 180000000, 'NGN', 1],
-  ['srv_redesign', 'SITE-REDESIGN', 'Website Redesigns', 'Complete architectural overhaul, performance upgrade, and visual modernization of legacy corporate sites.', 'Websites', 40000000, 'NGN', 1],
-  ['srv_maint', 'TECH-SUPPORT', 'Maintenance & Technical Support', 'Ongoing code upkeep, security patches, uptime monitoring, and SLA-backed engineering support.', 'Support', 20000000, 'NGN', 1],
-  ['srv_host', 'HOST-INFRA', 'Hosting & Domain Assistance', 'High-availability cloud deployment, DNS configuration, SSL provisioning, and cloud infrastructure setup.', 'Infrastructure', 15000000, 'NGN', 1],
+const services: [string, string, string, string, string, number, string, string, string, string, number, number][] = [
+  ['srv_biz_web', 'BIZ-WEB', 'Business Websites', 'Modern, high-converting corporate and brand websites engineered for market credibility and lead generation.', 'Websites', 45000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_ecom', 'E-COMM', 'E-commerce Websites', 'Scalable online storefronts with cart management, inventory tracking, and seamless checkout flows.', 'E-commerce', 85000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_rest', 'REST-ORDER', 'Restaurant Websites & Ordering Systems', 'Custom restaurant digital hubs with real-time digital menus, table reservation, and direct order workflows.', 'Hospitality', 65000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_prop', 'PROP-AIRBNB', 'Property & Airbnb Websites', 'Direct booking and showcase platforms for real estate developers, short-let operators, and property managers.', 'Real Estate', 75000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_book', 'BOOK-SYS', 'Booking Systems', 'Automated reservation, appointment scheduling, calendar integration, and client notification engines.', 'Applications', 55000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_land', 'LAND-PAGES', 'Landing Pages', 'Precision-crafted single-page experiences optimized for paid ad campaigns and maximum conversion velocity.', 'Marketing', 25000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_webapp', 'WEB-APP', 'Custom Web Applications', 'Purpose-built software applications engineered to streamline core business operations and customer self-service.', 'Applications', 120000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_port', 'CUST-PORTAL', 'Customer Portals', 'Secure client-facing dashboards for document exchange, service requests, invoicing, and account management.', 'Applications', 90000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_dash', 'ADMIN-DASH', 'Admin Dashboards', 'Comprehensive control panels with operational metrics, analytics, permissions, and business management tools.', 'Dashboards', 80000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_soft', 'CUSTOM-SW', 'Custom Business Software', 'Tailor-made software solutions built around proprietary business workflows and operational bottlenecks.', 'Enterprise', 150000000, 'NGN', 'CODEBRIDGE_SERVICE', 'ALL', 'PROJECT', 1, 1],
+  ['srv_mgmt', 'BIZ-MGMT', 'Business Management Systems', 'End-to-end digital operating systems integrating CRM, resource planning, and internal communications.', 'Enterprise', 180000000, 'NGN', 'CODEBRIDGE_SERVICE', 'ALL', 'PROJECT', 1, 1],
+  ['srv_redesign', 'SITE-REDESIGN', 'Website Redesigns', 'Complete architectural overhaul, performance upgrade, and visual modernization of legacy corporate sites.', 'Websites', 40000000, 'NGN', 'CODEBRIDGE_SERVICE', 'WEB', 'PROJECT', 1, 1],
+  ['srv_maint', 'TECH-SUPPORT', 'Maintenance & Technical Support', 'Ongoing code upkeep, security patches, uptime monitoring, and SLA-backed engineering support.', 'Support', 20000000, 'NGN', 'CODEBRIDGE_SERVICE', 'ALL', 'MONTHLY', 1, 1],
+  ['srv_host', 'HOST-INFRA', 'Hosting & Domain Assistance', 'High-availability cloud deployment, DNS configuration, SSL provisioning, and cloud infrastructure setup.', 'Infrastructure', 15000000, 'NGN', 'CODEBRIDGE_SERVICE', 'CLOUD', 'ONE_OFF', 1, 1],
+  // Mobile App Services (Price unconfigured)
+  ['srv_mob_android', 'MOB-ANDROID', 'Mobile App Development (Android)', 'Native or optimized Android mobile application development engineered for high performance, material design, and offline capability.', 'Mobile Apps', 0, 'KES', 'CODEBRIDGE_SERVICE', 'ANDROID', 'PROJECT', 0, 1],
+  ['srv_mob_ios', 'MOB-IOS', 'Mobile App Development (iOS)', 'Premium iOS mobile application development engineered according to Apple Human Interface Guidelines and Swift/modern standards.', 'Mobile Apps', 0, 'KES', 'CODEBRIDGE_SERVICE', 'IOS', 'PROJECT', 0, 1],
+  ['srv_mob_cross', 'MOB-CROSS', 'Cross-Platform Mobile App Development (Android + iOS)', 'Unified React Native / Flutter cross-platform mobile application engineering serving both Google Play Store and Apple App Store.', 'Mobile Apps', 0, 'KES', 'CODEBRIDGE_SERVICE', 'CROSS_PLATFORM', 'PROJECT', 0, 1],
+  ['srv_pub_play', 'PUB-PLAY', 'Google Play Store Publishing Assistance', 'Release preparation, APK/AAB generation, Google Play Console listing configuration, privacy policy checklist, and submission assistance. Note: Final approval is strictly controlled by Google.', 'Store Publishing', 0, 'KES', 'CODEBRIDGE_SERVICE', 'ANDROID', 'ONE_OFF', 0, 1],
+  ['srv_pub_apple', 'PUB-APPLE', 'Apple App Store Publishing Assistance', 'iOS production build signing, App Store Connect metadata & screenshots setup, TestFlight configuration, and App Store review submission assistance. Note: Final approval is strictly controlled by Apple.', 'Store Publishing', 0, 'KES', 'CODEBRIDGE_SERVICE', 'IOS', 'ONE_OFF', 0, 1],
+  ['srv_mob_maint', 'MOB-MAINT', 'Mobile App Maintenance & SLA Support', 'Continuous OS compatibility updates (new Android/iOS releases), library dependency maintenance, bug fixes, and store compliance monitoring.', 'Mobile Maintenance', 0, 'KES', 'CODEBRIDGE_SERVICE', 'MOBILE', 'MONTHLY', 0, 1],
+  // Third-Party Fees
+  ['fee_play_dev', 'FEE-PLAY-DEV', 'Google Play Developer Account Fee', 'One-time registration fee ($25 USD reference) paid directly by the client to Google for their Google Play Console developer account.', 'Third-Party Accounts', 0, 'USD', 'THIRD_PARTY_FEE', 'ANDROID', 'ONE_OFF', 1, 1],
+  ['fee_apple_dev', 'FEE-APPLE-DEV', 'Apple Developer Program Annual Membership', 'Annual membership fee ($99 USD/yr reference) paid directly by the client to Apple to maintain their App Store Developer organization account.', 'Third-Party Accounts', 0, 'USD', 'THIRD_PARTY_FEE', 'IOS', 'YEARLY', 1, 1],
+  ['fee_cloud_infra', 'FEE-CLOUD-INFRA', 'Cloud Infrastructure & Hosting Services', 'Third-party cloud infrastructure (Vercel, Supabase, AWS, GCP, domain registrar) fees paid directly according to usage and selected tier.', 'Infrastructure', 0, 'USD', 'THIRD_PARTY_FEE', 'CLOUD', 'MONTHLY', 1, 1],
 ];
 
 for (const s of services) {

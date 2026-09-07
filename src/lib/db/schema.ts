@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS leads (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- Services Catalog (14 business digital products)
+-- Services Catalog (14 business digital products + Mobile App Services)
 CREATE TABLE IF NOT EXISTS services (
   id TEXT PRIMARY KEY,
   code TEXT UNIQUE NOT NULL,
@@ -98,6 +98,10 @@ CREATE TABLE IF NOT EXISTS services (
   category TEXT NOT NULL,
   base_price_minor INTEGER NOT NULL DEFAULT 0,
   currency TEXT NOT NULL DEFAULT 'NGN',
+  item_type TEXT NOT NULL DEFAULT 'CODEBRIDGE_SERVICE' CHECK (item_type IN ('CODEBRIDGE_SERVICE', 'THIRD_PARTY_FEE', 'REIMBURSABLE_EXPENSE')),
+  platform TEXT NOT NULL DEFAULT 'ALL' CHECK (platform IN ('ALL', 'WEB', 'MOBILE', 'ANDROID', 'IOS', 'CROSS_PLATFORM', 'CLOUD')),
+  billing_type TEXT NOT NULL DEFAULT 'PROJECT' CHECK (billing_type IN ('PROJECT', 'MILESTONE', 'MONTHLY', 'YEARLY', 'ONE_OFF')),
+  is_price_configured INTEGER NOT NULL DEFAULT 1,
   is_active INTEGER NOT NULL DEFAULT 1
 );
 
@@ -163,6 +167,11 @@ CREATE TABLE IF NOT EXISTS proposals (
   title TEXT NOT NULL,
   scope_of_work TEXT NOT NULL,
   deliverables_json TEXT NOT NULL DEFAULT '[]',
+  line_items_json TEXT NOT NULL DEFAULT '[]',
+  codebridge_total_minor INTEGER NOT NULL DEFAULT 0,
+  third_party_total_minor INTEGER NOT NULL DEFAULT 0,
+  app_store_ownership TEXT DEFAULT 'CLIENT_OWNED' CHECK (app_store_ownership IN ('CLIENT_OWNED', 'CODEBRIDGE_MANAGED')),
+  store_approval_disclaimer TEXT,
   payment_structure_type TEXT NOT NULL DEFAULT 'FULL_UPFRONT' CHECK (payment_structure_type IN ('FULL_UPFRONT', 'DEPOSIT_MILESTONES', 'CUSTOM')),
   payment_schedule_json TEXT NOT NULL DEFAULT '[]',
   total_amount_minor INTEGER NOT NULL DEFAULT 0,
@@ -226,6 +235,9 @@ CREATE TABLE IF NOT EXISTS invoices (
   description TEXT,
   amount_minor INTEGER NOT NULL DEFAULT 0,
   amount_paid_minor INTEGER NOT NULL DEFAULT 0,
+  codebridge_amount_minor INTEGER NOT NULL DEFAULT 0,
+  third_party_reimbursement_minor INTEGER NOT NULL DEFAULT 0,
+  line_items_json TEXT,
   currency TEXT NOT NULL CHECK (currency IN ('KES', 'NGN')),
   status TEXT NOT NULL DEFAULT 'ISSUED' CHECK (status IN ('DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'OVERDUE', 'CANCELLED')),
   due_date TEXT NOT NULL,
@@ -242,20 +254,32 @@ CREATE INDEX IF NOT EXISTS idx_invoices_project ON invoices(project_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
 CREATE INDEX IF NOT EXISTS idx_invoices_number ON invoices(invoice_number);
 
--- Payments (Phase 2B: Discrete Verified Financial Transactions)
+-- Payments (Flutterwave and Verified Financial Transactions)
 CREATE TABLE IF NOT EXISTS payments (
   id TEXT PRIMARY KEY,
   invoice_id TEXT NOT NULL REFERENCES invoices(id),
   project_id TEXT NOT NULL REFERENCES projects(id),
   amount_minor INTEGER NOT NULL,
   currency TEXT NOT NULL CHECK (currency IN ('KES', 'NGN')),
-  payment_method TEXT NOT NULL CHECK (payment_method IN ('BANK_TRANSFER', 'CASH', 'OTHER_MANUAL', 'GATEWAY_SIMULATION')),
+  payment_method TEXT NOT NULL CHECK (payment_method IN ('BANK_TRANSFER', 'CASH', 'OTHER_MANUAL', 'GATEWAY_SIMULATION', 'MPESA', 'CARD', 'FLUTTERWAVE')),
   verification_source TEXT NOT NULL CHECK (verification_source IN (
     'MANUAL_VERIFICATION', 'BANK_TRANSFER_CONFIRMATION', 'GATEWAY_SIMULATION',
-    'PAYSTACK_WEBHOOK', 'FLUTTERWAVE_WEBHOOK', 'M_PESA_CALLBACK'
+    'FLUTTERWAVE_WEBHOOK', 'M_PESA_CALLBACK'
   )),
-  status TEXT NOT NULL DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'FAILED')),
+  status TEXT NOT NULL DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'SUCCESSFUL', 'FAILED', 'CANCELLED', 'REFUNDED')),
   reference TEXT UNIQUE NOT NULL,
+  gateway TEXT NOT NULL DEFAULT 'flutterwave',
+  gateway_transaction_id TEXT,
+  gateway_reference TEXT,
+  gross_amount_minor INTEGER,
+  gateway_fee_minor INTEGER DEFAULT 0,
+  net_amount_minor INTEGER,
+  settlement_status TEXT DEFAULT 'PENDING' CHECK (settlement_status IN ('PENDING', 'SETTLED', 'NOT_APPLICABLE')),
+  settlement_currency TEXT,
+  settlement_amount_minor INTEGER,
+  settlement_destination TEXT,
+  metadata_json TEXT,
+  paid_at TEXT,
   verified_at TEXT NOT NULL,
   verified_by TEXT NOT NULL REFERENCES users(id),
   verification_notes TEXT,
@@ -264,6 +288,7 @@ CREATE TABLE IF NOT EXISTS payments (
 
 CREATE INDEX IF NOT EXISTS idx_payments_invoice ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payments_reference ON payments(reference);
+CREATE INDEX IF NOT EXISTS idx_payments_gateway_tx ON payments(gateway_transaction_id);
 
 -- Commission Events (Phase 2B -> Phase 2D Handoff: Immutable Financial Facts)
 CREATE TABLE IF NOT EXISTS commission_events (

@@ -21,7 +21,15 @@ import {
   RefreshCw,
   Eye,
   AlertTriangle,
-  MessageSquare
+  MessageSquare,
+  CreditCard,
+  DollarSign,
+  ShieldCheck,
+  Smartphone,
+  Building2,
+  ExternalLink,
+  Info,
+  Trash2
 } from 'lucide-react';
 
 import ChatDrawer from '@/components/dashboard/ChatDrawer';
@@ -32,6 +40,14 @@ export default function AdminOpsDashboard() {
   const [projects, setProjects] = useState<any[]>([]);
   const [proposals, setProposals] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
+  const [financialSummary, setFinancialSummary] = useState<any>({
+    grossCodeBridgeRevenueMinor: 0,
+    thirdPartyReimbursementsMinor: 0,
+    totalGatewayFeesMinor: 0,
+    netCodeBridgeRevenueMinor: 0,
+  });
+  const [catalogServices, setCatalogServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState('');
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
@@ -49,17 +65,62 @@ export default function AdminOpsDashboard() {
   const [invoiceSearchQuery, setInvoiceSearchQuery] = useState('');
   const [proposalFilterStatus, setProposalFilterStatus] = useState('ALL');
   const [proposalSearchQuery, setProposalSearchQuery] = useState('');
+  const [paymentFilterGateway, setPaymentFilterGateway] = useState('ALL');
 
   // Payment Verification Modal State
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<any>(null);
   const [paymentForm, setPaymentForm] = useState({
     amount: '',
-    paymentMethod: 'BANK_TRANSFER',
+    paymentMethod: 'FLUTTERWAVE',
     verificationSource: 'MANUAL_VERIFICATION',
     reference: '',
     verificationNotes: '',
   });
+
+  // Default Line Items for Quote Builder
+  const defaultLineItems = [
+    {
+      id: 'li-1',
+      title: 'Custom Mobile Application Engineering',
+      description: 'Cross-platform mobile client architecture, API integration, and native performance tuning.',
+      item_type: 'CODEBRIDGE_SERVICE',
+      platform: 'CROSS_PLATFORM',
+      amount: '200000',
+    },
+    {
+      id: 'li-2',
+      title: 'Google Play Store Publishing Assistance',
+      description: 'Android bundle preparation, signing, and submission management (Platform approval controlled by Google).',
+      item_type: 'CODEBRIDGE_SERVICE',
+      platform: 'ANDROID',
+      amount: '40000',
+    },
+    {
+      id: 'li-3',
+      title: 'Apple App Store Publishing Assistance',
+      description: 'iOS archive generation, provisioning, and submission management (Platform approval controlled by Apple).',
+      item_type: 'CODEBRIDGE_SERVICE',
+      platform: 'IOS',
+      amount: '40000',
+    },
+    {
+      id: 'li-4',
+      title: 'Google Play Developer Account Registration Fee ($25 one-off)',
+      description: 'Third-party developer account fee paid directly to Google by client.',
+      item_type: 'THIRD_PARTY_FEE',
+      platform: 'ANDROID',
+      amount: '3500',
+    },
+    {
+      id: 'li-5',
+      title: 'Apple Developer Program Enrollment ($99/year)',
+      description: 'Third-party developer membership paid directly to Apple by client.',
+      item_type: 'THIRD_PARTY_FEE',
+      platform: 'IOS',
+      amount: '14000',
+    },
+  ];
 
   // Proposal Form State
   const [proposalForm, setProposalForm] = useState({
@@ -70,19 +131,24 @@ export default function AdminOpsDashboard() {
     totalAmount: '280000',
     currency: 'KES',
     validDays: 14,
-    termsNotes: 'Standard 4-milestone engineering schedule with 100% CodeBridge warranty.',
+    termsNotes: 'Standard engineering schedule with 100% CodeBridge warranty.',
     status: 'SENT',
+    lineItems: defaultLineItems,
+    appStoreOwnership: 'CLIENT_OWNED',
+    storeApprovalDisclaimer: 'CodeBridge prepares and submits the application according to platform specifications. Final store approval is controlled exclusively by Apple and Google and is never guaranteed.',
   });
 
   const loadData = async () => {
     try {
-      const [resMe, resLeads, resReps, resProjects, resProposals, resInvoices] = await Promise.all([
+      const [resMe, resLeads, resReps, resProjects, resProposals, resInvoices, resPayments, resServices] = await Promise.all([
         fetch('/api/me'),
         fetch('/api/leads'),
         fetch('/api/admin/representatives'),
         fetch('/api/projects'),
         fetch('/api/proposals'),
         fetch('/api/invoices'),
+        fetch('/api/payments'),
+        fetch('/api/services'),
       ]);
 
       if (resMe.ok) {
@@ -108,6 +174,17 @@ export default function AdminOpsDashboard() {
       if (resInvoices.ok) {
         const d = await resInvoices.json();
         setInvoices(d.invoices || []);
+      }
+      if (resPayments.ok) {
+        const d = await resPayments.json();
+        setPayments(d.payments || []);
+        if (d.summary) {
+          setFinancialSummary(d.summary);
+        }
+      }
+      if (resServices.ok) {
+        const d = await resServices.json();
+        setCatalogServices(d.data || []);
       }
     } catch (err) {
       console.error('Failed to load operations data:', err);
@@ -187,16 +264,61 @@ export default function AdminOpsDashboard() {
   const handleOpenProposalModal = (lead?: any) => {
     if (lead) {
       setSelectedLeadForProposal(lead);
+      const estBudget = ((lead.estimated_budget_minor || 28000000) / 100).toString();
       setProposalForm({
         title: `Digital Transformation for ${lead.business_name}`,
         scopeOfWork: `Design, engineer, and deploy high-performance software system tailored to ${lead.business_type} operations.`,
         deliverables: 'Custom UI/UX System Architecture\nScalable API & Database Engineering\nInternal Quality Assurance & UAT\nProduction Deployment & Handover',
         paymentStructureType: 'FULL_UPFRONT',
-        totalAmount: ((lead.estimated_budget_minor || 28000000) / 100).toString(),
+        totalAmount: estBudget,
         currency: lead.currency || 'KES',
         validDays: 14,
-        termsNotes: 'Standard 4-milestone engineering schedule with 100% CodeBridge warranty.',
+        termsNotes: 'Standard engineering schedule with 100% CodeBridge warranty.',
         status: 'SENT',
+        lineItems: [
+          {
+            id: 'li-1',
+            title: `Custom Mobile App Engineering for ${lead.business_name}`,
+            description: 'Native/hybrid client architecture, authenticated workflows, and responsive interface design.',
+            item_type: 'CODEBRIDGE_SERVICE',
+            platform: 'CROSS_PLATFORM',
+            amount: (parseFloat(estBudget) * 0.7).toFixed(0),
+          },
+          {
+            id: 'li-2',
+            title: 'Google Play Store Publishing Assistance',
+            description: 'Build compilation, store listing setup, and submission management (Platform approval controlled by Google).',
+            item_type: 'CODEBRIDGE_SERVICE',
+            platform: 'ANDROID',
+            amount: (parseFloat(estBudget) * 0.15).toFixed(0),
+          },
+          {
+            id: 'li-3',
+            title: 'Apple App Store Publishing Assistance',
+            description: 'iOS archive generation, provisioning profiles, and submission management (Platform approval controlled by Apple).',
+            item_type: 'CODEBRIDGE_SERVICE',
+            platform: 'IOS',
+            amount: (parseFloat(estBudget) * 0.15).toFixed(0),
+          },
+          {
+            id: 'li-4',
+            title: 'Google Play Developer Account Registration Fee ($25 one-off)',
+            description: 'Direct third-party account registration fee paid directly to Google by client.',
+            item_type: 'THIRD_PARTY_FEE',
+            platform: 'ANDROID',
+            amount: '3500',
+          },
+          {
+            id: 'li-5',
+            title: 'Apple Developer Program Enrollment ($99/year)',
+            description: 'Annual third-party developer membership paid directly to Apple by client.',
+            item_type: 'THIRD_PARTY_FEE',
+            platform: 'IOS',
+            amount: '14000',
+          },
+        ],
+        appStoreOwnership: 'CLIENT_OWNED',
+        storeApprovalDisclaimer: 'CodeBridge prepares and submits the application according to platform specifications. Final store approval is controlled exclusively by Apple and Google and is never guaranteed.',
       });
     } else {
       setSelectedLeadForProposal(null);
@@ -208,11 +330,71 @@ export default function AdminOpsDashboard() {
         totalAmount: '280000',
         currency: 'KES',
         validDays: 14,
-        termsNotes: 'Standard 4-milestone engineering schedule with 100% CodeBridge warranty.',
+        termsNotes: 'Standard engineering schedule with 100% CodeBridge warranty.',
         status: 'SENT',
+        lineItems: defaultLineItems,
+        appStoreOwnership: 'CLIENT_OWNED',
+        storeApprovalDisclaimer: 'CodeBridge prepares and submits the application according to platform specifications. Final store approval is controlled exclusively by Apple and Google and is never guaranteed.',
       });
     }
     setProposalModalOpen(true);
+  };
+
+  const handleLineItemChange = (index: number, field: string, value: any) => {
+    const updated = [...proposalForm.lineItems];
+    updated[index] = { ...updated[index], [field]: value };
+    
+    // Auto-calculate CodeBridge Total (services + reimbursables) to keep totalAmount synchronized
+    let newTotal = 0;
+    for (const item of updated) {
+      if (item.item_type === 'CODEBRIDGE_SERVICE' || item.item_type === 'REIMBURSABLE_EXPENSE') {
+        newTotal += parseFloat(item.amount || '0') || 0;
+      }
+    }
+    
+    setProposalForm({
+      ...proposalForm,
+      lineItems: updated,
+      totalAmount: newTotal > 0 ? newTotal.toString() : proposalForm.totalAmount,
+    });
+  };
+
+  const handleAddLineItem = () => {
+    const newItem = {
+      id: `li-${Date.now()}`,
+      title: 'Additional Service / Component',
+      description: 'Scope details and deliverables specifications.',
+      item_type: 'CODEBRIDGE_SERVICE',
+      platform: 'CROSS_PLATFORM',
+      amount: '30000',
+    };
+    const updated = [...proposalForm.lineItems, newItem];
+    let newTotal = 0;
+    for (const item of updated) {
+      if (item.item_type === 'CODEBRIDGE_SERVICE' || item.item_type === 'REIMBURSABLE_EXPENSE') {
+        newTotal += parseFloat(item.amount || '0') || 0;
+      }
+    }
+    setProposalForm({
+      ...proposalForm,
+      lineItems: updated,
+      totalAmount: newTotal > 0 ? newTotal.toString() : proposalForm.totalAmount,
+    });
+  };
+
+  const handleRemoveLineItem = (index: number) => {
+    const updated = proposalForm.lineItems.filter((_, i) => i !== index);
+    let newTotal = 0;
+    for (const item of updated) {
+      if (item.item_type === 'CODEBRIDGE_SERVICE' || item.item_type === 'REIMBURSABLE_EXPENSE') {
+        newTotal += parseFloat(item.amount || '0') || 0;
+      }
+    }
+    setProposalForm({
+      ...proposalForm,
+      lineItems: updated,
+      totalAmount: newTotal > 0 ? newTotal.toString() : proposalForm.totalAmount,
+    });
   };
 
   const handleCreateProposal = async (e: React.FormEvent) => {
@@ -231,10 +413,21 @@ export default function AdminOpsDashboard() {
 
       const validUntil = new Date(Date.now() + proposalForm.validDays * 86400000).toISOString();
 
+      const formattedLineItems = proposalForm.lineItems.map(item => ({
+        name: item.title,
+        description: item.description,
+        item_type: item.item_type,
+        platform: item.platform,
+        amount_minor: Math.round(parseFloat(item.amount || '0') * 100),
+      }));
+
       const payload: any = {
         title: proposalForm.title.trim(),
         scopeOfWork: proposalForm.scopeOfWork.trim(),
         deliverables: deliverablesArray,
+        lineItems: formattedLineItems,
+        appStoreOwnership: proposalForm.appStoreOwnership,
+        storeApprovalDisclaimer: proposalForm.storeApprovalDisclaimer,
         paymentStructureType: proposalForm.paymentStructureType,
         totalAmountMinor: cleanMinor,
         currency: proposalForm.currency,
@@ -418,6 +611,213 @@ export default function AdminOpsDashboard() {
         </div>
       </div>
 
+      {/* Financial & Settlement Console (Collection vs Settlement) */}
+      <div className="cb-card" style={{ padding: '24px', marginBottom: '32px', borderTop: '4px solid #3B82F6' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <div className="cb-badge cb-badge-blue" style={{ marginBottom: '6px' }}>
+              <CreditCard size={12} /> Flutterwave Gateway & Settlement Engine
+            </div>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
+              Financial & Settlement Console (Collection vs Settlement)
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--cb-text-secondary)', marginTop: '4px', maxWidth: '750px' }}>
+              Distinguishes client <strong>Collection</strong> (KES via M-Pesa / Card) from merchant <strong>Settlement</strong> (NGN or merchant wallet). Separates CodeBridge service revenue from third-party pass-through expenses to prevent revenue inflation.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <span className="cb-badge cb-badge-emerald">Live Gateway: Flutterwave</span>
+            <span className="cb-badge cb-badge-neutral">{payments.length} Transactions</span>
+          </div>
+        </div>
+
+        {/* 4 Financial Split Summary Cards */}
+        <div className="cb-grid-4" style={{ marginBottom: '20px' }}>
+          <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'var(--cb-surface-card)', border: '1px solid var(--cb-border-subtle)' }}>
+            <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>
+              Gross Service Revenue
+            </div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#34D399' }}>
+              {((financialSummary.grossCodeBridgeRevenueMinor || 0) / 100).toLocaleString()} <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--cb-text-muted)' }}>KES / NGN</span>
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
+              Earned CodeBridge development & engineering services
+            </div>
+          </div>
+
+          <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'var(--cb-surface-card)', border: '1px solid var(--cb-border-subtle)' }}>
+            <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>
+              Third-Party Pass-Through
+            </div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#60A5FA' }}>
+              {((financialSummary.thirdPartyReimbursementsMinor || 0) / 100).toLocaleString()} <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--cb-text-muted)' }}>KES / NGN</span>
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
+              Direct store/cloud reimbursements (0% revenue inflation)
+            </div>
+          </div>
+
+          <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'var(--cb-surface-card)', border: '1px solid var(--cb-border-subtle)' }}>
+            <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>
+              Authoritative Gateway Fees
+            </div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#F87171' }}>
+              {((financialSummary.totalGatewayFeesMinor || 0) / 100).toLocaleString()} <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--cb-text-muted)' }}>KES / NGN</span>
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
+              Deducted by Flutterwave payment network
+            </div>
+          </div>
+
+          <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'var(--cb-surface-card)', border: '1px solid var(--cb-border-subtle)' }}>
+            <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>
+              Net CodeBridge Revenue
+            </div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#FBBF24' }}>
+              {((financialSummary.netCodeBridgeRevenueMinor || 0) / 100).toLocaleString()} <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--cb-text-muted)' }}>KES / NGN</span>
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--cb-text-secondary)', marginTop: '4px' }}>
+              Gross Service Revenue minus Gateway Fees
+            </div>
+          </div>
+        </div>
+
+        {/* Regulatory / Settlement Disclosure Banner */}
+        <div style={{
+          padding: '12px 16px',
+          borderRadius: '8px',
+          backgroundColor: 'rgba(59, 130, 246, 0.08)',
+          border: '1px solid rgba(59, 130, 246, 0.25)',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '12px',
+          fontSize: '12px',
+          color: '#BFDBFE',
+          lineHeight: '1.5',
+        }}>
+          <Info size={18} style={{ flexShrink: 0, marginTop: '2px', color: '#60A5FA' }} />
+          <div>
+            <strong>Flutterwave Multi-Currency Settlement Architecture:</strong> For Kenyan clients, invoices are denominated and collected in <strong>KES</strong> via M-Pesa and Card. Settlement into Nigerian NGN business accounts or merchant wallets is governed solely by the Flutterwave merchant account configuration. The application strictly records authoritative settlement figures returned by Flutterwave and never fabricates artificial foreign exchange rates.
+          </div>
+        </div>
+
+        {/* Transactions & Settlement Details Table */}
+        {payments.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '32px', color: 'var(--cb-text-muted)', fontSize: '13px' }}>
+            No payments processed yet. Client payments via Flutterwave Checkout or administrative verifications will be logged here with collection vs settlement tracking.
+          </div>
+        ) : (
+          <div className="cb-table-container">
+            <table className="cb-table">
+              <thead>
+                <tr>
+                  <th>Invoice & Client</th>
+                  <th>Gateway & Ref</th>
+                  <th>Collection (Customer Paid)</th>
+                  <th>Financial Split</th>
+                  <th>Settlement (Merchant)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((p) => {
+                  const grossFmt = ((p.amount_minor || p.gross_amount_minor || 0) / 100).toLocaleString();
+                  const feeFmt = ((p.gateway_fee_minor || 0) / 100).toLocaleString();
+                  const cbRevFmt = ((p.codebridge_amount_minor != null ? p.codebridge_amount_minor : (p.amount_minor || 0)) / 100).toLocaleString();
+                  const thirdPartyFmt = ((p.third_party_reimbursement_minor || 0) / 100).toLocaleString();
+                  
+                  return (
+                    <tr key={p.id}>
+                      <td>
+                        <div style={{ fontWeight: 700, color: 'var(--cb-accent)', fontFamily: 'monospace' }}>
+                          {p.invoice_number}
+                        </div>
+                        <div style={{ fontWeight: 600, color: 'var(--cb-text-primary)', fontSize: '12px' }}>
+                          {p.company_name}
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>
+                          {p.country_name} ({p.country_code})
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                          <span className="cb-badge cb-badge-blue" style={{ fontSize: '10px', padding: '2px 6px' }}>
+                            {p.gateway || 'FLUTTERWAVE'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--cb-text-secondary)' }}>
+                          Ref: {p.gateway_reference || p.reference || 'N/A'}
+                        </div>
+                        {p.gateway_transaction_id && (
+                          <div style={{ fontSize: '10px', color: 'var(--cb-text-muted)' }}>
+                            ID: {p.gateway_transaction_id}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 700, color: 'var(--cb-text-primary)', fontSize: '13px' }}>
+                          {grossFmt} {p.currency}
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--cb-text-secondary)' }}>
+                          Method: <strong>{p.payment_method || 'CARD / M-PESA'}</strong>
+                        </div>
+                        <div style={{ fontSize: '10px', color: 'var(--cb-text-muted)' }}>
+                          {p.paid_at ? new Date(p.paid_at).toLocaleString() : new Date(p.created_at).toLocaleString()}
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ fontSize: '11px', color: '#34D399', fontWeight: 600 }}>
+                          CodeBridge: {cbRevFmt} {p.currency}
+                        </div>
+                        {Number(p.third_party_reimbursement_minor || 0) > 0 && (
+                          <div style={{ fontSize: '11px', color: '#60A5FA' }}>
+                            3rd-Party: {thirdPartyFmt} {p.currency}
+                          </div>
+                        )}
+                        {Number(p.gateway_fee_minor || 0) > 0 && (
+                          <div style={{ fontSize: '10px', color: '#F87171' }}>
+                            Fee: -{feeFmt} {p.currency}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 600, fontSize: '12px', color: p.settlement_status === 'CONFIRMED' ? '#34D399' : '#FBBF24' }}>
+                          {p.settlement_status || 'PENDING_SETTLEMENT'}
+                        </div>
+                        {p.settlement_amount_minor != null ? (
+                          <div style={{ fontSize: '12px', color: 'var(--cb-text-primary)', fontWeight: 700 }}>
+                            {((p.settlement_amount_minor || 0) / 100).toLocaleString()} {p.settlement_currency || p.currency}
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>
+                            Per Flutterwave Merchant Cycle
+                          </div>
+                        )}
+                        <div style={{ fontSize: '10px', color: 'var(--cb-text-muted)' }}>
+                          Dest: {p.settlement_destination || 'Configured Merchant Account'}
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`cb-badge ${
+                          ['CONFIRMED', 'SUCCESSFUL'].includes(p.status)
+                            ? 'cb-badge-emerald'
+                            : p.status === 'FAILED'
+                            ? 'cb-badge-rose'
+                            : 'cb-badge-amber'
+                        }`}>
+                          {p.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Commercial Proposals Management Table */}
       <div className="cb-card" style={{ padding: '24px', marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
@@ -557,6 +957,18 @@ export default function AdminOpsDashboard() {
                                   validDays: 14,
                                   termsNotes: p.terms_notes || '',
                                   status: 'SENT',
+                                  lineItems: (p.line_items && p.line_items.length > 0)
+                                    ? p.line_items.map((it: any, i: number) => ({
+                                        id: it.id || `li-rev-${i}`,
+                                        title: it.name || it.title || 'Service Item',
+                                        description: it.description || '',
+                                        item_type: it.item_type || 'CODEBRIDGE_SERVICE',
+                                        platform: it.platform || 'CROSS_PLATFORM',
+                                        amount: ((it.amount_minor || 0) / 100).toString(),
+                                      }))
+                                    : defaultLineItems,
+                                  appStoreOwnership: p.app_store_ownership || 'CLIENT_OWNED',
+                                  storeApprovalDisclaimer: p.store_approval_disclaimer || 'CodeBridge prepares and submits the application according to platform specifications. Final store approval is controlled exclusively by Apple and Google and is never guaranteed.',
                                 });
                                 setProposalModalOpen(true);
                               }}
@@ -878,14 +1290,19 @@ export default function AdminOpsDashboard() {
         </div>
       </div>
 
-      {/* Author Proposal Modal */}
+      {/* Author Proposal & Quote Builder Modal (Phase 2A + Mobile Pricing Rules) */}
       {proposalModalOpen && (
         <div className="cb-modal-overlay">
-          <div className="cb-modal" style={{ maxWidth: '650px' }}>
+          <div className="cb-modal" style={{ maxWidth: '850px', maxHeight: '92vh', overflowY: 'auto' }}>
             <div className="cb-modal-header">
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
-                Author Commercial Proposal (Phase 2A)
-              </h3>
+              <div>
+                <div className="cb-badge cb-badge-blue" style={{ marginBottom: '4px' }}>
+                  <Briefcase size={12} /> Commercial Quote & Engineering Scope
+                </div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--cb-text-primary)' }}>
+                  Author Commercial Proposal & Quote Builder
+                </h3>
+              </div>
               <button
                 onClick={() => setProposalModalOpen(false)}
                 style={{ background: 'none', border: 'none', color: 'var(--cb-text-muted)', cursor: 'pointer' }}
@@ -902,23 +1319,37 @@ export default function AdminOpsDashboard() {
                   </div>
                 )}
 
-                <div className="cb-form-group">
-                  <label className="cb-label">Proposal Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={proposalForm.title}
-                    onChange={(e) => setProposalForm({ ...proposalForm, title: e.target.value })}
-                    className="cb-input"
-                    placeholder="e.g. Enterprise Booking & Payment Infrastructure"
-                  />
+                <div className="cb-grid-2">
+                  <div className="cb-form-group">
+                    <label className="cb-label">Proposal Title *</label>
+                    <input
+                      type="text"
+                      required
+                      value={proposalForm.title}
+                      onChange={(e) => setProposalForm({ ...proposalForm, title: e.target.value })}
+                      className="cb-input"
+                      placeholder="e.g. Enterprise Mobile & Payment Infrastructure"
+                    />
+                  </div>
+
+                  <div className="cb-form-group">
+                    <label className="cb-label">Proposal Currency *</label>
+                    <select
+                      value={proposalForm.currency}
+                      onChange={(e) => setProposalForm({ ...proposalForm, currency: e.target.value })}
+                      className="cb-select"
+                    >
+                      <option value="KES">KES (Kenya Shillings — M-Pesa & Card Collection)</option>
+                      <option value="NGN">NGN (Nigerian Naira — Flutterwave Direct)</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="cb-form-group">
                   <label className="cb-label">Scope of Work *</label>
                   <textarea
                     required
-                    rows={3}
+                    rows={2}
                     value={proposalForm.scopeOfWork}
                     onChange={(e) => setProposalForm({ ...proposalForm, scopeOfWork: e.target.value })}
                     className="cb-textarea"
@@ -926,11 +1357,196 @@ export default function AdminOpsDashboard() {
                   />
                 </div>
 
+                {/* Mobile App & Store Publishing Architecture Controls */}
+                <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'rgba(30, 41, 59, 0.6)', border: '1px solid var(--cb-border-subtle)', marginBottom: '18px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <Smartphone size={16} color="#60A5FA" />
+                    <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--cb-text-primary)', margin: 0 }}>
+                      Mobile App & Store Publishing Configuration
+                    </h4>
+                  </div>
+
+                  <div className="cb-grid-2">
+                    <div className="cb-form-group">
+                      <label className="cb-label">Developer Account Ownership *</label>
+                      <select
+                        value={proposalForm.appStoreOwnership}
+                        onChange={(e) => setProposalForm({ ...proposalForm, appStoreOwnership: e.target.value })}
+                        className="cb-select"
+                      >
+                        <option value="CLIENT_OWNED">Client-Owned Developer Account (Default & Recommended)</option>
+                        <option value="CODEBRIDGE_MANAGED">CodeBridge-Managed Account (Agency Credentials)</option>
+                      </select>
+                      <span style={{ fontSize: '11px', color: 'var(--cb-text-muted)', display: 'block', marginTop: '4px' }}>
+                        Under Client-Owned, client registers Google Play ($25) and Apple Developer ($99/yr) directly. CodeBridge prepares, compiles, and manages submissions.
+                      </span>
+                    </div>
+
+                    <div className="cb-form-group">
+                      <label className="cb-label">Store Approval Regulatory Notice</label>
+                      <div style={{ padding: '10px 12px', borderRadius: '6px', backgroundColor: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', fontSize: '11px', color: '#FCD34D', lineHeight: '1.4' }}>
+                        <ShieldCheck size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-2px' }} />
+                        <strong>Platform Rule:</strong> CodeBridge submits applications adhering to official platform guidelines. Final store approval is controlled exclusively by Apple and Google and is <em>never guaranteed</em>.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interactive Quote Builder: Line Items with Item Type Selector */}
+                <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'var(--cb-surface-card)', border: '1px solid var(--cb-border-subtle)', marginBottom: '18px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div>
+                      <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--cb-text-primary)', margin: 0 }}>
+                        Quote Breakdown & Item Classification
+                      </h4>
+                      <p style={{ fontSize: '11px', color: 'var(--cb-text-muted)', margin: '2px 0 0 0' }}>
+                        Classify every item as CodeBridge Service (Revenue), Third-Party Fee (Non-Revenue), or Reimbursable Expense.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleAddLineItem}
+                      className="cb-btn cb-btn-outline cb-btn-sm"
+                      style={{ gap: '4px', fontSize: '11px' }}
+                    >
+                      <Plus size={13} /> Add Line Item
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {proposalForm.lineItems.map((item, idx) => (
+                      <div
+                        key={item.id || idx}
+                        style={{
+                          padding: '12px',
+                          borderRadius: '6px',
+                          backgroundColor: 'var(--cb-bg)',
+                          border: item.item_type === 'CODEBRIDGE_SERVICE'
+                            ? '1px solid rgba(16, 185, 129, 0.3)'
+                            : item.item_type === 'THIRD_PARTY_FEE'
+                            ? '1px solid rgba(59, 130, 246, 0.3)'
+                            : '1px solid rgba(245, 158, 11, 0.3)',
+                        }}
+                      >
+                        <div className="cb-grid-4" style={{ gap: '8px', marginBottom: '8px' }}>
+                          <div style={{ gridColumn: 'span 2' }}>
+                            <label style={{ fontSize: '10px', color: 'var(--cb-text-muted)', display: 'block', marginBottom: '2px' }}>Item Name / Deliverable</label>
+                            <input
+                              type="text"
+                              value={item.title}
+                              onChange={(e) => handleLineItemChange(idx, 'title', e.target.value)}
+                              className="cb-input"
+                              style={{ padding: '4px 8px', fontSize: '12px' }}
+                            />
+                          </div>
+
+                          <div>
+                            <label style={{ fontSize: '10px', color: 'var(--cb-text-muted)', display: 'block', marginBottom: '2px' }}>Type Classification *</label>
+                            <select
+                              value={item.item_type}
+                              onChange={(e) => handleLineItemChange(idx, 'item_type', e.target.value)}
+                              className="cb-select"
+                              style={{ padding: '4px 8px', fontSize: '11px' }}
+                            >
+                              <option value="CODEBRIDGE_SERVICE">CodeBridge Service (Revenue)</option>
+                              <option value="THIRD_PARTY_FEE">Third-Party Fee (Client Direct)</option>
+                              <option value="REIMBURSABLE_EXPENSE">Reimbursable Expense (Pass-Through)</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label style={{ fontSize: '10px', color: 'var(--cb-text-muted)', display: 'block', marginBottom: '2px' }}>Amount ({proposalForm.currency})</label>
+                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                              <input
+                                type="number"
+                                value={item.amount}
+                                onChange={(e) => handleLineItemChange(idx, 'amount', e.target.value)}
+                                className="cb-input"
+                                style={{ padding: '4px 8px', fontSize: '12px' }}
+                              />
+                              {proposalForm.lineItems.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveLineItem(idx)}
+                                  style={{ background: 'none', border: 'none', color: '#F87171', cursor: 'pointer', padding: '4px' }}
+                                  title="Remove item"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            value={item.description}
+                            onChange={(e) => handleLineItemChange(idx, 'description', e.target.value)}
+                            className="cb-input"
+                            placeholder="Description / note (e.g. Paid directly to Google or Apple)"
+                            style={{ padding: '4px 8px', fontSize: '11px', flex: 1 }}
+                          />
+                          <span className={`cb-badge ${
+                            item.item_type === 'CODEBRIDGE_SERVICE'
+                              ? 'cb-badge-emerald'
+                              : item.item_type === 'THIRD_PARTY_FEE'
+                              ? 'cb-badge-blue'
+                              : 'cb-badge-amber'
+                          }`} style={{ fontSize: '10px', padding: '2px 6px', whiteSpace: 'nowrap' }}>
+                            {item.item_type.replace('_', ' ')}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Calculated Quote Summary Box */}
+                  <div style={{
+                    marginTop: '14px',
+                    padding: '12px 14px',
+                    borderRadius: '6px',
+                    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+                    border: '1px solid var(--cb-border-subtle)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    fontSize: '12px',
+                  }}>
+                    <div>
+                      <div style={{ color: '#34D399', fontWeight: 600 }}>
+                        CodeBridge Services: {proposalForm.lineItems
+                          .filter(i => i.item_type === 'CODEBRIDGE_SERVICE')
+                          .reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0)
+                          .toLocaleString()} {proposalForm.currency}
+                      </div>
+                      <div style={{ color: '#60A5FA', fontSize: '11px', marginTop: '2px' }}>
+                        Client Direct 3rd-Party Costs: {proposalForm.lineItems
+                          .filter(i => i.item_type === 'THIRD_PARTY_FEE')
+                          .reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0)
+                          .toLocaleString()} {proposalForm.currency} (Not CodeBridge Revenue)
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--cb-text-muted)', display: 'block' }}>
+                        Total Invoiced by CodeBridge
+                      </span>
+                      <strong style={{ fontSize: '16px', color: 'var(--cb-text-primary)' }}>
+                        {(parseFloat(proposalForm.totalAmount) || 0).toLocaleString()} {proposalForm.currency}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="cb-form-group">
-                  <label className="cb-label">Deliverables (One per line) *</label>
+                  <label className="cb-label">Deliverables Checklist (One per line) *</label>
                   <textarea
                     required
-                    rows={4}
+                    rows={3}
                     value={proposalForm.deliverables}
                     onChange={(e) => setProposalForm({ ...proposalForm, deliverables: e.target.value })}
                     className="cb-textarea"
@@ -940,19 +1556,24 @@ export default function AdminOpsDashboard() {
 
                 <div className="cb-grid-2">
                   <div className="cb-form-group">
-                    <label className="cb-label">Currency *</label>
+                    <label className="cb-label">Payment Commercial Structure *</label>
                     <select
-                      value={proposalForm.currency}
-                      onChange={(e) => setProposalForm({ ...proposalForm, currency: e.target.value })}
+                      value={proposalForm.paymentStructureType}
+                      onChange={(e) => setProposalForm({ ...proposalForm, paymentStructureType: e.target.value })}
                       className="cb-select"
                     >
-                      <option value="KES">KES (Kenya Shillings)</option>
-                      <option value="NGN">NGN (Nigerian Naira)</option>
+                      <option value="FULL_UPFRONT">Option A: 100% Full Payment Upfront (Default)</option>
+                      <option value="DEPOSIT_MILESTONES">Option B: 50% Deposit / 30% Milestone / 20% Handover</option>
                     </select>
+                    <span style={{ fontSize: '11px', color: 'var(--cb-text-secondary)', display: 'block', marginTop: '4px' }}>
+                      {proposalForm.paymentStructureType === 'FULL_UPFRONT'
+                        ? '• Default: Issues 100% upfront invoice. Project kicks off strictly after verified Flutterwave payment.'
+                        : '• Staged: 50% upfront deposit to initiate development; milestones invoiced at 30% and 20% completion.'}
+                    </span>
                   </div>
 
                   <div className="cb-form-group">
-                    <label className="cb-label">Fixed Project Total ({proposalForm.currency}) *</label>
+                    <label className="cb-label">Authoritative Proposal Amount ({proposalForm.currency}) *</label>
                     <input
                       type="number"
                       required
@@ -966,23 +1587,6 @@ export default function AdminOpsDashboard() {
                       Stored safely in integer minor units ({Math.round(parseFloat(proposalForm.totalAmount || '0') * 100)} minor)
                     </span>
                   </div>
-                </div>
-
-                <div className="cb-form-group">
-                  <label className="cb-label">Payment Commercial Structure *</label>
-                  <select
-                    value={proposalForm.paymentStructureType}
-                    onChange={(e) => setProposalForm({ ...proposalForm, paymentStructureType: e.target.value })}
-                    className="cb-select"
-                  >
-                    <option value="FULL_UPFRONT">Option A: 100% Full Payment Upfront (Default)</option>
-                    <option value="DEPOSIT_MILESTONES">Option B: 50% Deposit / 30% Milestone / 20% Handover</option>
-                  </select>
-                  <span style={{ fontSize: '11px', color: 'var(--cb-text-secondary)', display: 'block', marginTop: '4px' }}>
-                    {proposalForm.paymentStructureType === 'FULL_UPFRONT'
-                      ? '• Default Model: Proposal approval issues a 100% upfront invoice. Project kicks off strictly after verified payment.'
-                      : '• Staged Model: Issues a 50% deposit invoice upon approval to start project. Remaining 30% and 20% milestones are invoiced when work/handover triggers occur.'}
-                  </span>
                 </div>
 
                 <div className="cb-grid-2">

@@ -29,11 +29,35 @@ export default function ClientDashboard() {
   const [rejectionMode, setRejectionMode] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionFeedback, setActionFeedback] = useState('');
+  const [initiatingInvoiceId, setInitiatingInvoiceId] = useState<string | null>(null);
 
   // Chat State
   const [chatOpen, setChatOpen] = useState(false);
   const [chatEntityId, setChatEntityId] = useState<string | null>(null);
   const [chatEntityType, setChatEntityType] = useState<'LEAD' | 'PROJECT'>('PROJECT');
+
+  const handlePayInvoice = async (invId: string) => {
+    try {
+      setInitiatingInvoiceId(invId);
+      const res = await fetch('/api/payments/flutterwave/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceId: invId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to initiate payment with Flutterwave.');
+        return;
+      }
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to initiate checkout.');
+    } finally {
+      setInitiatingInvoiceId(null);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -320,6 +344,7 @@ export default function ClientDashboard() {
                   <th>Outstanding Balance</th>
                   <th>Due Date</th>
                   <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -327,6 +352,8 @@ export default function ClientDashboard() {
                   const amountMinor = inv.amount_minor || 0;
                   const paidMinor = inv.amount_paid_minor || 0;
                   const balanceMinor = Math.max(0, amountMinor - paidMinor);
+                  const isPayable = (inv.status === 'ISSUED' || inv.status === 'PARTIALLY_PAID') && balanceMinor > 0;
+
                   return (
                     <tr key={inv.id}>
                       <td>
@@ -374,6 +401,37 @@ export default function ClientDashboard() {
                         }`}>
                           {inv.status}
                         </span>
+                      </td>
+                      <td>
+                        {inv.status === 'PAID' ? (
+                          <span className="cb-badge cb-badge-emerald" style={{ fontSize: '11px' }}>
+                            ✓ Paid & Settled
+                          </span>
+                        ) : isPayable ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                            <button
+                              onClick={() => handlePayInvoice(inv.id)}
+                              disabled={initiatingInvoiceId === inv.id}
+                              className="cb-btn cb-btn-sm cb-btn-primary"
+                              style={{
+                                backgroundColor: '#F5A623',
+                                borderColor: '#F5A623',
+                                color: '#000',
+                                fontWeight: 700,
+                                fontSize: '11px',
+                                padding: '6px 12px',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {initiatingInvoiceId === inv.id ? 'Connecting...' : 'Pay with Flutterwave'}
+                            </button>
+                            <span style={{ fontSize: '9px', color: 'var(--cb-text-muted)', textAlign: 'center' }}>
+                              {inv.currency === 'KES' ? 'M-Pesa / Card (KES)' : 'Card / Bank (NGN)'}
+                            </span>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>—</span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -491,6 +549,96 @@ export default function ClientDashboard() {
                       </tbody>
                     </table>
                   </div>
+                </div>
+              )}
+
+              {/* Line Items Breakdown: CodeBridge Services vs Third-Party Costs */}
+              {selectedProposal.lineItems && selectedProposal.lineItems.length > 0 && (
+                <div style={{ marginBottom: '20px' }}>
+                  {/* CodeBridge Services */}
+                  <div style={{ marginBottom: '14px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--cb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                      CodeBridge Services (Engineering & Delivery)
+                    </div>
+                    <div style={{ borderRadius: '8px', border: '1px solid var(--cb-border-subtle)', overflow: 'hidden' }}>
+                      <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse', textAlign: 'left' }}>
+                        <thead style={{ backgroundColor: 'rgba(255,255,255,0.03)', color: 'var(--cb-text-secondary)' }}>
+                          <tr>
+                            <th style={{ padding: '8px 12px' }}>Service Name</th>
+                            <th style={{ padding: '8px 12px' }}>Platform</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'right' }}>Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedProposal.lineItems
+                            .filter((item: any) => item.item_type === 'CODEBRIDGE_SERVICE' || !item.item_type)
+                            .map((item: any, idx: number) => (
+                              <tr key={idx} style={{ borderTop: '1px solid var(--cb-border-subtle)' }}>
+                                <td style={{ padding: '8px 12px', color: 'var(--cb-text-primary)', fontWeight: 600 }}>
+                                  {item.name}
+                                  {item.description && <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>{item.description}</div>}
+                                </td>
+                                <td style={{ padding: '8px 12px', color: 'var(--cb-text-secondary)' }}>{item.platform || 'General'}</td>
+                                <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: 'var(--cb-text-primary)' }}>
+                                  {((item.amount_minor || item.amountMinor || 0) / 100).toLocaleString()} {selectedProposal.currency}
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Third-Party Costs */}
+                  {selectedProposal.lineItems.some((item: any) => item.item_type === 'THIRD_PARTY_FEE' || item.item_type === 'REIMBURSABLE_EXPENSE') && (
+                    <div style={{ marginBottom: '14px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#F59E0B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                        Estimated / Separate Third-Party Costs (Not CodeBridge Revenue)
+                      </div>
+                      <div style={{ borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.3)', backgroundColor: 'rgba(245, 158, 11, 0.04)', overflow: 'hidden' }}>
+                        <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse', textAlign: 'left' }}>
+                          <thead style={{ backgroundColor: 'rgba(245, 158, 11, 0.08)', color: '#FCD34D' }}>
+                            <tr>
+                              <th style={{ padding: '8px 12px' }}>Third-Party Provider / Account</th>
+                              <th style={{ padding: '8px 12px' }}>Payment Arrangement</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedProposal.lineItems
+                              .filter((item: any) => item.item_type === 'THIRD_PARTY_FEE' || item.item_type === 'REIMBURSABLE_EXPENSE')
+                              .map((item: any, idx: number) => (
+                                <tr key={idx} style={{ borderTop: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                                  <td style={{ padding: '8px 12px', color: 'var(--cb-text-primary)', fontWeight: 600 }}>
+                                    {item.name}
+                                    {item.note && <div style={{ fontSize: '11px', color: 'var(--cb-text-muted)' }}>{item.note}</div>}
+                                  </td>
+                                  <td style={{ padding: '8px 12px', color: '#FCD34D', fontSize: '11px' }}>
+                                    {item.item_type === 'REIMBURSABLE_EXPENSE'
+                                      ? `Reimbursable: ${((item.amount_minor || 0) / 100).toLocaleString()} ${selectedProposal.currency}`
+                                      : 'Paid directly by client to external platform'}
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <p style={{ fontSize: '11px', color: 'var(--cb-text-muted)', marginTop: '6px' }}>
+                        * Third-party costs are paid directly by the client to providers (Apple, Google, hosting) and are not included in the CodeBridge development total.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* App Store Ownership & Disclaimer */}
+                  {selectedProposal.app_store_ownership && (
+                    <div style={{ padding: '12px 14px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--cb-border-subtle)', marginBottom: '14px', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--cb-text-secondary)', marginBottom: '2px' }}>
+                        App Store Account Model: <span style={{ color: 'var(--cb-accent)' }}>{selectedProposal.app_store_ownership === 'CLIENT_OWNED' ? 'Client-Owned Developer Account (Recommended)' : 'CodeBridge-Managed Account'}</span>
+                      </div>
+                      <div style={{ color: 'var(--cb-text-muted)', fontSize: '11px' }}>
+                        {selectedProposal.store_approval_disclaimer || 'CodeBridge builds, prepares, and submits mobile applications in full accordance with Apple App Store and Google Play Store guidelines. Final submission approval and publication timelines are controlled strictly by Apple and Google.'}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

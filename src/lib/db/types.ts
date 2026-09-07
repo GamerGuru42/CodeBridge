@@ -85,15 +85,22 @@ export type PaymentMethod =
   | 'BANK_TRANSFER'
   | 'CASH'
   | 'OTHER_MANUAL'
-  | 'GATEWAY_SIMULATION';
+  | 'GATEWAY_SIMULATION'
+  | 'MPESA'
+  | 'CARD'
+  | 'FLUTTERWAVE';
 
 export type VerificationSource =
   | 'MANUAL_VERIFICATION'
   | 'BANK_TRANSFER_CONFIRMATION'
   | 'GATEWAY_SIMULATION'
-  | 'PAYSTACK_WEBHOOK'
   | 'FLUTTERWAVE_WEBHOOK'
   | 'M_PESA_CALLBACK';
+
+export type ServiceItemType = 'CODEBRIDGE_SERVICE' | 'THIRD_PARTY_FEE' | 'REIMBURSABLE_EXPENSE';
+export type ServicePlatform = 'ALL' | 'WEB' | 'MOBILE' | 'ANDROID' | 'IOS' | 'CROSS_PLATFORM' | 'CLOUD';
+export type BillingType = 'PROJECT' | 'MILESTONE' | 'MONTHLY' | 'YEARLY' | 'ONE_OFF';
+export type AppStoreOwnership = 'CLIENT_OWNED' | 'CODEBRIDGE_MANAGED';
 
 export type CurrencyCode = 'NGN' | 'KES' | 'USD';
 
@@ -186,6 +193,10 @@ export interface Service {
   category: string;
   base_price_minor: number;
   currency: CurrencyCode;
+  item_type?: ServiceItemType;
+  platform?: ServicePlatform;
+  billing_type?: BillingType;
+  is_price_configured?: number;
   is_active: number;
 }
 
@@ -255,6 +266,9 @@ export interface Invoice {
   description?: string;
   amount_minor: number;
   amount_paid_minor: number;
+  codebridge_amount_minor?: number;
+  third_party_reimbursement_minor?: number;
+  line_items_json?: string;
   currency: CurrencyCode;
   status: InvoiceStatus;
   due_date: string;
@@ -274,8 +288,20 @@ export interface Payment {
   currency: CurrencyCode;
   payment_method: PaymentMethod;
   verification_source: VerificationSource;
-  status: 'PENDING' | 'CONFIRMED' | 'FAILED';
+  status: 'PENDING' | 'CONFIRMED' | 'SUCCESSFUL' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
   reference: string;
+  gateway?: string;
+  gateway_transaction_id?: string;
+  gateway_reference?: string;
+  gross_amount_minor?: number;
+  gateway_fee_minor?: number;
+  net_amount_minor?: number;
+  settlement_status?: 'PENDING' | 'SETTLED' | 'NOT_APPLICABLE';
+  settlement_currency?: CurrencyCode;
+  settlement_amount_minor?: number;
+  settlement_destination?: string;
+  metadata_json?: string;
+  paid_at?: string;
   verified_at: string;
   verified_by: string;
   verification_notes?: string;
@@ -334,6 +360,18 @@ export interface AuditLog {
   created_at: string;
 }
 
+export interface ProposalLineItem {
+  id: string;
+  name: string;
+  description?: string;
+  item_type: ServiceItemType;
+  platform?: ServicePlatform;
+  amount_minor: number;
+  currency: CurrencyCode;
+  is_included_in_total: boolean;
+  note?: string;
+}
+
 export interface Proposal {
   id: string;
   proposal_number: string;
@@ -346,6 +384,11 @@ export interface Proposal {
   title: string;
   scope_of_work: string;
   deliverables_json: string; // JSON array of string deliverables
+  line_items_json?: string; // JSON array of ProposalLineItem
+  codebridge_total_minor?: number;
+  third_party_total_minor?: number;
+  app_store_ownership?: AppStoreOwnership;
+  store_approval_disclaimer?: string;
   payment_structure_type?: PaymentStructureType;
   payment_schedule_json?: string; // JSON array of schedule items
   total_amount_minor: number;

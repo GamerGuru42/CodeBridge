@@ -39,7 +39,7 @@ export async function POST(
       return NextResponse.json({ error: 'Payment amount must be a positive integer in minor units.' }, { status: 400 });
     }
 
-    const validMethods: PaymentMethod[] = ['BANK_TRANSFER', 'CASH', 'OTHER_MANUAL', 'GATEWAY_SIMULATION'];
+    const validMethods: PaymentMethod[] = ['BANK_TRANSFER', 'CASH', 'OTHER_MANUAL', 'GATEWAY_SIMULATION', 'MPESA', 'CARD', 'FLUTTERWAVE'];
     if (!validMethods.includes(paymentMethod)) {
       return NextResponse.json({ error: `Invalid payment method: ${paymentMethod}` }, { status: 400 });
     }
@@ -48,7 +48,6 @@ export async function POST(
       'MANUAL_VERIFICATION',
       'BANK_TRANSFER_CONFIRMATION',
       'GATEWAY_SIMULATION',
-      'PAYSTACK_WEBHOOK',
       'FLUTTERWAVE_WEBHOOK',
       'M_PESA_CALLBACK',
     ];
