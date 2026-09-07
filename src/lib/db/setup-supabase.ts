@@ -4,15 +4,29 @@ import path from 'node:path';
 import bcrypt from 'bcryptjs';
 import postgres from 'postgres';
 
-function getFallbackDbUrl() {
-  if (process.env.DIRECT_URL) return process.env.DIRECT_URL;
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+function loadEnvFile() {
   const envPath = path.resolve(process.cwd(), '.env.local');
   if (fs.existsSync(envPath)) {
     const content = fs.readFileSync(envPath, 'utf-8');
-    const match = content.match(/^DATABASE_URL=(.*)$/m);
-    if (match) return match[1].trim().replace(/^["']|["']$/g, '');
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const match = trimmed.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        const value = match[2].trim().replace(/^["']|["']$/g, '');
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
+      }
+    }
   }
+}
+loadEnvFile();
+
+function getFallbackDbUrl() {
+  if (process.env.DIRECT_URL) return process.env.DIRECT_URL;
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
   return null;
 }
 
@@ -528,6 +542,136 @@ CREATE INDEX IF NOT EXISTS idx_commissions_rep ON commissions(representative_id)
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 
+-- Territories
+CREATE TABLE IF NOT EXISTS territories (
+  id VARCHAR(16) PRIMARY KEY,
+  country_name TEXT NOT NULL,
+  currency VARCHAR(8) NOT NULL,
+  default_payout_method VARCHAR(32) NOT NULL DEFAULT 'BANK',
+  default_commission_rate_bps INTEGER NOT NULL DEFAULT 2000,
+  direct_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE territories ADD COLUMN IF NOT EXISTS direct_admin BOOLEAN DEFAULT FALSE;
+
+-- Representatives extensions
+ALTER TABLE representatives ADD COLUMN IF NOT EXISTS territory_id VARCHAR(16);
+ALTER TABLE representatives ADD COLUMN IF NOT EXISTS payout_currency VARCHAR(8) DEFAULT 'KES';
+ALTER TABLE representatives ADD COLUMN IF NOT EXISTS payout_method VARCHAR(32) DEFAULT 'MPESA';
+ALTER TABLE representatives ADD COLUMN IF NOT EXISTS payout_destination TEXT;
+ALTER TABLE representatives ADD COLUMN IF NOT EXISTS payout_bank_code VARCHAR(32) DEFAULT 'MPS';
+ALTER TABLE representatives ADD COLUMN IF NOT EXISTS payout_account_name TEXT;
+
+-- Immutable Double-Entry Ledger Table
+CREATE TABLE IF NOT EXISTS ledger_entries (
+  id VARCHAR(64) PRIMARY KEY,
+  entry_type VARCHAR(32) NOT NULL,
+  account_debited VARCHAR(64) NOT NULL,
+  account_credited VARCHAR(64) NOT NULL,
+  currency VARCHAR(8) NOT NULL,
+  amount_minor BIGINT NOT NULL CHECK (amount_minor > 0),
+  invoice_id VARCHAR(64),
+  payment_id VARCHAR(64),
+  sales_rep_id VARCHAR(64),
+  project_id VARCHAR(64),
+  client_id VARCHAR(64),
+  reference VARCHAR(128) NOT NULL,
+  notes TEXT,
+  metadata_json TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ledger_invoice ON ledger_entries(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_ledger_payment ON ledger_entries(payment_id);
+CREATE INDEX IF NOT EXISTS idx_ledger_rep ON ledger_entries(sales_rep_id);
+CREATE INDEX IF NOT EXISTS idx_ledger_reference ON ledger_entries(reference);
+CREATE INDEX IF NOT EXISTS idx_ledger_type ON ledger_entries(entry_type);
+
+-- Commission Payouts Table
+CREATE TABLE IF NOT EXISTS commission_payouts (
+  id VARCHAR(64) PRIMARY KEY,
+  sales_rep_id VARCHAR(64) NOT NULL,
+  commission_id VARCHAR(64),
+  currency VARCHAR(8) NOT NULL,
+  amount_minor BIGINT NOT NULL CHECK (amount_minor > 0),
+  payout_method VARCHAR(32) NOT NULL DEFAULT 'MPESA',
+  payout_destination TEXT NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'QUEUED',
+  idempotency_key VARCHAR(128) NOT NULL UNIQUE,
+  provider VARCHAR(32) NOT NULL DEFAULT 'flutterwave',
+  provider_transfer_id VARCHAR(128),
+  provider_reference VARCHAR(128),
+  failure_reason TEXT,
+  retry_count INTEGER NOT NULL DEFAULT 0,
+  last_attempt_at TIMESTAMPTZ,
+  paid_at TIMESTAMPTZ,
+  metadata_json TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_payouts_rep ON commission_payouts(sales_rep_id);
+CREATE INDEX IF NOT EXISTS idx_payouts_status ON commission_payouts(status);
+
+-- Refunds Table
+CREATE TABLE IF NOT EXISTS refunds (
+  id VARCHAR(64) PRIMARY KEY,
+  payment_id VARCHAR(64) NOT NULL,
+  invoice_id VARCHAR(64) NOT NULL,
+  project_id VARCHAR(64),
+  client_id VARCHAR(64),
+  sales_rep_id VARCHAR(64),
+  currency VARCHAR(8) NOT NULL,
+  amount_minor BIGINT NOT NULL CHECK (amount_minor > 0),
+  completed_amount_minor BIGINT NOT NULL DEFAULT 0,
+  commission_reversal_minor BIGINT NOT NULL DEFAULT 0,
+  status VARCHAR(32) NOT NULL DEFAULT 'REQUESTED',
+  refund_reference VARCHAR(128) NOT NULL UNIQUE,
+  provider_refund_id VARCHAR(128),
+  provider_reference VARCHAR(128),
+  reason TEXT,
+  failure_reason TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_refunds_payment ON refunds(payment_id);
+CREATE INDEX IF NOT EXISTS idx_refunds_invoice ON refunds(invoice_id);
+
+-- Commission Adjustments Table
+CREATE TABLE IF NOT EXISTS commission_adjustments (
+  id VARCHAR(64) PRIMARY KEY,
+  sales_rep_id VARCHAR(64) NOT NULL,
+  commission_id VARCHAR(64) NOT NULL,
+  refund_id VARCHAR(64),
+  adjustment_type VARCHAR(32) NOT NULL,
+  currency VARCHAR(8) NOT NULL,
+  amount_minor BIGINT NOT NULL CHECK (amount_minor > 0),
+  recovery_status VARCHAR(32) NOT NULL DEFAULT 'NONE',
+  notes TEXT,
+  metadata_json TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_comm_adj_rep ON commission_adjustments(sales_rep_id);
+CREATE INDEX IF NOT EXISTS idx_comm_adj_comm ON commission_adjustments(commission_id);
+
+-- Disputes Table
+CREATE TABLE IF NOT EXISTS disputes (
+  id VARCHAR(64) PRIMARY KEY,
+  payment_id VARCHAR(64) NOT NULL,
+  invoice_id VARCHAR(64) NOT NULL,
+  amount_minor BIGINT NOT NULL CHECK (amount_minor > 0),
+  currency VARCHAR(8) NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'DISPUTE_OPEN',
+  provider_dispute_id VARCHAR(128),
+  reason TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  resolved_at TIMESTAMPTZ
+);
+
 -- Ensure permissions for Supabase Studio and service roles
 GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;
@@ -635,6 +779,38 @@ export async function setupSupabaseDatabase() {
       `;
       console.log(`   ℹ️ Existing user ${adminEmail} verified and updated as active SUPER_ADMIN.`);
     }
+
+    // 5. Seed Territories and System Service Users
+    console.log('-> Seeding foundational territories (NG, KE, GH, ZA, UG)...');
+    const defaultTerritories = [
+      { id: 'NG', name: 'Nigeria', currency: 'NGN', method: 'BANK', bps: 2000, directAdmin: true },
+      { id: 'KE', name: 'Kenya', currency: 'KES', method: 'MPESA', bps: 2000, directAdmin: false },
+      { id: 'GH', name: 'Ghana', currency: 'GHS', method: 'MOBILE_MONEY', bps: 2000, directAdmin: false },
+      { id: 'ZA', name: 'South Africa', currency: 'ZAR', method: 'BANK', bps: 2000, directAdmin: false },
+      { id: 'UG', name: 'Uganda', currency: 'UGX', method: 'MOBILE_MONEY', bps: 2000, directAdmin: false },
+    ];
+
+    for (const t of defaultTerritories) {
+      await sql`
+        INSERT INTO territories (id, country_name, currency, default_payout_method, default_commission_rate_bps, direct_admin, is_active)
+        VALUES (${t.id}, ${t.name}, ${t.currency}, ${t.method}, ${t.bps}, ${t.directAdmin}, 1)
+        ON CONFLICT (id) DO UPDATE SET
+          country_name = EXCLUDED.country_name,
+          currency = EXCLUDED.currency,
+          default_payout_method = EXCLUDED.default_payout_method,
+          default_commission_rate_bps = EXCLUDED.default_commission_rate_bps,
+          direct_admin = EXCLUDED.direct_admin;
+      `;
+    }
+    console.log('   ✅ Seeded 5 territories.');
+
+    // Seed system_flutterwave automated user for webhook ledger integrity
+    await sql`
+      INSERT INTO users (id, email, password_hash, role, status, email_verified)
+      VALUES ('system_flutterwave', 'system.flutterwave@code-bridge-rosy.vercel.app', 'LOCKED_SYSTEM_KEY', 'ADMIN', 'ACTIVE', 1)
+      ON CONFLICT (id) DO NOTHING;
+    `;
+    console.log('   ✅ Seeded system_flutterwave automated user.');
 
     console.log('\n✨ CodeBridge Supabase PostgreSQL Database Setup completed idempotently!');
     console.log('   No demo data, mock leads, mock proposals, or test transactions were seeded.');

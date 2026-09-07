@@ -24,9 +24,9 @@ class TestDbAdapter {
       this.sql = postgres(dbUrl, {
         ssl: 'require',
         prepare: false,
-        max: 10,
+        max: 2,
         idle_timeout: 30,
-        connect_timeout: 20,
+        connect_timeout: 30,
       });
     } else {
       this.isPg = false;

@@ -63,9 +63,9 @@ export function getPgClient(): postgres.Sql {
   pgClient = postgres(url, {
     prepare: false,
     ssl: 'require',
-    max: 10,
+    max: 5,
     idle_timeout: 20,
-    connect_timeout: 10,
+    connect_timeout: 20,
   });
 
   return pgClient;
